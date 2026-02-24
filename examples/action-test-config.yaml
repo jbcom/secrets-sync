@@ -1,0 +1,38 @@
+# Simple SecretSync Configuration for Testing GitHub Action
+# This is a minimal configuration to verify the action works
+
+vault:
+  address: https://vault.example.com
+  namespace: admin
+  auth:
+    token:
+      token: ${VAULT_TOKEN}
+
+aws:
+  region: us-east-1
+
+# Simple source configuration
+sources:
+  test-source:
+    vault:
+      mount: secret
+      paths:
+        - test/*
+
+# Use Vault as merge store
+merge_store:
+  vault:
+    mount: merged
+
+# Single test target
+targets:
+  TestTarget:
+    account_id: "123456789012"
+    imports:
+      - test-source
+    region: us-east-1
+
+# Pipeline settings
+pipeline:
+  dry_run: true
+  continue_on_error: true

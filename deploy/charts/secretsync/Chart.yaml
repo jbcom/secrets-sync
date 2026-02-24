@@ -1,0 +1,14 @@
+apiVersion: v2
+name: secretsync
+description: Universal secrets synchronization pipeline for multi-cloud secret management
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+
+dependencies:
+  - name: secretsync-events
+    version: 0.1.0
+    condition: secretsync-events.enabled
+  - name: secretsync-operator
+    version: 0.1.0
+    condition: secretsync-operator.enabled

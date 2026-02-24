@@ -1,0 +1,222 @@
+# AWS Organizations Dynamic Discovery - Complete Examples
+#
+# This file demonstrates all the features of Organizations-based dynamic target discovery
+# including OU-based listing, tag filtering, recursive traversal, and account name resolution.
+
+# =============================================================================
+# Example 1: Discover by Organizational Unit (OU)
+# =============================================================================
+dynamic_targets:
+  # Simple OU-based discovery - accounts directly in the OU only
+  development_accounts:
+    discovery:
+      organizations:
+        ou: "ou-xxxx-development"
+    imports:
+      - shared-dev-secrets
+    exclude:
+      - "123456789012"  # Exclude specific accounts if needed
+
+# =============================================================================
+# Example 2: Recursive OU Traversal
+# =============================================================================
+  # Discover all accounts in an OU and ALL child OUs recursively
+  workload_accounts:
+    discovery:
+      organizations:
+        ou: "ou-xxxx-workloads"
+        recursive: true  # Includes all nested OUs
+    imports:
+      - platform-secrets
+      - monitoring-config
+
+# =============================================================================
+# Example 3: Tag-Based Filtering
+# =============================================================================
+  # Discover accounts by tags only (no OU specified)
+  # This will list ALL accounts in the organization and filter by tags
+  production_accounts:
+    discovery:
+      organizations:
+        tags:
+          Environment: production
+          ManagedBy: platform-team
+    imports:
+      - prod-secrets
+      - compliance-keys
+    # Note: ALL specified tags must match for an account to be included
+
+# =============================================================================
+# Example 4: Combined OU and Tag Filtering
+# =============================================================================
+  # Discover accounts in a specific OU AND filter by tags
+  # First lists accounts in the OU, then filters by tags
+  production_web_apps:
+    discovery:
+      organizations:
+        ou: "ou-xxxx-production"
+        tags:
+          Workload: web-application
+          CostCenter: engineering
+    imports:
+      - web-app-secrets
+      - ssl-certificates
+
+# =============================================================================
+# Example 5: Recursive OU with Tag Filtering
+# =============================================================================
+  # Most powerful: recursively traverse OUs and filter by tags
+  sandbox_environments:
+    discovery:
+      organizations:
+        ou: "ou-xxxx-sandboxes"
+        recursive: true  # Search all child OUs too
+        tags:
+          AutoCleanup: enabled
+          Owner: analytics-team
+    imports:
+      - sandbox-defaults
+      - testing-credentials
+    exclude:
+      - "999999999999"  # Exclude the sandbox management account
+
+# =============================================================================
+# Example 6: Custom Role ARN with Dynamic Account ID
+# =============================================================================
+  # Use a custom IAM role pattern for cross-account access
+  custom_role_accounts:
+    discovery:
+      organizations:
+        ou: "ou-xxxx-special"
+    imports:
+      - special-secrets
+    # {{.AccountID}} will be replaced with each discovered account ID
+    role_arn: "arn:aws:iam::{{.AccountID}}:role/CustomSecretsRole"
+    region: us-west-2
+    secret_prefix: "/custom/"
+
+# =============================================================================
+# Example 7: Multiple Discovery Methods Combined
+# =============================================================================
+  # Combine multiple discovery methods in one target
+  # Note: This requires both Identity Center and Organizations discovery to be configured
+  analytics_platform_accounts:
+    discovery:
+      # First: get accounts from Identity Center group
+      identity_center:
+        group: "Analytics Platform Users"
+      # Second: also get accounts from Organizations by tags
+      organizations:
+        tags:
+          Platform: analytics
+          Environment: shared
+      # Third: also get accounts from an SSM parameter
+      accounts_list:
+        source: "ssm:/platform/analytics-accounts"
+    imports:
+      - analytics-shared
+      - data-lake-access
+    exclude:
+      - "111111111111"  # Exclude management account
+    # All discovered accounts are deduplicated automatically
+
+# =============================================================================
+# Example 8: Real-World Scenario - Multi-Environment Setup
+# =============================================================================
+  # Development environments with testing data
+  dev_envs:
+    discovery:
+      organizations:
+        ou: "ou-xxxx-dev"
+        recursive: true
+        tags:
+          AutoProvision: enabled
+    imports:
+      - dev-shared-config
+      - testing-data
+    region: us-east-1
+
+  # Staging environments with production-like data
+  staging_envs:
+    discovery:
+      organizations:
+        ou: "ou-xxxx-staging"
+        tags:
+          Environment: staging
+    imports:
+      - dev-shared-config  # Inherit from dev
+      - staging-specific   # Add staging-specific secrets
+    region: us-east-1
+
+  # Production environments with strict controls
+  prod_envs:
+    discovery:
+      organizations:
+        ou: "ou-xxxx-production"
+        tags:
+          Environment: production
+          Compliance: required
+    imports:
+      - prod-secrets
+      - pci-compliance-keys
+    role_arn: "arn:aws:iam::{{.AccountID}}:role/ProdSecretsAccess"
+    secret_prefix: "/prod/"
+    region: us-east-1
+    exclude:
+      - "888888888888"  # Exclude prod management account
+
+# =============================================================================
+# Notes on Account Tags
+# =============================================================================
+# 
+# Account tags are automatically fetched from AWS Organizations API.
+# The tags are retrieved using the ListTagsForResource API call for each account.
+#
+# To set tags on accounts, use:
+#   aws organizations tag-resource \
+#     --resource-id <account-id> \
+#     --tags Key=Environment,Value=production
+#
+# To view tags on an account:
+#   aws organizations list-tags-for-resource \
+#     --resource-id <account-id>
+#
+# Tag Filtering Behavior:
+# - ALL specified tags must match (AND logic, not OR)
+# - Tag keys and values are case-sensitive
+# - Accounts without tags are excluded when tag filtering is enabled
+# - Empty tag maps in config are treated as "no tag filtering"
+
+# =============================================================================
+# Notes on Account Name Resolution
+# =============================================================================
+#
+# When using Identity Center discovery, account names are automatically enriched
+# from AWS Organizations if the execution context has Organizations API access.
+# This ensures that discovered targets have meaningful names.
+#
+# Account names are used to generate target names automatically:
+# - Sanitized (spaces → underscores, special chars removed)
+# - Made unique by appending account ID suffix if needed
+# - Example: "Analytics Sandbox" → "Analytics_Sandbox" or "Analytics_Sandbox_123456"
+
+# =============================================================================
+# Notes on Recursive OU Traversal
+# =============================================================================
+#
+# When recursive: true is set:
+# 1. Lists all accounts directly in the specified OU
+# 2. Lists all child OUs
+# 3. Recursively processes each child OU
+# 4. Continues until all nested OUs are processed
+# 5. Errors in child OUs are logged but don't stop the traversal
+#
+# Permissions Required:
+# - organizations:ListAccountsForParent (for each OU)
+# - organizations:ListOrganizationalUnitsForParent (for recursive traversal)
+# - organizations:ListTagsForResource (for tag filtering)
+#
+# Best Practice:
+# - Use recursive: true for broad discovery
+# - Use tags to filter the results to specific account types
+# - Combine both for powerful, maintainable configurations

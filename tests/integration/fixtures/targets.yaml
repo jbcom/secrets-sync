@@ -1,0 +1,22 @@
+# Generalized test targets configuration
+# Mirrors production patterns without referencing specific customers
+#
+# Pattern: Multi-tier inheritance with source imports
+#   - Staging targets import from sources (base layer)
+#   - Production targets inherit from staging (inherit + extend)
+#   - Demo targets inherit from production (full chain)
+
+# Base staging target - imports directly from sources
+Staging:
+  imports:
+    - analytics          # Primary analytics source
+    - data-engineers     # Team-specific secrets
+
+# Production target - inherits from staging
+# All staging secrets + any prod-specific overrides
+Production:
+  - Staging
+
+# Demo environment - inherits full production chain
+Demo:
+  - Production

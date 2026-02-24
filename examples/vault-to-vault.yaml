@@ -1,0 +1,16 @@
+---
+apiVersion: secretsync.extendeddata.dev/v1alpha1
+kind: SecretSync
+metadata:
+  name: vault-to-vault
+  namespace: default
+spec:
+  source:
+    address: "https://vault.example.com"
+    path: "hello/world/(.*)"
+    namespace: "foo/bar"
+  dest:
+  - vault:
+      address: "https://vault2.example.com"
+      path: "rewritten/path/$1"
+      namespace: "robertlestak/example"

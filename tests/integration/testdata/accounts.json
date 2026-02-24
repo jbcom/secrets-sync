@@ -1,0 +1,87 @@
+{
+  "accounts": [
+    {
+      "id": "111111111111",
+      "name": "analytics-staging",
+      "email": "staging@example.com",
+      "status": "ACTIVE",
+      "ou": "ou-xxxx-development",
+      "tags": {
+        "Environment": "staging",
+        "Team": "analytics"
+      }
+    },
+    {
+      "id": "222222222222",
+      "name": "analytics-production",
+      "email": "prod@example.com",
+      "status": "ACTIVE",
+      "ou": "ou-xxxx-production",
+      "tags": {
+        "Environment": "production",
+        "Team": "analytics"
+      }
+    },
+    {
+      "id": "333333333333",
+      "name": "demo-environment",
+      "email": "demo@example.com",
+      "status": "ACTIVE",
+      "ou": "ou-xxxx-development",
+      "tags": {
+        "Environment": "demo",
+        "Team": "analytics"
+      }
+    },
+    {
+      "id": "444444444444",
+      "name": "AWS-DataEngineering-Sandbox-Account",
+      "email": "sandbox1@example.com",
+      "status": "ACTIVE",
+      "ou": "ou-xxxx-development",
+      "tags": {
+        "Environment": "sandbox",
+        "Team": "data-engineering"
+      }
+    },
+    {
+      "id": "555555555555",
+      "name": "fsc-analytics-dev-acct",
+      "email": "dev1@example.com",
+      "status": "ACTIVE",
+      "ou": "ou-xxxx-development",
+      "tags": {
+        "Environment": "development",
+        "Team": "analytics"
+      }
+    },
+    {
+      "id": "666666666666",
+      "name": "org-Data_Engineers_Sandbox",
+      "email": "sandbox2@example.com",
+      "status": "ACTIVE",
+      "ou": "ou-xxxx-development",
+      "tags": {
+        "Environment": "sandbox",
+        "Team": "data-engineering"
+      }
+    }
+  ],
+  "organizational_units": [
+    {
+      "id": "ou-xxxx-development",
+      "name": "Development",
+      "parent": "r-xxxx"
+    },
+    {
+      "id": "ou-xxxx-production",
+      "name": "Production",
+      "parent": "r-xxxx"
+    },
+    {
+      "id": "ou-xxxx-sandbox",
+      "name": "Sandbox",
+      "parent": "ou-xxxx-development"
+    }
+  ]
+}

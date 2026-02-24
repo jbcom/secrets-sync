@@ -1,0 +1,41 @@
+---
+name: "SecretSync"
+author: "jbcom"
+description: "Sync secrets from HashiCorp Vault to AWS Secrets Manager across multiple accounts"
+runs:
+  using: "docker"
+  # TODO: Once release workflow automation exists, use immutable digest format:
+  # 1. Get digest: docker pull extended-data-library/secretssync:v1 && docker inspect --format='{{index .RepoDigests 0}}' extended-data-library/secretssync:v1
+  # 2. Update to: image: "docker://extended-data-library/secretssync:v1@sha256:<digest>"
+  # For now, using tag-based reference until digest automation is implemented
+  image: "docker://extended-data-library/secretssync:v1" # x-release-please-version
+branding:
+  icon: "lock"
+  color: "blue"
+
+# Configuration via environment variables (GitHub Actions inputs map to env vars)
+# See https://github.com/extended-data-library/secretssync#configuration for full documentation
+#
+# Required:
+#   SECRETSYNC_CONFIG       - Path to config file (default: config.yaml)
+#
+# Optional:
+#   SECRETSYNC_TARGETS      - Comma-separated list of targets (default: all)
+#   SECRETSYNC_DRY_RUN      - Run without making changes (default: false)
+#   SECRETSYNC_MERGE_ONLY   - Only run merge phase (default: false)
+#   SECRETSYNC_SYNC_ONLY    - Only run sync phase (default: false)
+#   SECRETSYNC_DISCOVER     - Enable dynamic target discovery (default: false)
+#   SECRETSYNC_OUTPUT       - Output format: human, json, github (default: github)
+#   SECRETSYNC_DIFF         - Show diff even without dry-run (default: false)
+#   SECRETSYNC_EXIT_CODE    - Use exit codes for CI (default: false)
+#   SECRETSYNC_LOG_LEVEL    - Log level: debug, info, warn, error (default: info)
+#   SECRETSYNC_LOG_FORMAT   - Log format: text, json (default: text)
+#
+# Vault Authentication (one required):
+#   VAULT_ADDR              - Vault server address
+#   VAULT_TOKEN             - Vault token (or use AppRole/K8s auth in config)
+#   VAULT_ROLE_ID           - AppRole role ID
+#   VAULT_SECRET_ID         - AppRole secret ID
+#
+# AWS Authentication:
+#   Use aws-actions/configure-aws-credentials@v4 before this action for OIDC

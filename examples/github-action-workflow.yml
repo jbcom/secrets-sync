@@ -1,0 +1,143 @@
+name: Sync Secrets with SecretSync
+
+# This is a complete example workflow showing how to use SecretSync
+# as a GitHub Action for automated secrets synchronization.
+#
+# Note: After initial release, you can use @v1 to get automatic updates,
+# or pin to @v1.0.0 for stability. This example uses @v1.0.0 for initial release.
+
+on:
+  # Scheduled sync every 6 hours
+  schedule:
+    - cron: '0 */6 * * *'
+  
+  # Manual trigger with options
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: 'Targets to sync (comma-separated, leave empty for all)'
+        required: false
+        default: ''
+      dry_run:
+        description: 'Run in dry-run mode (no changes)'
+        type: boolean
+        default: false
+      environment:
+        description: 'Environment configuration to use'
+        type: choice
+        default: 'production'
+        options:
+          - development
+          - staging
+          - production
+
+  # Trigger on config changes
+  push:
+    branches:
+      - main
+    paths:
+      - 'config.yaml'
+      - 'configs/**'
+
+  # Validate on pull requests
+  pull_request:
+    paths:
+      - 'config.yaml'
+      - 'configs/**'
+
+# Required permissions for OIDC and GitHub API
+permissions:
+  id-token: write      # Required for AWS OIDC authentication
+  contents: read       # Required to checkout repository
+  pull-requests: write # Required for PR comments (optional)
+
+jobs:
+  # Validation job for pull requests
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: us-east-1
+      
+      - name: Validate Configuration (Dry Run)
+        uses: extended-data-library/secretssync@v1.0.0  # Use specific version for first release
+        with:
+          config: config.yaml
+          dry-run: 'true'
+          output-format: 'github'
+          exit-code: 'true'
+          log-level: 'info'
+        env:
+          VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+          VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+
+  # Main sync job
+  sync:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    # Optional: Use GitHub Environments for additional protection
+    # environment: production
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Determine Configuration
+        id: config
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "config=configs/${{ github.event.inputs.environment }}.yaml" >> $GITHUB_OUTPUT
+          else
+            echo "config=config.yaml" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: us-east-1
+          # Optional: Add session tags for audit trail
+          role-session-name: GitHubActions-SecretSync-${{ github.run_id }}
+      
+      - name: Run SecretSync
+        uses: extended-data-library/secretssync@v1.0.0  # Use specific version for first release
+        with:
+          config: ${{ steps.config.outputs.config }}
+          targets: ${{ github.event.inputs.targets || '' }}
+          dry-run: ${{ github.event.inputs.dry_run || 'false' }}
+          output-format: 'github'
+          log-level: 'info'
+          log-format: 'text'
+        env:
+          # Vault credentials from GitHub Secrets
+          VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+          VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+          
+          # Optional: Additional environment variables
+          # VAULT_ADDR: https://vault.example.com
+          # VAULT_NAMESPACE: admin
+
+  # Optional: Notification job
+  notify:
+    needs: [sync]
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Success Notification
+        if: needs.sync.result == 'success'
+        run: |
+          echo "✅ Secrets sync completed successfully"
+          # Add your notification logic here (Slack, Teams, etc.)
+      
+      - name: Send Failure Notification
+        if: needs.sync.result == 'failure'
+        run: |
+          echo "❌ Secrets sync failed"
+          # Add your notification logic here (Slack, Teams, etc.)

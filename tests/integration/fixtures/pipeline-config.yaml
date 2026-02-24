@@ -1,0 +1,115 @@
+# Integration test pipeline configuration
+# Exercises all merge/sync patterns with realistic complexity
+
+vault:
+  address: http://vault:8200
+  auth:
+    token: ${VAULT_TOKEN}
+
+aws:
+  region: us-east-1
+  endpoint: ${AWS_ENDPOINT_URL}
+
+# Sources - KV2 mounts in Vault
+sources:
+  analytics:
+    vault:
+      mount: analytics
+  data-engineers:
+    vault:
+      mount: data-engineers
+  shared:
+    vault:
+      mount: shared
+
+# Merge store - intermediate aggregation layer
+merge_store:
+  vault:
+    mount: merged-secrets
+
+# Targets with inheritance chain
+# Graph: analytics + data-engineers → Staging → Production → Demo
+targets:
+  Staging:
+    account_id: "111111111111"
+    region: us-east-1
+    imports:
+      - analytics
+      - data-engineers
+  
+  Production:
+    account_id: "222222222222"
+    region: us-east-1
+    imports:
+      - Staging  # Inherits ALL secrets from Staging
+  
+  Demo:
+    account_id: "333333333333"
+    region: us-east-1
+    imports:
+      - Production  # Inherits ALL secrets from Production
+
+# Dynamic targets - discovered via AWS Organizations
+# Uses fuzzy matching on account names for target resolution
+dynamic_targets:
+  # Sandbox accounts discovered via Identity Center permission sets
+  engineer_sandboxes:
+    discovery:
+      identity_center:
+        permission_set: "EngineerAccess"
+    imports:
+      - analytics
+      - Staging
+      - data-engineers
+    exclude:
+      - "222222222222"  # Exclude production
+  
+  # Development accounts discovered from Organizations OU
+  dev_accounts:
+    discovery:
+      organizations:
+        ou: "ou-xxxx-development"
+        recursive: true
+        # Fuzzy match account names to target configs
+        name_matching:
+          strategy: fuzzy           # loose/fuzzy/exact
+          normalize_keys: true      # JSON key normalization
+          case_insensitive: true
+    imports:
+      - analytics
+      - data-engineers
+    # Map discovered accounts to targets using fuzzy name matching
+    account_name_patterns:
+      - pattern: ".*-staging$"
+        target: Staging
+      - pattern: ".*-prod(uction)?$"
+        target: Production
+      - pattern: ".*-demo$"
+        target: Demo
+  
+  # All member accounts with tag-based filtering
+  tagged_accounts:
+    discovery:
+      organizations:
+        tags:
+          Environment: ["sandbox", "development"]
+          Team: ["analytics", "data-engineering"]
+        # Fuzzy matching for account name → target resolution
+        name_matching:
+          strategy: loose           # Normalize and fuzzy match
+          normalize_keys: true
+          strip_prefixes: ["aws-", "fsc-", "org-"]
+          strip_suffixes: ["-account", "-acct"]
+    imports:
+      - shared
+      - analytics
+
+# Pipeline settings
+pipeline:
+  merge:
+    parallel: 2
+  sync:
+    parallel: 2
+    delete_orphans: false
+  dry_run: false
+  continue_on_error: true

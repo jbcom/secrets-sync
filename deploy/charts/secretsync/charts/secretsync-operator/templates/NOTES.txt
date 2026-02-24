@@ -1,0 +1,5 @@
+The SecretSync Operator has been installed.
+
+To verify that the operator is running, run:
+
+  kubectl get pods -n {{ .Release.Namespace }} -l "app.kubernetes.io/name=secretsync-operator"

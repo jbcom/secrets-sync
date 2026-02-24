@@ -1,0 +1,18 @@
+---
+apiVersion: secretsync.extendeddata.dev/v1alpha1
+kind: SecretSync
+metadata:
+  name: vault-to-github
+  namespace: default
+spec:
+  source:
+    address: "https://vault.example.com"
+    path: "hello/world"
+    namespace: "foo/bar"
+  dest:
+  - github:
+      repo: "foobar"
+      owner: "helloworld"
+  - github:
+      repo: "barfoo"
+      owner: "helloworld"

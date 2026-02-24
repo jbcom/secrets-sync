@@ -1,0 +1,115 @@
+# Integration test environment with automated seeding
+# Usage:
+#   docker-compose -f docker-compose.test.yml up --abort-on-container-exit
+#   OR
+#   make test-integration-docker
+
+services:
+  # LocalStack for AWS Secrets Manager emulation
+  localstack:
+    image: localstack/localstack:3.8.1
+    container_name: secretsync-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: secretsmanager,s3,sts
+      DEBUG: 0
+      EAGER_SERVICE_LOADING: 1
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - ./tests/integration/scripts:/docker-entrypoint-initaws.d:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 10s
+
+  # HashiCorp Vault in dev mode
+  vault:
+    image: hashicorp/vault:1.17.6
+    container_name: secretsync-vault
+    ports:
+      - "8200:8200"
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "test-root-token"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+      VAULT_ADDR: "http://0.0.0.0:8200"
+      VAULT_LOG_LEVEL: "warn"
+    cap_add:
+      - IPC_LOCK
+    healthcheck:
+      test: ["CMD", "vault", "status"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+      start_period: 5s
+    command: server -dev -dev-root-token-id="test-root-token"
+
+  # Vault seeder - initializes Vault with test data
+  vault-seeder:
+    image: hashicorp/vault:1.17.6
+    container_name: secretsync-vault-seeder
+    depends_on:
+      vault:
+        condition: service_healthy
+    environment:
+      VAULT_ADDR: "http://vault:8200"
+      VAULT_TOKEN: "test-root-token"
+    volumes:
+      - ./tests/integration/testdata:/testdata:ro
+      - ./tests/integration/scripts:/scripts:ro
+    command: /scripts/seed-vault.sh
+    restart: "no"
+
+  # AWS seeder - initializes LocalStack with test data
+  aws-seeder:
+    image: amazon/aws-cli:2.22.17
+    container_name: secretsync-aws-seeder
+    depends_on:
+      localstack:
+        condition: service_healthy
+    environment:
+      AWS_ENDPOINT_URL: "http://localstack:4566"
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
+      AWS_REGION: "us-east-1"
+      AWS_DEFAULT_REGION: "us-east-1"
+    volumes:
+      - ./tests/integration/testdata:/testdata:ro
+      - ./tests/integration/scripts:/scripts:ro
+    entrypoint: /scripts/seed-aws.sh
+    restart: "no"
+
+  # Test runner service - runs integration tests after seeding
+  test-runner:
+    image: golang:1.25-trixie
+    container_name: secretsync-test-runner
+    working_dir: /app
+    volumes:
+      - .:/app
+    depends_on:
+      vault-seeder:
+        condition: service_completed_successfully
+      aws-seeder:
+        condition: service_completed_successfully
+    environment:
+      # Vault config
+      VAULT_ADDR: "http://vault:8200"
+      VAULT_TOKEN: "test-root-token"
+      # AWS config (LocalStack)
+      AWS_ENDPOINT_URL: "http://localstack:4566"
+      AWS_ACCESS_KEY_ID: "test"
+      AWS_SECRET_ACCESS_KEY: "test"
+      AWS_REGION: "us-east-1"
+      AWS_DEFAULT_REGION: "us-east-1"
+      # Go test config
+      CGO_ENABLED: "0"
+      INTEGRATION_TESTS: "true"
+    command: >
+      sh -c "
+        echo '=== Starting integration tests ===' &&
+        go mod download &&
+        go test -v -timeout=10m -tags=integration ./tests/integration/... &&
+        echo '=== Integration tests completed successfully ==='
+      "

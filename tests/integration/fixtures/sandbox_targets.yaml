@@ -1,0 +1,9 @@
+# Sandbox account targets for dynamic discovery testing
+# These simulate accounts discovered via AWS Identity Center
+
+# Engineers sandbox targets - discovered via permission set
+engineer_sandboxes:
+  imports:
+    - analytics           # Base analytics secrets
+    - Staging             # Inherit from staging target
+    - data-engineers      # Team-specific secrets
