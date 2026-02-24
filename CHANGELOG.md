@@ -7,6 +7,17 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0](https://github.com/jbcom/extended-data-library/compare/secretssync-v0.1.0...secretssync-v1.0.0) (2026-02-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* Repository restructured as monorepo. Import paths unchanged but package installation from source requires uv workspace.
+
+### Features
+
+* consolidate extended-data-library org into monorepo ([a6a0f63](https://github.com/jbcom/extended-data-library/commit/a6a0f63fe5a2cc4658b6ae59205890658ca66e16))
+
 ## [Unreleased]
 
 ## [1.2.0] - 2025-12-09
