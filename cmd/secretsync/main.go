@@ -1,6 +1,6 @@
 package main
 
-import "github.com/extended-data-library/secretssync/cmd/secretsync/cmd"
+import "github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync/cmd"
 
 func main() {
 	cmd.Execute()

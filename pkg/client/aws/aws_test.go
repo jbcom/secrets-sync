@@ -7,7 +7,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/extended-data-library/secretssync/pkg/driver"
+	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/driver"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

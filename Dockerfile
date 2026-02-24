@@ -51,7 +51,7 @@ ENV SECRETSYNC_CONFIG=${SECRETSYNC_CONFIG} \
     SECRETSYNC_VERSION=${VERSION}
 
 LABEL org.opencontainers.image.title="secretsync" \
-      org.opencontainers.image.source="https://github.com/extended-data-library/secretssync" \
+      org.opencontainers.image.source="https://github.com/jbcom/extended-data-library" \
       org.opencontainers.image.version=${VERSION}
 
 WORKDIR /app

@@ -30,7 +30,7 @@ linters:
         - (*github.com/spf13/cobra.Command).MarkFlagRequired
         - (*github.com/spf13/viper.Viper).BindPFlag
         - github.com/spf13/viper.BindPFlag
-        - (*github.com/extended-data-library/secretssync/pkg/client/vault.VaultClient).Close
+        - (*github.com/jbcom/extended-data-library/packages/secretssync/pkg/client/vault.VaultClient).Close
   # Exclusion rules (v2 format - under linters, not issues)
   exclusions:
     presets:

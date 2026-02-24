@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/extended-data-library/secretssync/pkg/diff"
+	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/diff"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

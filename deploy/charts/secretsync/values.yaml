@@ -191,7 +191,7 @@ secretsync-operator:
   replicaCount: 1
 
   image:
-    repository: docker.io/extended-data-library/secretssync
+    repository: docker.io/jbcom/secretssync
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
@@ -262,7 +262,7 @@ secretsync-events:
   replicaCount: 1
 
   image:
-    repository: docker.io/extended-data-library/secretssync
+    repository: docker.io/jbcom/secretssync
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""

@@ -5,16 +5,16 @@ description: "Sync secrets from HashiCorp Vault to AWS Secrets Manager across mu
 runs:
   using: "docker"
   # TODO: Once release workflow automation exists, use immutable digest format:
-  # 1. Get digest: docker pull extended-data-library/secretssync:v1 && docker inspect --format='{{index .RepoDigests 0}}' extended-data-library/secretssync:v1
-  # 2. Update to: image: "docker://extended-data-library/secretssync:v1@sha256:<digest>"
+  # 1. Get digest: docker pull jbcom/secretssync:v1 && docker inspect --format='{{index .RepoDigests 0}}' jbcom/secretssync:v1
+  # 2. Update to: image: "docker://jbcom/secretssync:v1@sha256:<digest>"
   # For now, using tag-based reference until digest automation is implemented
-  image: "docker://extended-data-library/secretssync:v1" # x-release-please-version
+  image: "docker://jbcom/secretssync:v1" # x-release-please-version
 branding:
   icon: "lock"
   color: "blue"
 
 # Configuration via environment variables (GitHub Actions inputs map to env vars)
-# See https://github.com/extended-data-library/secretssync#configuration for full documentation
+# See https://github.com/jbcom/extended-data-library#configuration for full documentation
 #
 # Required:
 #   SECRETSYNC_CONFIG       - Path to config file (default: config.yaml)

@@ -23,9 +23,9 @@ builds:
       - arm64
     ldflags:
       - -s -w
-      - -X github.com/extended-data-library/secretssync/cmd/secretsync/cmd.Version={{.Version}}
-      - -X github.com/extended-data-library/secretssync/cmd/secretsync/cmd.Commit={{.Commit}}
-      - -X github.com/extended-data-library/secretssync/cmd/secretsync/cmd.Date={{.Date}}
+      - -X github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync/cmd.Version={{.Version}}
+      - -X github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync/cmd.Commit={{.Commit}}
+      - -X github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync/cmd.Date={{.Date}}
 
 archives:
   - id: default
@@ -88,8 +88,8 @@ changelog:
 
 release:
   github:
-    owner: extended-data-library
-    name: secretssync
+    owner: jbcom
+    name: extended-data-library
   draft: false
   prerelease: auto
   mode: replace
@@ -100,12 +100,12 @@ release:
 
     **Docker:**
     ```bash
-    docker pull extended-data-library/secretssync:{{ .Version }}
+    docker pull jbcom/secretssync:{{ .Version }}
     ```
 
     **Helm (OCI):**
     ```bash
-    helm install secretsync oci://registry-1.docker.io/extended-data-library/secretssync --version {{ .Version }}
+    helm install secretsync oci://registry-1.docker.io/jbcom/secretssync --version {{ .Version }}
     ```
 
     **Binary:**
@@ -113,7 +113,7 @@ release:
 
   footer: |
     ---
-    **Full Changelog**: https://github.com/extended-data-library/secretssync/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/jbcom/extended-data-library/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 # Docker images and Helm charts are built/pushed separately
 # via dedicated workflow jobs for better control

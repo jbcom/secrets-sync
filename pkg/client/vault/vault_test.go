@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/extended-data-library/secretssync/pkg/driver"
+	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/driver"
 	"github.com/hashicorp/vault/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

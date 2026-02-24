@@ -14,7 +14,7 @@ import (
 	identitystoretypes "github.com/aws/aws-sdk-go-v2/service/identitystore/types"
 	"github.com/aws/aws-sdk-go-v2/service/ssoadmin"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
-	"github.com/extended-data-library/secretssync/pkg/driver"
+	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/driver"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
