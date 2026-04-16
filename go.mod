@@ -2,9 +2,6 @@ module github.com/jbcom/extended-data-library/packages/secretssync
 
 go 1.25.3
 
-// required for hashicorp/vault
-replace github.com/pires/go-proxyproto v1.0.0 => github.com/pires/go-proxyproto v0.7.0
-
 require (
 	github.com/aws/aws-sdk-go-v2 v1.41.5
 	github.com/aws/aws-sdk-go-v2/config v1.32.14
