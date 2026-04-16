@@ -137,7 +137,7 @@ SecretSync is now available as a GitHub Action! This release provides a Docker-b
 
 ```yaml
 - name: Sync Secrets
-  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
   with:
     config: config.yaml
   env:

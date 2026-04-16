@@ -93,7 +93,7 @@ When reporting bugs, please include:
    
    # If using GitHub Action
    # Include the version/tag from your workflow
-   uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+   uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
    ```
 
 2. **Configuration** (sanitized - remove secrets!)
@@ -232,10 +232,10 @@ Yes! SecretSync is production-ready. Many organizations use it daily.
 For GitHub Actions:
 ```yaml
 # Pin to major version (recommended)
-uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
 
 # Pin to specific version (most stable)
-uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
 
 # Use latest (not recommended for production)
 uses: jbcom/extended-data-library/packages/secretssync@main

@@ -67,7 +67,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Validate Configuration (Dry Run)
-        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
         with:
           config: config.yaml
           dry-run: 'true'
@@ -107,7 +107,7 @@ jobs:
           role-session-name: GitHubActions-SecretSync-${{ github.run_id }}
       
       - name: Run SecretSync
-        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
         with:
           config: ${{ steps.config.outputs.config }}
           targets: ${{ github.event.inputs.targets || '' }}

@@ -37,7 +37,7 @@ make build
 Use the packaged action from the monorepo subdirectory and pin to a package tag:
 
 ```yaml
-- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
   with:
     config: config.yaml
 ```

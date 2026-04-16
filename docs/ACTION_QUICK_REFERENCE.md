@@ -3,14 +3,14 @@
 ## Installation
 
 ```yaml
-- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
 ```
 
 ## Minimal Example
 
 ```yaml
 - name: Sync Secrets
-  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
   with:
     config: config.yaml
   env:
@@ -39,7 +39,7 @@
 ### Dry Run (PR Validation)
 
 ```yaml
-- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
   with:
     config: config.yaml
     dry-run: 'true'
@@ -49,7 +49,7 @@
 ### Specific Targets
 
 ```yaml
-- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
   with:
     config: config.yaml
     targets: 'Staging,Production'
@@ -58,7 +58,7 @@
 ### Merge Only
 
 ```yaml
-- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
   with:
     config: config.yaml
     merge-only: 'true'
@@ -67,7 +67,7 @@
 ### With Exit Codes
 
 ```yaml
-- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
   with:
     config: config.yaml
     dry-run: 'true'
@@ -78,7 +78,7 @@
 ### Debug Mode
 
 ```yaml
-- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
   with:
     config: config.yaml
     log-level: 'debug'
@@ -112,7 +112,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
         with:
           config: config.yaml
         env:
@@ -216,7 +216,7 @@ Use with `continue-on-error: true` to handle:
 ```yaml
 - name: Check Changes
   id: check
-  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
   with:
     dry-run: 'true'
     exit-code: 'true'
@@ -233,7 +233,7 @@ Use with `continue-on-error: true` to handle:
 
 ```yaml
 - uses: actions/checkout@v4  # Must checkout first!
-- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
   with:
     config: path/to/config.yaml  # Relative to repo root
 ```
@@ -258,7 +258,7 @@ Ensure OIDC is configured correctly and trust policy allows your repository.
 
 ```yaml
 # Recommended: Pin to a package release tag
-uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
 
 # Not recommended: Track the branch tip
 uses: jbcom/extended-data-library/packages/secretssync@main
