@@ -10,7 +10,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/jbcom/extended-data-library)](https://goreportcard.com/report/github.com/jbcom/extended-data-library)
 [![Python Bindings](https://img.shields.io/badge/python-bindings-blue.svg)](./python/)
 
-[Quick Start](#quick-start) • [Documentation](./docs/) • [Python Bindings](#python-bindings) • [Examples](./examples/) • [GitHub Action](./docs/GITHUB_ACTIONS.md)
+[Quick Start](#quick-start) • [Package Docs](https://extended-data.dev/packages/secretssync/) • [Repo Docs](./docs/) • [Python Bindings](#python-bindings) • [Examples](./examples/) • [GitHub Action](./docs/GITHUB_ACTIONS.md)
 
 </div>
 
@@ -342,6 +342,7 @@ See [GitHub Actions documentation](./docs/GITHUB_ACTIONS.md) for complete usage 
 ## 📚 Documentation
 
 ### Getting Started
+- [🌐 Published Package Docs](https://extended-data.dev/packages/secretssync/) - Public package overview, installation paths, and Python integration guidance
 - [🚀 Getting Started Guide](./docs/GETTING_STARTED.md) - Step-by-step setup tutorial
 - [❓ FAQ](./docs/FAQ.md) - Frequently asked questions
 - [📋 Examples](./examples/) - Complete configuration examples
@@ -449,7 +450,7 @@ curl http://localhost:9090/health
 ```bash
 # Clone
 git clone https://github.com/jbcom/extended-data-library.git
-cd secretsync
+cd extended-data-library/packages/secretssync
 
 # Build
 go build ./...
@@ -504,7 +505,7 @@ For detailed documentation, see [tests/integration/README.md](./tests/integratio
 ## 🌟 Community & Support
 
 ### Getting Help
-- **📚 Documentation**: Comprehensive guides and examples
+- **📚 Documentation**: Start with the [published package docs](https://extended-data.dev/packages/secretssync/) and the repo-local [docs folder](./docs/)
 - **🐛 GitHub Issues**: Questions, bug reports, and feature requests
 - **🔒 Security**: Private security vulnerability reporting
 
