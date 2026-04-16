@@ -1,6 +1,6 @@
 # Python Bindings
 
-SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling seamless integration with Python applications, AI agents, and the Extended Data Library ecosystem.
+SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling seamless integration with Python applications, AI agents, and the Extended Data Library packages.
 
 ## Overview
 
@@ -15,7 +15,7 @@ The Python bindings expose the core SecretSync functionality:
 
 ### Option 1: Via vendor-connectors (Recommended)
 
-The easiest way to use SecretSync from Python is via the [vendor-connectors](https://github.com/extended-data-library/vendor-connectors) library:
+The easiest way to use SecretSync from Python is via the [vendor-connectors](https://github.com/jbcom/extended-data-library/tree/main/packages/vendor-connectors) library:
 
 ```bash
 pip install vendor-connectors[secrets]
@@ -26,6 +26,9 @@ This provides:
 - CLI fallback when bindings aren't installed
 - AI framework integrations (LangChain, CrewAI, Strands)
 - MCP server support
+
+To execute the full pipeline from Python, keep the `secretsync` CLI installed
+or build the native bindings in the current environment.
 
 ### Option 2: Build Native Bindings
 
@@ -117,7 +120,7 @@ result = connector.run_pipeline("pipeline.yaml")
 # Or customize options
 options = SyncOptions(
     operation=SyncOperation.SYNC,  # Only sync phase
-    targets="production,staging",  # Comma-separated string
+    targets=["production", "staging"],
     parallelism=8,
     continue_on_error=True,
 )

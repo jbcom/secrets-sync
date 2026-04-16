@@ -152,6 +152,10 @@ The recommended way to use SecretSync from Python is via the [vendor-connectors]
 pip install vendor-connectors[secrets]
 ```
 
+This installs the Python connector surface. To execute the full pipeline from
+Python, make sure the `secretsync` CLI is installed or the native bindings have
+been built in the current environment.
+
 ```python
 from vendor_connectors.secrets import SecretsConnector
 
