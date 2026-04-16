@@ -4,7 +4,7 @@ This guide outlines the requirements and different deployment models for the Vau
 
 ## Getting Started
 
-The service can be configured with either a `YAML` or `JSON` configuration file, or via environment variables. The configuration is unmarshalled into the [`ConfigFile`](../internal/config/config.go#L62) struct. An example of a fully configured `YAML` file can be found in [examples/config-full.yaml](../examples/config-full.yaml). To configure via environment variables, you must prefix the environment variable with `SECRETSYNC_` and use `_` to denote nested fields. For example, to set the `queue.type` field, you would set the environment variable `SECRETSYNC_QUEUE_TYPE`. Note: The legacy `VSS_` prefix is still supported for backwards compatibility.
+The service can be configured with either a `YAML` or `JSON` configuration file, or via environment variables. The configuration is unmarshalled into the [`pipeline.Config`](../pkg/pipeline/types.go#L5) struct. An example of a fully configured `YAML` file can be found in [examples/config-full.yaml](../examples/config-full.yaml). To configure via environment variables, you must prefix the environment variable with `SECRETSYNC_` and use `_` to denote nested fields. For example, to set the `queue.type` field, you would set the environment variable `SECRETSYNC_QUEUE_TYPE`. Note: The legacy `VSS_` prefix is still supported for backwards compatibility.
 
 While various examples are provided, the operator intentionally does not ship with a "default" configuration file. This is to ensure that you are aware of the security implications of each component you are enabling. This guide will walk you through each section, what it does, and how to configure it.
 

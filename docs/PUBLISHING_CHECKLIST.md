@@ -147,23 +147,23 @@ SecretSync is now available as a GitHub Action! This release provides a Docker-b
 
 ### 📚 Documentation
 
-- [GitHub Actions Guide](./docs/GITHUB_ACTIONS.md)
-- [Quick Reference](./docs/ACTION_QUICK_REFERENCE.md)
-- [Example Workflows](./examples/github-action-workflow.yml)
-- [Privacy Policy](./docs/PRIVACY.md)
-- [Support](./docs/SUPPORT.md)
+- [GitHub Actions Guide](./GITHUB_ACTIONS.md)
+- [Quick Reference](./ACTION_QUICK_REFERENCE.md)
+- [Example Workflows](../examples/github-action-workflow.yml)
+- [Privacy Policy](./PRIVACY.md)
+- [Support](./SUPPORT.md)
 
 ### 🔒 Security
 
-SecretSync collects zero data and runs entirely within your GitHub Actions environment. See [Privacy Policy](./docs/PRIVACY.md) for details.
+SecretSync collects zero data and runs entirely within your GitHub Actions environment. See [Privacy Policy](./PRIVACY.md) for details.
 
 ### 🤝 Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+We welcome contributions! See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
 
 ### 📄 License
 
-MIT License - See [LICENSE](./LICENSE)
+MIT License - See [LICENSE](../LICENSE)
 ```
 
 6. Check "✓ Publish this Action to the GitHub Marketplace"
