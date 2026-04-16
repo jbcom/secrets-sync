@@ -1,64 +1,58 @@
 # Contributing
 
-Thank you for your interest in contributing to PACKAGE_NAME!
+Thank you for your interest in contributing to SecretSync.
 
 ## Development Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/jbcom/PACKAGE_NAME.git
-cd PACKAGE_NAME
+git clone https://github.com/jbcom/extended-data-library.git
+cd extended-data-library/packages/secretssync
 
-# Install with all development dependencies
-uv sync --all-extras
+# Download Go dependencies
+go mod download
 ```
 
 ## Running Tests
 
 ```bash
-# Run tests
-uv run pytest
+# Unit tests
+go test ./...
 
-# Run with coverage
-uv run pytest --cov=PACKAGE_NAME
+# Race-enabled unit tests with coverage output
+make test
+
+# Integration tests (starts local test services via docker-compose)
+make test-integration-docker
 ```
 
 ## Code Style
 
 This project uses:
-- [Ruff](https://docs.astral.sh/ruff/) for linting and formatting
-- Type hints throughout
+- `gofmt` for formatting
+- `golangci-lint` for linting
+- GoDoc comments for exported APIs
 
 ```bash
-# Check code style
-uv run ruff check .
-uv run ruff format --check .
-
-# Auto-fix issues
-uv run ruff check --fix .
-uv run ruff format .
+gofmt ./...
+golangci-lint run
 ```
 
-## Building Documentation
+## Building and Bindings
 
 ```bash
-# Install docs dependencies
-uv sync --extra docs
+# Build the CLI
+make build
 
-# Build docs
-cd docs
-uv run sphinx-build -b html . _build/html
-
-# Or use make
-make html
+# Generate Python bindings
+make python-bindings
 ```
 
 ## Pull Request Process
 
 1. Create a feature branch from `main`
 2. Make your changes with tests
-3. Ensure CI passes (lint + tests)
-4. Submit PR - an AI agent will review and merge
+3. Ensure lint and tests pass locally
+4. Submit a PR against `jbcom/extended-data-library`
 
 ## Commit Messages
 

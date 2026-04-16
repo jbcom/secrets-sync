@@ -98,7 +98,7 @@ Since SecretSync doesn't collect any personal data:
 ### Open Source
 
 SecretSync is fully open source:
-- **Source Code**: Available at [github.com/extended-data-library/secretssync](https://github.com/extended-data-library/secretssync)
+- **Source Code**: Available in the [SecretSync package directory](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync)
 - **Transparency**: All code is reviewable
 - **Community**: Issues and improvements are publicly tracked
 
@@ -112,7 +112,7 @@ All SecretSync operations are logged in your GitHub Actions logs, which you cont
 ## Changes to This Policy
 
 We may update this privacy policy from time to time. Changes will be:
-- Posted to the [SecretSync repository](https://github.com/extended-data-library/secretssync)
+- Posted to the [SecretSync repository](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync)
 - Documented in the CHANGELOG
 - Effective immediately upon posting
 
@@ -121,8 +121,8 @@ We may update this privacy policy from time to time. Changes will be:
 For privacy-related questions or concerns:
 
 - **Email**: [Contact via GitHub](https://github.com/jbcom)
-- **Issues**: [GitHub Issues](https://github.com/extended-data-library/secretssync/issues)
-- **Security**: See [SECURITY.md](https://github.com/extended-data-library/secretssync/blob/main/docs/SECURITY.md)
+- **Issues**: [GitHub Issues](https://github.com/jbcom/extended-data-library/issues)
+- **Security**: See [SECURITY.md](https://github.com/jbcom/extended-data-library/blob/main/packages/secretssync/docs/SECURITY.md)
 
 ## Compliance
 
@@ -144,7 +144,7 @@ Organizations using SecretSync for compliance:
 
 ## License
 
-SecretSync is licensed under the [MIT License](https://github.com/extended-data-library/secretssync/blob/main/LICENSE).
+SecretSync is licensed under the [MIT License](https://github.com/jbcom/extended-data-library/blob/main/packages/secretssync/LICENSE).
 
 ---
 

@@ -20,7 +20,7 @@ The request context is automatically generated at the pipeline start and propaga
 ```go
 import (
     "context"
-    reqctx "github.com/extended-data-library/secretssync/pkg/context"
+    reqctx "github.com/jbcom/extended-data-library/packages/secretssync/pkg/context"
 )
 
 // Generate request context
@@ -50,7 +50,7 @@ failed to list secrets: connection refused
 The `ErrorBuilder` provides a fluent API for constructing errors with context:
 
 ```go
-import reqctx "github.com/extended-data-library/secretssync/pkg/context"
+import reqctx "github.com/jbcom/extended-data-library/packages/secretssync/pkg/context"
 
 // Create error builder
 errBuilder := reqctx.NewErrorBuilder(ctx, "vault.write").

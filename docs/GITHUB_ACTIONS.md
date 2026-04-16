@@ -30,7 +30,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: extended-data-library/secretssync@v1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: config.yaml
 ```
@@ -86,7 +86,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Validate Changes (Dry Run)
-        uses: extended-data-library/secretssync@v1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: config.yaml
           dry-run: 'true'
@@ -133,7 +133,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: extended-data-library/secretssync@v1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: config.yaml
           targets: ${{ github.event.inputs.targets != 'all' && github.event.inputs.targets || '' }}
@@ -162,7 +162,7 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Merge Secrets
-        uses: extended-data-library/secretssync@v1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: config.yaml
           merge-only: 'true'
@@ -200,7 +200,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Sync with Discovery
-        uses: extended-data-library/secretssync@v1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: config.yaml
           discover: 'true'
@@ -241,7 +241,7 @@ jobs:
       
       - name: Check for Changes
         id: check
-        uses: extended-data-library/secretssync@v1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: config.yaml
           dry-run: 'true'
@@ -254,7 +254,7 @@ jobs:
       
       - name: Apply Changes
         if: steps.check.outcome == 'failure'
-        uses: extended-data-library/secretssync@v1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: config.yaml
           output-format: 'github'
@@ -300,7 +300,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: extended-data-library/secretssync@v1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: configs/${{ github.event.inputs.environment }}.yaml
           output-format: 'github'
@@ -392,7 +392,7 @@ jobs:
   sync-production:
     environment: production  # Requires approval
     steps:
-      - uses: extended-data-library/secretssync@v1
+      - uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: production.yaml
 ```
@@ -514,7 +514,7 @@ Ensure your config file is in the repository and the path is correct:
 ```yaml
 - uses: actions/checkout@v4  # Required to access repository files
 
-- uses: extended-data-library/secretssync@v1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
   with:
     config: path/to/config.yaml  # Relative to repo root
 ```
@@ -524,7 +524,7 @@ Ensure your config file is in the repository and the path is correct:
 Verify environment variables are set correctly:
 
 ```yaml
-- uses: extended-data-library/secretssync@v1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
   with:
     config: config.yaml
     log-level: debug  # Enable debug logging
@@ -546,7 +546,7 @@ Check:
 Ensure `output-format` is set to `github`:
 
 ```yaml
-- uses: extended-data-library/secretssync@v1
+- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
   with:
     output-format: 'github'  # Enables GitHub Actions annotations
 ```
@@ -566,7 +566,7 @@ Example using exit codes:
 ```yaml
 - name: Check for Changes
   id: check
-  uses: extended-data-library/secretssync@v1
+  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
   with:
     dry-run: 'true'
     exit-code: 'true'
@@ -608,7 +608,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: extended-data-library/secretssync@v1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: configs/${{ matrix.environment }}.yaml
 ```
@@ -628,7 +628,7 @@ jobs:
   sync:
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: extended-data-library/secretssync@v1
+      - uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
 ```
 
 ### Composite Actions
@@ -651,7 +651,7 @@ runs:
         role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
         aws-region: us-east-1
     
-    - uses: extended-data-library/secretssync@v1
+    - uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
       with:
         config: ${{ inputs.config }}
         output-format: 'github'
@@ -662,10 +662,9 @@ runs:
 
 ## Support
 
-- **Documentation**: [Full docs](https://github.com/extended-data-library/secretssync/tree/main/docs)
-- **Issues**: [GitHub Issues](https://github.com/extended-data-library/secretssync/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/extended-data-library/secretssync/discussions)
+- **Documentation**: [Full docs](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/docs)
+- **Issues**: [GitHub Issues](https://github.com/jbcom/extended-data-library/issues)
 
 ## License
 
-MIT License - see [LICENSE](https://github.com/extended-data-library/secretssync/blob/main/LICENSE)
+MIT License - see [LICENSE](https://github.com/jbcom/extended-data-library/blob/main/packages/secretssync/LICENSE)

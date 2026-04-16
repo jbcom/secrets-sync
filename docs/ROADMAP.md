@@ -126,7 +126,7 @@ Based on community feedback, we're prioritizing:
 ## How to Influence the Roadmap
 
 ### 🗳️ Community Input
-- **GitHub Discussions**: Share your use cases and requirements
+- **GitHub Issues**: Share your use cases and requirements
 - **Feature Requests**: Create detailed feature requests with business justification
 - **User Surveys**: Participate in periodic user surveys
 - **Community Calls**: Join monthly community calls (coming in v1.3.0)
@@ -209,8 +209,8 @@ Based on community feedback, we're prioritizing:
 
 ## Questions?
 
-- **Roadmap Discussions**: [GitHub Discussions](https://github.com/extended-data-library/secretssync/discussions)
-- **Feature Requests**: [GitHub Issues](https://github.com/extended-data-library/secretssync/issues)
+- **Roadmap Feedback**: [GitHub Issues](https://github.com/jbcom/extended-data-library/issues)
+- **Feature Requests**: [GitHub Issues](https://github.com/jbcom/extended-data-library/issues)
 - **Enterprise Inquiries**: Contact us through GitHub Issues
 - **Community**: Join our growing community of users and contributors
 

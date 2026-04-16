@@ -17,24 +17,11 @@ Start with our comprehensive documentation:
 
 ## 💬 Community Support
 
-### GitHub Discussions
-
-For questions, ideas, and community discussion:
-
-**[GitHub Discussions](https://github.com/extended-data-library/secretssync/discussions)**
-
-Best for:
-- How-to questions
-- Architecture discussions
-- Feature ideas
-- Sharing your use cases
-- General Q&A
-
 ### GitHub Issues
 
-For bug reports and feature requests:
+Use repo issues for bug reports, feature ideas, and how-to questions:
 
-**[GitHub Issues](https://github.com/extended-data-library/secretssync/issues)**
+**[GitHub Issues](https://github.com/jbcom/extended-data-library/issues)**
 
 Before opening an issue:
 1. Search existing issues to avoid duplicates
@@ -75,12 +62,12 @@ What actually happens
 ### How to Report Security Issues
 
 1. **GitHub Security Advisories** (Recommended)
-   - Go to: https://github.com/extended-data-library/secretssync/security/advisories
+   - Go to: https://github.com/jbcom/extended-data-library/security/advisories
    - Click "Report a vulnerability"
    - Provide details privately
 
 2. **Email** (Alternative)
-   - Contact: security@jbcom.dev (if available) or create a private security advisory
+   - Contact: security@jbcom.dev
 
 3. **Response Time**
    - We aim to respond within 48 hours
@@ -106,7 +93,7 @@ When reporting bugs, please include:
    
    # If using GitHub Action
    # Include the version/tag from your workflow
-   uses: extended-data-library/secretssync@v1
+   uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
    ```
 
 2. **Configuration** (sanitized - remove secrets!)
@@ -129,7 +116,7 @@ When reporting bugs, please include:
 
 We welcome feature requests! When requesting a feature:
 
-1. **Check Existing Requests**: Search issues and discussions first
+1. **Check Existing Requests**: Search existing issues first
 2. **Describe the Use Case**: Why is this feature needed?
 3. **Propose a Solution**: How should it work?
 4. **Consider Alternatives**: What workarounds exist today?
@@ -245,22 +232,19 @@ Yes! SecretSync is production-ready. Many organizations use it daily.
 For GitHub Actions:
 ```yaml
 # Pin to major version (recommended)
-uses: extended-data-library/secretssync@v1
+uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
 
 # Pin to specific version (most stable)
-uses: extended-data-library/secretssync@v1.2.3
+uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
 
 # Use latest (not recommended for production)
-uses: extended-data-library/secretssync@main
+uses: jbcom/extended-data-library/packages/secretssync@main
 ```
 
 For CLI:
 ```bash
-# Download latest release
-curl -LO https://github.com/extended-data-library/secretssync/releases/latest/download/secretsync-linux-amd64
-
-# Or use go install
-go install github.com/extended-data-library/secretssync/cmd/secretsync@latest
+# Use go install
+go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
 ```
 
 ### Where do I report a security issue?
@@ -269,7 +253,7 @@ See our [Security Policy](./SECURITY.md) and contact us privately.
 
 ### How can I contribute?
 
-See the Contributing section above or open a discussion!
+See the Contributing section above or open an issue.
 
 ## 📝 Feedback
 
@@ -283,10 +267,9 @@ Your feedback helps us improve! Please:
 
 ## 🔗 Links
 
-- **Repository**: [github.com/extended-data-library/secretssync](https://github.com/extended-data-library/secretssync)
-- **Issues**: [github.com/extended-data-library/secretssync/issues](https://github.com/extended-data-library/secretssync/issues)
-- **Discussions**: [github.com/extended-data-library/secretssync/discussions](https://github.com/extended-data-library/secretssync/discussions)
-- **Releases**: [github.com/extended-data-library/secretssync/releases](https://github.com/extended-data-library/secretssync/releases)
+- **Repository**: [SecretSync package](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync)
+- **Issues**: [GitHub Issues](https://github.com/jbcom/extended-data-library/issues)
+- **Releases**: [Release list](https://github.com/jbcom/extended-data-library/releases)
 - **License**: [MIT License](../LICENSE)
 
 ---

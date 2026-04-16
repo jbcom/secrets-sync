@@ -111,7 +111,7 @@ git push origin v1 --force
 
 ### Step 3: Create GitHub Release
 
-1. Go to: https://github.com/extended-data-library/secretssync/releases
+1. Go to: https://github.com/jbcom/extended-data-library/releases
 2. Click "Draft a new release"
 3. Select tag: `v1.0.0`
 4. Release title: `v1.0.0 - GitHub Marketplace Release`
@@ -137,7 +137,7 @@ SecretSync is now available as a GitHub Action! This release provides a Docker-b
 
 ```yaml
 - name: Sync Secrets
-  uses: extended-data-library/secretssync@v1
+  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
   with:
     config: config.yaml
   env:
@@ -197,7 +197,7 @@ MIT License - See [LICENSE](./LICENSE)
    ```
 
 2. **Announce release**
-   - Create GitHub Discussion
+   - Open a tracking issue for launch feedback
    - Tweet/share on social media
    - Update any external documentation
 
@@ -207,7 +207,7 @@ MIT License - See [LICENSE](./LICENSE)
    - Track usage metrics (if available)
 
 4. **Set up monitoring**
-   - Enable GitHub Discussions
+   - Confirm issue templates and labels are ready
    - Set up issue templates
    - Configure automated responses
 
@@ -267,7 +267,7 @@ To update marketplace listing:
 After publishing, provide support through:
 
 1. **GitHub Issues**: Bug reports and feature requests
-2. **GitHub Discussions**: Questions and community support
+2. **GitHub Issues**: Questions and community support
 3. **Email**: Security issues (private reporting)
 4. **Documentation**: Keep docs updated with common questions
 

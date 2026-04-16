@@ -19,13 +19,15 @@ Instead, please report security vulnerabilities through one of the following met
 
 ### GitHub Security Advisories (Preferred)
 
-1. Go to the [Security Advisories](https://github.com/extended-data-library/secretssync/security/advisories) page
+1. Go to the [Security Advisories](https://github.com/jbcom/extended-data-library/security/advisories) page
 2. Click "Report a vulnerability"
 3. Fill out the form with details about the vulnerability
 
 ### Email (Alternative)
 
-If you cannot use GitHub Security Advisories, please open a confidential discussion at [GitHub Discussions](https://github.com/jbcom/go-secretsync/discussions) with the label "security".
+If you cannot use GitHub Security Advisories, email
+[`security@jbcom.dev`](mailto:security@jbcom.dev) with the details below. Do
+not open a public issue for security reports.
 
 Include the following information:
 - Type of issue (e.g. buffer overflow, SQL injection, cross-site scripting, etc.)
@@ -126,7 +128,7 @@ We do not currently offer a formal bug bounty program, but we greatly appreciate
 For security-related questions or concerns:
 
 - **Security Issues**: Use GitHub Security Advisories
-- **General Security Questions**: Create a GitHub Discussion
+- **General Security Questions**: Email security@jbcom.dev
 - **Documentation Issues**: Create a regular GitHub Issue
 
 Thank you for helping keep SecretSync and our users safe!

@@ -17,7 +17,7 @@ Be respectful, inclusive, and professional. We're all here to learn and improve 
 
 ### Suggesting Features
 
-1. **Check existing requests**: Search issues and discussions
+1. **Check existing requests**: Search existing issues first
 2. **Describe the use case**: Why is this needed?
 3. **Propose a solution**: How should it work?
 4. **Consider alternatives**: What workarounds exist today?
@@ -28,8 +28,8 @@ Be respectful, inclusive, and professional. We're all here to learn and improve 
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/secretsync.git
-   cd secretsync
+   git clone https://github.com/YOUR_USERNAME/extended-data-library.git
+   cd extended-data-library/packages/secretssync
    ```
 
 2. **Create a feature branch**
@@ -233,7 +233,7 @@ To add support for a new secret store:
    ```go
    package newstore
    
-   import "github.com/extended-data-library/secretssync/pkg/store"
+   import "github.com/jbcom/extended-data-library/packages/secretssync/pkg/store"
    
    type Store struct {
        // configuration fields
@@ -283,8 +283,7 @@ Releases are managed by maintainers:
 ## Getting Help
 
 - **Documentation**: Read the [docs/](./docs/) directory
-- **Discussions**: Use [GitHub Discussions](https://github.com/extended-data-library/secretssync/discussions)
-- **Issues**: For bugs and features, use [GitHub Issues](https://github.com/extended-data-library/secretssync/issues)
+- **Issues**: Use [GitHub Issues](https://github.com/jbcom/extended-data-library/issues) for bugs, questions, and feature requests
 
 ## License
 

@@ -117,12 +117,12 @@ See [Two-Phase Architecture](./docs/TWO_PHASE_ARCHITECTURE.md) for detailed docu
 
 ```bash
 # Go install
-go install github.com/jbcom/extended-data-library/cmd/secretsync@latest
+go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
 
-# Or download binary from releases
-curl -LO https://github.com/jbcom/extended-data-library/releases/latest/download/secretsync-linux-amd64
-chmod +x secretsync-linux-amd64
-sudo mv secretsync-linux-amd64 /usr/local/bin/secretsync
+# Or build from a local checkout
+git clone https://github.com/jbcom/extended-data-library.git
+cd extended-data-library/packages/secretssync
+make build
 ```
 
 ## Python Bindings
@@ -284,7 +284,7 @@ SecretSync is available as a GitHub Action for seamless CI/CD integration:
 
 ```yaml
 - name: Sync Secrets
-  uses: jbcom/extended-data-library/packages/secretssync@v1
+  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
   with:
     config: config.yaml
     dry-run: 'false'
@@ -501,8 +501,7 @@ For detailed documentation, see [tests/integration/README.md](./tests/integratio
 
 ### Getting Help
 - **📚 Documentation**: Comprehensive guides and examples
-- **💬 GitHub Discussions**: Community Q&A and feature discussions
-- **🐛 Issues**: Bug reports and feature requests
+- **🐛 GitHub Issues**: Questions, bug reports, and feature requests
 - **🔒 Security**: Private security vulnerability reporting
 
 ### Contributing

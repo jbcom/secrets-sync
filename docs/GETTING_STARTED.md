@@ -15,34 +15,29 @@ Before you begin, ensure you have:
 
 Choose your preferred installation method:
 
-### Option A: Download Binary
+### Option A: Go Install
 
 ```bash
-# Download latest release
-curl -LO https://github.com/extended-data-library/secretssync/releases/latest/download/secretsync-linux-amd64
-
-# Make executable and move to PATH
-chmod +x secretsync-linux-amd64
-sudo mv secretsync-linux-amd64 /usr/local/bin/secretsync
-
-# Verify installation
-secretsync version
+go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
 ```
 
-### Option B: Go Install
-
-```bash
-go install github.com/extended-data-library/secretssync/cmd/secretsync@latest
-```
-
-### Option C: Docker
+### Option B: Docker
 
 ```bash
 # Pull image
-docker pull extended-data-library/secretssync:latest
+docker pull jbcom/secretssync:v1
 
 # Create alias for easier usage
-alias secretsync='docker run --rm -v $(pwd):/workspace extended-data-library/secretssync'
+alias secretsync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secretssync:v1'
+```
+
+### Option C: Build from Source
+
+```bash
+git clone https://github.com/jbcom/extended-data-library.git
+cd extended-data-library/packages/secretssync
+make build
+./bin/secretsync version
 ```
 
 ## Step 2: Basic Configuration
@@ -229,7 +224,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: extended-data-library/secretssync@v1
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: config.yaml
         env:
@@ -346,10 +341,9 @@ aws secretsmanager list-secrets --region us-east-1
 
 ## Getting Help
 
-- **Documentation**: [Full docs](https://github.com/extended-data-library/secretssync/tree/main/docs)
-- **Examples**: [Configuration examples](https://github.com/extended-data-library/secretssync/tree/main/examples)
-- **Issues**: [GitHub Issues](https://github.com/extended-data-library/secretssync/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/extended-data-library/secretssync/discussions)
+- **Documentation**: [Full docs](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/docs)
+- **Examples**: [Configuration examples](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/examples)
+- **Issues**: [GitHub Issues](https://github.com/jbcom/extended-data-library/issues)
 
 ## What's Next?
 

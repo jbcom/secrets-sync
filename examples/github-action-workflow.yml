@@ -3,8 +3,8 @@ name: Sync Secrets with SecretSync
 # This is a complete example workflow showing how to use SecretSync
 # as a GitHub Action for automated secrets synchronization.
 #
-# Note: After initial release, you can use @v1 to get automatic updates,
-# or pin to @v1.0.0 for stability. This example uses @v1.0.0 for initial release.
+# Pin to a package release tag for reproducible runs.
+# This example uses the latest current package tag.
 
 on:
   # Scheduled sync every 6 hours
@@ -67,7 +67,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Validate Configuration (Dry Run)
-        uses: extended-data-library/secretssync@v1.0.0  # Use specific version for first release
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: config.yaml
           dry-run: 'true'
@@ -107,7 +107,7 @@ jobs:
           role-session-name: GitHubActions-SecretSync-${{ github.run_id }}
       
       - name: Run SecretSync
-        uses: extended-data-library/secretssync@v1.0.0  # Use specific version for first release
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
         with:
           config: ${{ steps.config.outputs.config }}
           targets: ${{ github.event.inputs.targets || '' }}

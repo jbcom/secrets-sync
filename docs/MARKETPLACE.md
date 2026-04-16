@@ -72,7 +72,7 @@ SecretSync provides fully automated, real-time secret synchronization between Ha
 - [x] **Clear naming**: Descriptive and searchable name
 - [x] **Useful description**: Clear value proposition
 - [x] **Good documentation**: Step-by-step guides and examples
-- [x] **Community support**: GitHub Issues and Discussions
+- [x] **Community support**: GitHub Issues
 - [x] **Regular updates**: Active maintenance and improvements
 
 ## Publishing to Marketplace
@@ -241,20 +241,20 @@ Add these to README for visibility:
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[![GitHub release](https://img.shields.io/github/release/extended-data-library/secretssync.svg)](https://github.com/extended-data-library/secretssync/releases)
+[![GitHub release](https://img.shields.io/github/v/release/jbcom/extended-data-library?filter=secretssync-v*&label=release)](https://github.com/jbcom/extended-data-library/releases)
 
-[![GitHub stars](https://img.shields.io/github/stars/extended-data-library/secretssync.svg)](https://github.com/extended-data-library/secretssync/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/jbcom/extended-data-library.svg)](https://github.com/jbcom/extended-data-library/stargazers)
 ```
 
 ## Support URLs
 
 Add these to the Marketplace listing:
 
-- **Documentation**: https://github.com/extended-data-library/secretssync/tree/main/docs
-- **Issues**: https://github.com/extended-data-library/secretssync/issues
-- **Support**: https://github.com/extended-data-library/secretssync/blob/main/docs/SUPPORT.md
-- **Privacy Policy**: https://github.com/extended-data-library/secretssync/blob/main/docs/PRIVACY.md
-- **Security**: https://github.com/extended-data-library/secretssync/blob/main/docs/SECURITY.md
+- **Documentation**: https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/docs
+- **Issues**: https://github.com/jbcom/extended-data-library/issues
+- **Support**: https://github.com/jbcom/extended-data-library/blob/main/packages/secretssync/docs/SUPPORT.md
+- **Privacy Policy**: https://github.com/jbcom/extended-data-library/blob/main/packages/secretssync/docs/PRIVACY.md
+- **Security**: https://github.com/jbcom/extended-data-library/blob/main/packages/secretssync/docs/SECURITY.md
 
 ## Verification Requirements
 
@@ -281,7 +281,7 @@ For verified publisher status:
 Track these metrics:
 - Daily/monthly active users
 - Total installations
-- Popular use cases (from issues/discussions)
+- Popular use cases (from issues and support requests)
 - User feedback and ratings
 - Common problems/questions
 
@@ -311,7 +311,7 @@ See [Security Policy](./SECURITY.md) for details.
 ### Support
 
 - GitHub Issues for bug reports
-- GitHub Discussions for Q&A
+- GitHub Issues for Q&A
 - Email for security issues
 - Community-driven support
 

@@ -38,8 +38,8 @@ go install golang.org/x/tools/cmd/goimports@latest
 go install github.com/go-python/gopy@latest
 
 # Clone and build
-git clone https://github.com/extended-data-library/secretssync.git
-cd secretssync
+git clone https://github.com/jbcom/extended-data-library.git
+cd extended-data-library/packages/secretssync
 make python-bindings
 make python-install
 ```
@@ -49,7 +49,7 @@ make python-install
 If you have the `secretsync` CLI installed, the Python connector will use it automatically:
 
 ```bash
-go install github.com/extended-data-library/secretssync/cmd/secretsync@latest
+go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
 pip install vendor-connectors[secrets]
 ```
 

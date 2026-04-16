@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
       - name: secretsync
-        image: extended-data-library/secretssync:latest
+        image: jbcom/secretssync:v1
         args:
           - pipeline
           - --config

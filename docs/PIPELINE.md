@@ -359,20 +359,16 @@ jobs:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
       
-      - name: Install secretsync
-        run: |
-          curl -sL https://github.com/extended-data-library/secretssync/releases/latest/download/secretsync_linux_amd64 \
-            -o /usr/local/bin/secretsync && chmod +x /usr/local/bin/secretsync
-      
       - name: Run Pipeline
+        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
+        with:
+          config: config.yaml
+          targets: ${{ inputs.targets || '' }}
+          dry-run: ${{ inputs.dry_run || false }}
+          output-format: github
         env:
           VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
           VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
-        run: |
-          secretsync pipeline \
-            --config config.yaml \
-            --targets "${{ inputs.targets || 'all' }}" \
-            ${{ inputs.dry_run && '--dry-run' || '' }}
 ```
 
 ### GitLab CI
@@ -380,12 +376,11 @@ jobs:
 ```yaml
 secrets-sync:
   stage: deploy
-  image: alpine
+  image: golang:1.25
   before_script:
-    - wget -O /usr/local/bin/secretsync https://github.com/extended-data-library/secretssync/releases/latest/download/secretsync_linux_amd64
-    - chmod +x /usr/local/bin/secretsync
+    - go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
   script:
-    - secretsync pipeline --config config.yaml
+    - /go/bin/secretsync pipeline --config config.yaml
   only:
     - schedules
     - web

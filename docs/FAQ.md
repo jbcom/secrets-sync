@@ -39,17 +39,16 @@ Yes! SecretSync v1.2.0 is production-ready with:
 
 Multiple installation options:
 ```bash
-# Binary download
-curl -LO https://github.com/extended-data-library/secretssync/releases/latest/download/secretsync-linux-amd64
-
 # Go install
-go install github.com/extended-data-library/secretssync/cmd/secretsync@latest
+go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
 
 # Docker
-docker pull extended-data-library/secretssync:latest
+docker pull jbcom/secretssync:v1
 
-# Helm
-helm install secretsync oci://registry-1.docker.io/extended-data-library/secretssync
+# Build from source
+git clone https://github.com/jbcom/extended-data-library.git
+cd extended-data-library/packages/secretssync
+make build
 ```
 
 ### What permissions does SecretSync need?
@@ -232,7 +231,7 @@ Use the GitHub Action:
 
 ```yaml
 - name: Sync Secrets
-  uses: extended-data-library/secretssync@v1
+  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.1
   with:
     config: config.yaml
     dry-run: 'false'
@@ -424,7 +423,7 @@ secretsync pipeline --config config.yaml --dry-run --show-values
 
 ### How do I report security issues?
 
-Use [GitHub Security Advisories](https://github.com/extended-data-library/secretssync/security/advisories) to report security vulnerabilities privately.
+Use [GitHub Security Advisories](https://github.com/jbcom/extended-data-library/security/advisories) to report security vulnerabilities privately.
 
 ## Development
 
@@ -466,15 +465,14 @@ go test -race ./...
 
 ### Where can I get help?
 
-- **Documentation**: [docs/](https://github.com/extended-data-library/secretssync/tree/main/docs)
-- **GitHub Issues**: For bugs and feature requests
-- **GitHub Discussions**: For questions and community support
-- **Examples**: [examples/](https://github.com/extended-data-library/secretssync/tree/main/examples)
+- **Documentation**: [docs/](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/docs)
+- **GitHub Issues**: For bugs, questions, and feature requests
+- **Examples**: [examples/](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/examples)
 
 ### How do I request a feature?
 
-1. Check existing [issues](https://github.com/extended-data-library/secretssync/issues) and [discussions](https://github.com/extended-data-library/secretssync/discussions)
-2. Create a [feature request](https://github.com/extended-data-library/secretssync/issues/new/choose)
+1. Check existing [issues](https://github.com/jbcom/extended-data-library/issues)
+2. Create a [feature request](https://github.com/jbcom/extended-data-library/issues/new/choose)
 3. Provide detailed use case and requirements
 
 ### Is there a roadmap?
@@ -483,4 +481,4 @@ See [ROADMAP.md](./ROADMAP.md) for planned features and timeline.
 
 ---
 
-**Didn't find your question?** [Ask in GitHub Discussions](https://github.com/extended-data-library/secretssync/discussions) or [create an issue](https://github.com/extended-data-library/secretssync/issues/new/choose).
+**Didn't find your question?** [Open an issue](https://github.com/jbcom/extended-data-library/issues/new/choose).
