@@ -337,8 +337,8 @@ This action is MIT licensed and free. Paid versions require different licensing.
 ### How do version tags work?
 
 Users can reference:
-- `@v1` - Latest v1.x.x (auto-updates)
-- `@v1.2.3` - Specific version (pinned)
+- `@secretssync-v2.0.2` - Current package release tag (recommended)
+- `@secretssync-vX.Y.Z` - Exact package release tag (pinned)
 - `@main` - Latest commit (not recommended)
 
 ### What if my action has dependencies?

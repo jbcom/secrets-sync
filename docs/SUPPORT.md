@@ -231,13 +231,13 @@ Yes! SecretSync is production-ready. Many organizations use it daily.
 
 For GitHub Actions:
 ```yaml
-# Pin to major version (recommended)
+# Pin to the current package release tag (recommended)
 uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
 
-# Pin to specific version (most stable)
+# Pin to an exact package release tag (most stable)
 uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
 
-# Use latest (not recommended for production)
+# Track the branch tip (not recommended for production)
 uses: jbcom/extended-data-library/packages/secretssync@main
 ```
 
