@@ -7,6 +7,13 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1](https://github.com/jbcom/extended-data-library/compare/secretssync-v2.0.0...secretssync-v2.0.1) (2026-04-16)
+
+
+### Bug Fixes
+
+* **repo:** remediate dependency alerts and lock drift ([#117](https://github.com/jbcom/extended-data-library/issues/117)) ([664a62d](https://github.com/jbcom/extended-data-library/commit/664a62d1fbb5859206e3bdaf60e4bf4802104fc7))
+
 ## [2.0.0](https://github.com/jbcom/extended-data-library/compare/secretssync-v1.0.0...secretssync-v2.0.0) (2026-02-24)
 
 
