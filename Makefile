@@ -41,7 +41,7 @@ python-bindings:
 	$(GOPY) pkg -output=$(PYTHON_OUTPUT) -vm=$(PYTHON) -name=$(PYTHON_PKG) \
 		-version=$(VERSION) \
 		-author="Extended Data Library" \
-		-email="support@extendeddata.dev" \
+		-email="support@extended-data.dev" \
 		-url="https://github.com/jbcom/extended-data-library/packages/secretssync" \
 		-desc="Enterprise-grade secret synchronization pipeline with Python bindings" \
 		./python/secretssync
