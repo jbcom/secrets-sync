@@ -19,7 +19,7 @@ SecretSync is an enterprise-grade secret synchronization pipeline that automates
 
 ### Is SecretSync production-ready?
 
-Yes! SecretSync v1.2.0 is production-ready with:
+Yes. The current SecretSync 2.x line is production-ready with:
 - 150+ comprehensive tests
 - Full CI/CD pipeline with integration tests
 - Circuit breakers and error handling

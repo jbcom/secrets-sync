@@ -2,13 +2,14 @@
 
 This roadmap outlines the planned development direction for SecretSync. It's a living document that evolves based on community feedback and changing requirements.
 
-## Current Status: v1.2.0 (December 2025)
+## Current Status: v2.x
 
-✅ **Production Ready** - All core features implemented and battle-tested
+✅ **Production Ready** - The current 2.x line is the supported release line for
+the independent SecretSync repository.
 
 ## Upcoming Releases
 
-### v1.3.0 - Observability & Integrations (Q1 2026)
+### v2.1.0 - Observability & Integrations
 
 **Theme**: Enhanced monitoring and ecosystem integrations
 
@@ -36,7 +37,7 @@ This roadmap outlines the planned development direction for SecretSync. It's a l
 - **Configuration Templates**: Pre-built templates for common patterns
 - **IDE Extensions**: VS Code extension for configuration editing
 
-### v1.4.0 - Enterprise Features (Q2 2026)
+### v2.2.0 - Enterprise Features
 
 **Theme**: Advanced enterprise capabilities and governance
 
@@ -64,7 +65,7 @@ This roadmap outlines the planned development direction for SecretSync. It's a l
 - **Batch Operations**: Bulk secret operations for efficiency
 - **Rate Limiting**: Intelligent rate limiting and backoff
 
-### v1.5.0 - Ecosystem & Platform (Q3 2026)
+### v2.3.0 - Ecosystem & Platform
 
 **Theme**: Platform features and ecosystem growth
 
@@ -92,7 +93,7 @@ This roadmap outlines the planned development direction for SecretSync. It's a l
 - **Shell Integration**: Bash/Zsh completion and integration
 - **Configuration Management**: CLI-based configuration management
 
-## Future Considerations (v2.0+)
+## Future Considerations (v3.0+)
 
 ### Major Architecture Evolution
 
