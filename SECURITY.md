@@ -111,7 +111,7 @@ We follow responsible disclosure practices:
 
 Security updates are released as:
 
-- **Patch releases** for supported versions (e.g., 1.2.1 → 1.2.2)
+- **Patch releases** for supported versions (e.g., 2.0.1 → 2.0.2)
 - **Security advisories** published on GitHub
 - **Release notes** highlighting security fixes
 

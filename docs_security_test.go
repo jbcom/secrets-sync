@@ -68,4 +68,12 @@ func TestSecurityPolicyDocumentsCurrentMajorOnly(t *testing.T) {
 			t.Fatalf("SECURITY.md should not advertise old support line %q", oldVersion)
 		}
 	}
+	for _, oldExample := range []string{"1.2.1", "1.2.2"} {
+		if strings.Contains(text, oldExample) {
+			t.Fatalf("SECURITY.md should not use unsupported 1.x patch example %q", oldExample)
+		}
+	}
+	if !strings.Contains(text, "2.0.1") || !strings.Contains(text, "2.0.2") {
+		t.Fatalf("SECURITY.md should use a supported 2.x patch-release example")
+	}
 }
