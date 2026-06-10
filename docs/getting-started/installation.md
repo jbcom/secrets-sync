@@ -2,7 +2,7 @@
 
 ## Requirements
 
-- Go 1.25+
+- Go 1.26.4+
 - Docker (optional, for containerized runs or the GitHub Action image)
 
 ## Install the CLI

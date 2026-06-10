@@ -15,6 +15,9 @@ go mod download
 ## Running Tests
 
 ```bash
+# Vulnerability scan
+go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
+
 # Unit tests
 go test ./...
 

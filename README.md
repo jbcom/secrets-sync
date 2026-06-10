@@ -454,6 +454,9 @@ cd secrets-sync
 # Build
 go build ./...
 
+# Vulnerability scan
+go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
+
 # Unit tests
 go test ./...
 

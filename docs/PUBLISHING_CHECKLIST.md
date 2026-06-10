@@ -23,6 +23,7 @@ Run these before merging a release PR or manually dispatching release workflow
 diagnostics:
 
 ```bash
+go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
 go test ./...
 go build -o bin/secretsync ./cmd/secretsync
 goreleaser check
