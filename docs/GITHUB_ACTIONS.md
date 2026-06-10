@@ -47,9 +47,13 @@ All inputs correspond to CLI flags and are optional:
 | `merge-only` | Only run merge phase | `false` | `--merge-only` |
 | `sync-only` | Only run sync phase | `false` | `--sync-only` |
 | `discover` | Enable dynamic target discovery | `false` | `--discover` |
-| `output-format` | Output format (human, json, github, compact) | `github` | `--output` |
+| `output-format` | Output format (human, json, github, compact, side-by-side) | `github` | `--output` |
 | `compute-diff` | Show diff even without dry-run | `false` | `--diff` |
 | `exit-code` | Use exit codes for CI/CD | `false` | `--exit-code` |
+| `continue-on-error` | Continue processing remaining targets after an error | `true` | `--continue-on-error` |
+| `parallelism` | Maximum concurrent target operations (`0` uses config/default) | `0` | `--parallelism` |
+| `metrics-addr` | Metrics server bind address | `0.0.0.0` | `--metrics-addr` |
+| `metrics-port` | Metrics server port (`0` disables metrics) | `0` | `--metrics-port` |
 | `log-level` | Logging level (debug, info, warn, error) | `info` | `--log-level` |
 | `log-format` | Log format (text, json) | `text` | `--log-format` |
 

@@ -24,6 +24,8 @@ var (
 	outputFormat    string
 	computeDiff     bool
 	exitCodeMode    bool
+	continueOnError bool
+	parallelism     int
 )
 
 // pipelineCmd runs the full merge-then-sync pipeline
@@ -39,11 +41,11 @@ var pipelineCmd = &cobra.Command{
 
 2. SYNC PHASE: Sync merged secrets to target AWS accounts
    - Assumes Control Tower execution role in each account
-   - Runs in parallel (respects --parallel setting)
+   - Runs in parallel (respects --parallelism or config settings)
 
 3. DIFF REPORTING: Track and report all changes
    - Zero-sum validation for migration verification
-   - Multiple output formats (human, JSON, GitHub Actions)
+   - Multiple output formats (human, JSON, GitHub Actions, compact, side-by-side)
    - CI/CD-friendly exit codes (0=no changes, 1=changes, 2=errors)
 
 Examples:
@@ -59,6 +61,9 @@ Examples:
 
   # GitHub Actions compatible output
   secretsync pipeline --config config.yaml --dry-run --output github
+
+  # Visual side-by-side diff output
+  secretsync pipeline --config config.yaml --dry-run --output side-by-side
 
   # Specific targets only
   secretsync pipeline --config config.yaml --targets "Serverless_Stg,Serverless_Prod"
@@ -79,9 +84,11 @@ func init() {
 	pipelineCmd.Flags().BoolVar(&syncOnly, "sync-only", false, "only run sync phase")
 	pipelineCmd.Flags().BoolVar(&dryRun, "dry-run", false, "dry run mode (no changes)")
 	pipelineCmd.Flags().BoolVar(&discoverTargets, "discover", false, "enable dynamic target discovery from AWS Organizations/Identity Center")
+	pipelineCmd.Flags().BoolVar(&continueOnError, "continue-on-error", true, "continue processing remaining targets after an error")
+	pipelineCmd.Flags().IntVar(&parallelism, "parallelism", 0, "max concurrent target operations (default: pipeline.merge.parallel config or 4)")
 
 	// Diff and output options
-	pipelineCmd.Flags().StringVarP(&outputFormat, "output", "o", "human", "output format: human, json, github, compact")
+	pipelineCmd.Flags().StringVarP(&outputFormat, "output", "o", "human", "output format: human, json, github, compact, side-by-side")
 	pipelineCmd.Flags().BoolVar(&computeDiff, "diff", false, "compute and show diff even when not in dry-run mode")
 	pipelineCmd.Flags().BoolVar(&exitCodeMode, "exit-code", false, "use exit codes: 0=no changes, 1=changes, 2=errors (useful for CI/CD)")
 }
@@ -144,7 +151,8 @@ func runPipeline(cmd *cobra.Command, args []string) error {
 		Operation:       op,
 		Targets:         targetList,
 		DryRun:          dryRun,
-		ContinueOnError: true,
+		ContinueOnError: continueOnError,
+		Parallelism:     parallelism,
 		OutputFormat:    format,
 		ComputeDiff:     computeDiff || dryRun,
 	}
@@ -204,6 +212,8 @@ func parseOutputFormat(s string) diff.OutputFormat {
 		return diff.OutputFormatGitHub
 	case "compact":
 		return diff.OutputFormatCompact
+	case "side-by-side", "sidebyside", "side_by_side":
+		return diff.OutputFormatSideBySide
 	default:
 		return diff.OutputFormatHuman
 	}

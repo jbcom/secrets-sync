@@ -28,9 +28,13 @@
 | `merge-only` | `false` | Only run merge phase |
 | `sync-only` | `false` | Only run sync phase |
 | `discover` | `false` | Enable dynamic discovery |
-| `output-format` | `github` | Output format (human, json, github, compact) |
+| `output-format` | `github` | Output format (human, json, github, compact, side-by-side) |
 | `compute-diff` | `false` | Show diff even without dry-run |
 | `exit-code` | `false` | Use exit codes (0=no changes, 1=changes, 2=errors) |
+| `continue-on-error` | `true` | Continue processing remaining targets after an error |
+| `parallelism` | `0` | Maximum concurrent target operations (`0` uses config/default) |
+| `metrics-addr` | `0.0.0.0` | Metrics server bind address |
+| `metrics-port` | `0` | Metrics server port (`0` disables metrics) |
 | `log-level` | `info` | Log level (debug, info, warn, error) |
 | `log-format` | `text` | Log format (text, json) |
 

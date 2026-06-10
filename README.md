@@ -200,7 +200,7 @@ crewai_tools = get_tools("crewai")
 secretsync validate --config pipeline.yaml
 
 # Dry run with enhanced diff output (v1.2.0)
-secretsync pipeline --config pipeline.yaml --dry-run --format side-by-side
+secretsync pipeline --config pipeline.yaml --dry-run --output side-by-side
 
 # Full pipeline execution with metrics (v1.1.0)
 secretsync pipeline --config pipeline.yaml --metrics-port 9090

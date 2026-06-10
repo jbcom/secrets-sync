@@ -165,10 +165,10 @@ curl http://localhost:9090/health
 
 ```bash
 # Side-by-side comparison
-secretsync pipeline --config config.yaml --dry-run --format side-by-side
+secretsync pipeline --config config.yaml --dry-run --output side-by-side
 
 # JSON output for automation
-secretsync pipeline --config config.yaml --dry-run --format json
+secretsync pipeline --config config.yaml --dry-run --output json
 ```
 
 #### 3. Secret Versioning (v1.2.0)

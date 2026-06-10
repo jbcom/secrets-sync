@@ -2,6 +2,67 @@
 name: "SecretSync"
 author: "jbcom"
 description: "Sync secrets from HashiCorp Vault to AWS Secrets Manager across multiple accounts"
+inputs:
+  config:
+    description: "Path to SecretSync configuration file"
+    required: false
+    default: "config.yaml"
+  targets:
+    description: "Comma-separated list of targets to process"
+    required: false
+    default: ""
+  dry-run:
+    description: "Run without making changes"
+    required: false
+    default: "false"
+  merge-only:
+    description: "Only run the merge phase"
+    required: false
+    default: "false"
+  sync-only:
+    description: "Only run the sync phase"
+    required: false
+    default: "false"
+  discover:
+    description: "Enable dynamic target discovery from AWS Organizations/Identity Center"
+    required: false
+    default: "false"
+  output-format:
+    description: "Output format: human, json, github, compact, side-by-side"
+    required: false
+    default: "github"
+  compute-diff:
+    description: "Compute and show diff even when not in dry-run mode"
+    required: false
+    default: "false"
+  exit-code:
+    description: "Use exit codes: 0=no changes, 1=changes, 2=errors"
+    required: false
+    default: "false"
+  continue-on-error:
+    description: "Continue processing remaining targets after an error"
+    required: false
+    default: "true"
+  parallelism:
+    description: "Maximum concurrent target operations; 0 uses config/default"
+    required: false
+    default: "0"
+  metrics-addr:
+    description: "Metrics server bind address"
+    required: false
+    default: "0.0.0.0"
+  metrics-port:
+    description: "Metrics server port; 0 disables metrics"
+    required: false
+    default: "0"
+  log-level:
+    description: "Logging level: debug, info, warn, error"
+    required: false
+    default: "info"
+  log-format:
+    description: "Log format: text or json"
+    required: false
+    default: "text"
 runs:
   using: "docker"
   # Prefer a digest-pinned image once the release workflow can refresh the
@@ -11,12 +72,38 @@ runs:
   # 3. image: "docker://jbcom/secretssync:v1@sha256:<digest>"
   # Until then, keep the release-please-managed tag reference below.
   image: "docker://jbcom/secretssync:v1" # x-release-please-version
+  args:
+    - "pipeline"
+    - "--config"
+    - "${{ inputs.config }}"
+    - "--targets"
+    - "${{ inputs.targets }}"
+    - "--dry-run=${{ inputs.dry-run }}"
+    - "--merge-only=${{ inputs.merge-only }}"
+    - "--sync-only=${{ inputs.sync-only }}"
+    - "--discover=${{ inputs.discover }}"
+    - "--output"
+    - "${{ inputs.output-format }}"
+    - "--diff=${{ inputs.compute-diff }}"
+    - "--exit-code=${{ inputs.exit-code }}"
+    - "--continue-on-error=${{ inputs.continue-on-error }}"
+    - "--parallelism"
+    - "${{ inputs.parallelism }}"
+    - "--metrics-addr"
+    - "${{ inputs.metrics-addr }}"
+    - "--metrics-port"
+    - "${{ inputs.metrics-port }}"
+    - "--log-level"
+    - "${{ inputs.log-level }}"
+    - "--log-format"
+    - "${{ inputs.log-format }}"
 branding:
   icon: "lock"
   color: "blue"
 
-# Configuration via environment variables (GitHub Actions inputs map to env vars)
-# See https://github.com/jbcom/secrets-sync#configuration for full documentation
+# Action inputs are passed to the Docker action as explicit CLI flags.
+# The CLI also supports SECRETSYNC_* environment variables for direct container
+# use; see https://github.com/jbcom/secrets-sync#configuration for full docs.
 #
 # Required:
 #   SECRETSYNC_CONFIG       - Path to config file (default: config.yaml)
@@ -27,7 +114,7 @@ branding:
 #   SECRETSYNC_MERGE_ONLY   - Only run merge phase (default: false)
 #   SECRETSYNC_SYNC_ONLY    - Only run sync phase (default: false)
 #   SECRETSYNC_DISCOVER     - Enable dynamic target discovery (default: false)
-#   SECRETSYNC_OUTPUT       - Output format: human, json, github (default: github)
+#   SECRETSYNC_OUTPUT       - Output format: human, json, github, compact, side-by-side (default: github)
 #   SECRETSYNC_DIFF         - Show diff even without dry-run (default: false)
 #   SECRETSYNC_EXIT_CODE    - Use exit codes for CI (default: false)
 #   SECRETSYNC_LOG_LEVEL    - Log level: debug, info, warn, error (default: info)
