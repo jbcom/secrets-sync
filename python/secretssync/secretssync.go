@@ -73,7 +73,7 @@ func DefaultSyncOptions() *SyncOptions {
 		DryRun:          false,
 		Operation:       OperationPipeline,
 		Targets:         "",
-		ContinueOnError: false,
+		ContinueOnError: true,
 		Parallelism:     4,
 		ComputeDiff:     false,
 		OutputFormat:    OutputFormatHuman,
