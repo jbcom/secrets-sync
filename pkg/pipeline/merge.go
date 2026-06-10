@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/client/vault"
-	reqctx "github.com/jbcom/extended-data-library/packages/secretssync/pkg/context"
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/utils"
+	"github.com/jbcom/secrets-sync/pkg/client/vault"
+	reqctx "github.com/jbcom/secrets-sync/pkg/context"
+	"github.com/jbcom/secrets-sync/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
 

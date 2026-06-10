@@ -16,7 +16,7 @@ branding:
   color: "blue"
 
 # Configuration via environment variables (GitHub Actions inputs map to env vars)
-# See https://github.com/jbcom/extended-data-library#configuration for full documentation
+# See https://github.com/jbcom/secrets-sync#configuration for full documentation
 #
 # Required:
 #   SECRETSYNC_CONFIG       - Path to config file (default: config.yaml)

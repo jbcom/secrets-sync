@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/client/aws"
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/client/vault"
-	reqctx "github.com/jbcom/extended-data-library/packages/secretssync/pkg/context"
+	"github.com/jbcom/secrets-sync/pkg/client/aws"
+	"github.com/jbcom/secrets-sync/pkg/client/vault"
+	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )

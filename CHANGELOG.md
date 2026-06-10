@@ -7,21 +7,21 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.2](https://github.com/jbcom/extended-data-library/compare/secretssync-v2.0.1...secretssync-v2.0.2) (2026-04-16)
+## [2.0.2](https://github.com/jbcom/secrets-sync/compare/secretssync-v2.0.1...secretssync-v2.0.2) (2026-04-16)
 
 
 ### Bug Fixes
 
-* **secretssync:** remove published module replace ([#140](https://github.com/jbcom/extended-data-library/issues/140)) ([cad8999](https://github.com/jbcom/extended-data-library/commit/cad89999718f5159c4b5735f3c36b4389c5d3fdd))
+* **secretssync:** remove published module replace ([#140](https://github.com/jbcom/secrets-sync/issues/140)) ([cad8999](https://github.com/jbcom/secrets-sync/commit/cad89999718f5159c4b5735f3c36b4389c5d3fdd))
 
-## [2.0.1](https://github.com/jbcom/extended-data-library/compare/secretssync-v2.0.0...secretssync-v2.0.1) (2026-04-16)
+## [2.0.1](https://github.com/jbcom/secrets-sync/compare/secretssync-v2.0.0...secretssync-v2.0.1) (2026-04-16)
 
 
 ### Bug Fixes
 
-* **repo:** remediate dependency alerts and lock drift ([#117](https://github.com/jbcom/extended-data-library/issues/117)) ([664a62d](https://github.com/jbcom/extended-data-library/commit/664a62d1fbb5859206e3bdaf60e4bf4802104fc7))
+* **repo:** remediate dependency alerts and lock drift ([#117](https://github.com/jbcom/secrets-sync/issues/117)) ([664a62d](https://github.com/jbcom/secrets-sync/commit/664a62d1fbb5859206e3bdaf60e4bf4802104fc7))
 
-## [2.0.0](https://github.com/jbcom/extended-data-library/compare/secretssync-v1.0.0...secretssync-v2.0.0) (2026-02-24)
+## [2.0.0](https://github.com/jbcom/secrets-sync/compare/secretssync-v1.0.0...secretssync-v2.0.0) (2026-02-24)
 
 
 ### ⚠ BREAKING CHANGES
@@ -30,9 +30,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
-* consolidate extended-data-library org into monorepo ([a6a0f63](https://github.com/jbcom/extended-data-library/commit/a6a0f63fe5a2cc4658b6ae59205890658ca66e16))
+* consolidate secrets-sync org into monorepo ([a6a0f63](https://github.com/jbcom/secrets-sync/commit/a6a0f63fe5a2cc4658b6ae59205890658ca66e16))
 
-## [1.0.0](https://github.com/jbcom/extended-data-library/compare/secretssync-v0.1.0...secretssync-v1.0.0) (2026-02-24)
+## [1.0.0](https://github.com/jbcom/secrets-sync/compare/secretssync-v0.1.0...secretssync-v1.0.0) (2026-02-24)
 
 
 ### ⚠ BREAKING CHANGES
@@ -41,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
-* consolidate extended-data-library org into monorepo ([a6a0f63](https://github.com/jbcom/extended-data-library/commit/a6a0f63fe5a2cc4658b6ae59205890658ca66e16))
+* consolidate secrets-sync org into monorepo ([a6a0f63](https://github.com/jbcom/secrets-sync/commit/a6a0f63fe5a2cc4658b6ae59205890658ca66e16))
 
 ## [Unreleased]
 
@@ -110,8 +110,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **PROJECT RENAME**: vault-secret-sync → SecretSync
 - CLI renamed from `vss` to `secretsync`
-- Docker images published to `docker.io/extended-data-library/secretssync`
-- Helm charts published to `oci://registry-1.docker.io/extended-data-library/secretssync`
+- Docker images published to `docker.io/secrets-sync/secretssync`
+- Helm charts published to `oci://registry-1.docker.io/secrets-sync/secretssync`
 - Simplified pipeline architecture (removed legacy operator complexity)
 - Environment variable prefix changed from `VSS_` to `SECRETSYNC_`
 
@@ -144,7 +144,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Current Maintainer
 - **Organization**: jbcom
-- **Repository**: [extended-data-library/secretssync](https://github.com/extended-data-library/secretssync)
+- **Repository**: [secrets-sync/secretssync](https://github.com/secrets-sync/secretssync)
 
 ### Original Source
 - **Author**: Robert Lestak

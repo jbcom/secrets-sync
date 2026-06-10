@@ -6,8 +6,8 @@ import (
 	"sync"
 	"time"
 
-	reqctx "github.com/jbcom/extended-data-library/packages/secretssync/pkg/context"
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/observability"
+	reqctx "github.com/jbcom/secrets-sync/pkg/context"
+	"github.com/jbcom/secrets-sync/pkg/observability"
 	log "github.com/sirupsen/logrus"
 )
 

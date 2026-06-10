@@ -6,14 +6,14 @@ of the package example configs.
 ## 1. Install the CLI
 
 ```bash
-go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
 ```
 
 ## 2. Start from an example config
 
 ```bash
-git clone https://github.com/jbcom/extended-data-library.git
-cd extended-data-library/packages/secretssync
+git clone https://github.com/jbcom/secrets-sync.git
+cd secrets-sync
 cp examples/pipeline-config.yaml pipeline.yaml
 ```
 

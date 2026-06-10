@@ -23,9 +23,9 @@ builds:
       - arm64
     ldflags:
       - -s -w
-      - -X github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync/cmd.Version={{.Version}}
-      - -X github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync/cmd.Commit={{.Commit}}
-      - -X github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync/cmd.Date={{.Date}}
+      - -X github.com/jbcom/secrets-sync/cmd/secretsync/cmd.Version={{.Version}}
+      - -X github.com/jbcom/secrets-sync/cmd/secretsync/cmd.Commit={{.Commit}}
+      - -X github.com/jbcom/secrets-sync/cmd/secretsync/cmd.Date={{.Date}}
 
 archives:
   - id: default
@@ -89,7 +89,7 @@ changelog:
 release:
   github:
     owner: jbcom
-    name: extended-data-library
+    name: secrets-sync
   draft: false
   prerelease: auto
   mode: replace
@@ -113,7 +113,7 @@ release:
 
   footer: |
     ---
-    **Full Changelog**: https://github.com/jbcom/extended-data-library/compare/{{ .PreviousTag }}...{{ .Tag }}
+    **Full Changelog**: https://github.com/jbcom/secrets-sync/compare/{{ .PreviousTag }}...{{ .Tag }}
 
 # Docker images and Helm charts are built/pushed separately
 # via dedicated workflow jobs for better control

@@ -28,8 +28,8 @@ Be respectful, inclusive, and professional. We're all here to learn and improve 
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/extended-data-library.git
-   cd extended-data-library/packages/secretssync
+   git clone https://github.com/YOUR_USERNAME/secrets-sync.git
+   cd secrets-sync
    ```
 
 2. **Create a feature branch**
@@ -233,7 +233,7 @@ To add support for a new secret store:
    ```go
    package newstore
    
-   import "github.com/jbcom/extended-data-library/packages/secretssync/pkg/store"
+   import "github.com/jbcom/secrets-sync/pkg/store"
    
    type Store struct {
        // configuration fields
@@ -283,7 +283,7 @@ Releases are managed by maintainers:
 ## Getting Help
 
 - **Documentation**: Read the [docs/](./docs/) directory
-- **Issues**: Use [GitHub Issues](https://github.com/jbcom/extended-data-library/issues) for bugs, questions, and feature requests
+- **Issues**: Use [GitHub Issues](https://github.com/jbcom/secrets-sync/issues) for bugs, questions, and feature requests
 
 ## License
 

@@ -360,7 +360,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Run Pipeline
-        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secretssync-v2.0.2
         with:
           config: config.yaml
           targets: ${{ inputs.targets || '' }}
@@ -378,7 +378,7 @@ secrets-sync:
   stage: deploy
   image: golang:1.25
   before_script:
-    - go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
+    - go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
   script:
     - /go/bin/secretsync pipeline --config config.yaml
   only:

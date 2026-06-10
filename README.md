@@ -4,10 +4,10 @@
 
 **Enterprise-Grade Secret Synchronization Pipeline**
 
-[![⭐ Star on GitHub](https://img.shields.io/github/stars/jbcom/extended-data-library?style=social)](https://github.com/jbcom/extended-data-library/stargazers)
+[![⭐ Star on GitHub](https://img.shields.io/github/stars/jbcom/secrets-sync?style=social)](https://github.com/jbcom/secrets-sync/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![GitHub release](https://img.shields.io/github/release/jbcom/extended-data-library.svg)](https://github.com/jbcom/extended-data-library/releases)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jbcom/extended-data-library)](https://goreportcard.com/report/github.com/jbcom/extended-data-library)
+[![GitHub release](https://img.shields.io/github/release/jbcom/secrets-sync.svg)](https://github.com/jbcom/secrets-sync/releases)
+[![Go Report Card](https://goreportcard.com/badge/github.com/jbcom/secrets-sync)](https://goreportcard.com/report/github.com/jbcom/secrets-sync)
 [![Python Bindings](https://img.shields.io/badge/python-bindings-blue.svg)](./python/)
 
 [Quick Start](#quick-start) • [Package Docs](https://extended-data.dev/packages/secretssync/) • [Repo Docs](./docs/) • [Python Bindings](#python-bindings) • [Examples](./examples/) • [GitHub Action](./docs/GITHUB_ACTIONS.md)
@@ -20,9 +20,9 @@ SecretSync provides **fully automated, enterprise-grade secret synchronization**
 
 ## 🏢 Part of Extended Data Library
 
-SecretSync is part of the [Extended Data Library](https://github.com/jbcom/extended-data-library) ecosystem - a collection of high-performance, enterprise-grade tools for data management, secret handling, and infrastructure automation.
+SecretSync is part of the [Extended Data Library](https://github.com/jbcom/secrets-sync) ecosystem - a collection of high-performance, enterprise-grade tools for data management, secret handling, and infrastructure automation.
 
-**🐍 Python Integration**: SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling seamless integration with the [vendor-connectors](https://github.com/jbcom/extended-data-library/tree/main/packages/vendor-connectors) library and Python-based AI agents.
+**🐍 Python Integration**: SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling seamless integration with the [extended-data](https://github.com/jbcom/extended-data) library and Python-based AI agents.
 
 **🚀 Perfect for:** Multi-account AWS environments, Kubernetes deployments, CI/CD pipelines, and enterprise secret management at scale.
 
@@ -117,11 +117,11 @@ See [Two-Phase Architecture](./docs/TWO_PHASE_ARCHITECTURE.md) for detailed docu
 
 ```bash
 # Go install
-go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
 
 # Or build from a local checkout
-git clone https://github.com/jbcom/extended-data-library.git
-cd extended-data-library/packages/secretssync
+git clone https://github.com/jbcom/secrets-sync.git
+cd secrets-sync
 make build
 ```
 
@@ -144,12 +144,12 @@ make python-bindings
 make python-install
 ```
 
-### Using via vendor-connectors
+### Using via extended-data
 
-The recommended way to use SecretSync from Python is via the [vendor-connectors](https://github.com/jbcom/extended-data-library/tree/main/packages/vendor-connectors) library:
+The recommended way to use SecretSync from Python is via the [extended-data](https://github.com/jbcom/extended-data) library:
 
 ```bash
-pip install vendor-connectors[secrets]
+pip install extended-data[secrets]
 ```
 
 This installs the Python connector surface. To execute the full pipeline from
@@ -157,7 +157,7 @@ Python, make sure the `secretsync` CLI is installed or the native bindings have
 been built in the current environment.
 
 ```python
-from vendor_connectors.secrets import SecretsConnector
+from extended_data.secrets import SecretsConnector
 
 # Initialize connector
 connector = SecretsConnector()
@@ -183,7 +183,7 @@ if result.success:
 SecretSync tools are available for LangChain, CrewAI, and AWS Strands:
 
 ```python
-from vendor_connectors.secrets import get_tools
+from extended_data.secrets import get_tools
 
 # Auto-detect framework
 tools = get_tools()
@@ -288,7 +288,7 @@ SecretSync is available as a GitHub Action for seamless CI/CD integration:
 
 ```yaml
 - name: Sync Secrets
-  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
+  uses: jbcom/secrets-sync@secretssync-v2.0.2
   with:
     config: config.yaml
     dry-run: 'false'
@@ -369,7 +369,7 @@ See [GitHub Actions documentation](./docs/GITHUB_ACTIONS.md) for complete usage 
 
 ```bash
 # Add Helm repo
-helm repo add secretsync https://jbcom.github.io/extended-data-library
+helm repo add secretsync https://jbcom.github.io/secrets-sync
 
 # Install
 helm install secretsync secretsync/secretsync \
@@ -381,7 +381,7 @@ helm install secretsync secretsync/secretsync \
 ```bash
 # Run with config file
 docker run -v $(pwd)/config.yaml:/config.yaml \
-  jbcom/extended-data-library-secretssync pipeline --config /config.yaml
+  jbcom/secrets-sync-secretssync pipeline --config /config.yaml
 
 # Multi-arch images available: linux/amd64, linux/arm64
 ```
@@ -449,8 +449,8 @@ curl http://localhost:9090/health
 
 ```bash
 # Clone
-git clone https://github.com/jbcom/extended-data-library.git
-cd extended-data-library/packages/secretssync
+git clone https://github.com/jbcom/secrets-sync.git
+cd secrets-sync
 
 # Build
 go build ./...

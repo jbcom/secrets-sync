@@ -23,9 +23,9 @@ VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 COMMIT?=$(shell git rev-parse --short HEAD 2>/dev/null || echo "none")
 DATE?=$(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
 LDFLAGS=-s -w \
-	-X github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync/cmd.Version=$(VERSION) \
-	-X github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync/cmd.Commit=$(COMMIT) \
-	-X github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync/cmd.Date=$(DATE)
+	-X github.com/jbcom/secrets-sync/cmd/secretsync/cmd.Version=$(VERSION) \
+	-X github.com/jbcom/secrets-sync/cmd/secretsync/cmd.Commit=$(COMMIT) \
+	-X github.com/jbcom/secrets-sync/cmd/secretsync/cmd.Date=$(DATE)
 
 all: lint test build
 
@@ -42,7 +42,7 @@ python-bindings:
 		-version=$(VERSION) \
 		-author="Extended Data Library" \
 		-email="support@extended-data.dev" \
-		-url="https://github.com/jbcom/extended-data-library/packages/secretssync" \
+		-url="https://github.com/jbcom/secrets-sync" \
 		-desc="Enterprise-grade secret synchronization pipeline with Python bindings" \
 		./python/secretssync
 	@echo "Python bindings generated in $(PYTHON_OUTPUT)"

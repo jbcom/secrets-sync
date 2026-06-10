@@ -241,20 +241,20 @@ Add these to README for visibility:
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[![GitHub release](https://img.shields.io/github/v/release/jbcom/extended-data-library?filter=secretssync-v*&label=release)](https://github.com/jbcom/extended-data-library/releases)
+[![GitHub release](https://img.shields.io/github/v/release/jbcom/secrets-sync?filter=secretssync-v*&label=release)](https://github.com/jbcom/secrets-sync/releases)
 
-[![GitHub stars](https://img.shields.io/github/stars/jbcom/extended-data-library.svg)](https://github.com/jbcom/extended-data-library/stargazers)
+[![GitHub stars](https://img.shields.io/github/stars/jbcom/secrets-sync.svg)](https://github.com/jbcom/secrets-sync/stargazers)
 ```
 
 ## Support URLs
 
 Add these to the Marketplace listing:
 
-- **Documentation**: https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/docs
-- **Issues**: https://github.com/jbcom/extended-data-library/issues
-- **Support**: https://github.com/jbcom/extended-data-library/blob/main/packages/secretssync/docs/SUPPORT.md
-- **Privacy Policy**: https://github.com/jbcom/extended-data-library/blob/main/packages/secretssync/docs/PRIVACY.md
-- **Security**: https://github.com/jbcom/extended-data-library/blob/main/packages/secretssync/docs/SECURITY.md
+- **Documentation**: https://github.com/jbcom/secrets-sync/docs
+- **Issues**: https://github.com/jbcom/secrets-sync/issues
+- **Support**: https://github.com/jbcom/secrets-sync/blob/main/docs/SUPPORT.md
+- **Privacy Policy**: https://github.com/jbcom/secrets-sync/blob/main/docs/PRIVACY.md
+- **Security**: https://github.com/jbcom/secrets-sync/blob/main/docs/SECURITY.md
 
 ## Verification Requirements
 

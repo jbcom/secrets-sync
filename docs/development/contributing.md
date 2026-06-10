@@ -5,8 +5,8 @@ Thank you for your interest in contributing to SecretSync.
 ## Development Setup
 
 ```bash
-git clone https://github.com/jbcom/extended-data-library.git
-cd extended-data-library/packages/secretssync
+git clone https://github.com/jbcom/secrets-sync.git
+cd secrets-sync
 
 # Download Go dependencies
 go mod download
@@ -52,7 +52,7 @@ make python-bindings
 1. Create a feature branch from `main`
 2. Make your changes with tests
 3. Ensure lint and tests pass locally
-4. Submit a PR against `jbcom/extended-data-library`
+4. Submit a PR against `jbcom/secrets-sync`
 
 ## Commit Messages
 

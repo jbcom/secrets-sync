@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/pipeline"
+	"github.com/jbcom/secrets-sync/pkg/pipeline"
 	"github.com/spf13/cobra"
 )
 

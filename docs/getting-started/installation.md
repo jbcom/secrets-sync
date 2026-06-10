@@ -9,7 +9,7 @@
 
 ```bash
 # Install the latest CLI from the monorepo module path
-go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
 ```
 
 ## Run with Docker
@@ -24,8 +24,8 @@ alias secretsync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secre
 ## Build from Source
 
 ```bash
-git clone https://github.com/jbcom/extended-data-library.git
-cd extended-data-library/packages/secretssync
+git clone https://github.com/jbcom/secrets-sync.git
+cd secrets-sync
 make build
 
 # The compiled binary is written to ./bin/secretsync
@@ -37,7 +37,7 @@ make build
 Use the packaged action from the monorepo subdirectory and pin to a package tag:
 
 ```yaml
-- uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secretssync-v2.0.2
   with:
     config: config.yaml
 ```

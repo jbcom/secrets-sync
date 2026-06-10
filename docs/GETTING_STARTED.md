@@ -18,7 +18,7 @@ Choose your preferred installation method:
 ### Option A: Go Install
 
 ```bash
-go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
 ```
 
 ### Option B: Docker
@@ -34,8 +34,8 @@ alias secretsync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secre
 ### Option C: Build from Source
 
 ```bash
-git clone https://github.com/jbcom/extended-data-library.git
-cd extended-data-library/packages/secretssync
+git clone https://github.com/jbcom/secrets-sync.git
+cd secrets-sync
 make build
 ./bin/secretsync version
 ```
@@ -224,7 +224,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secretssync-v2.0.2
         with:
           config: config.yaml
         env:
@@ -341,9 +341,9 @@ aws secretsmanager list-secrets --region us-east-1
 
 ## Getting Help
 
-- **Documentation**: [Full docs](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/docs)
-- **Examples**: [Configuration examples](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/examples)
-- **Issues**: [GitHub Issues](https://github.com/jbcom/extended-data-library/issues)
+- **Documentation**: [Full docs](https://github.com/jbcom/secrets-sync/docs)
+- **Examples**: [Configuration examples](https://github.com/jbcom/secrets-sync/examples)
+- **Issues**: [GitHub Issues](https://github.com/jbcom/secrets-sync/issues)
 
 ## What's Next?
 

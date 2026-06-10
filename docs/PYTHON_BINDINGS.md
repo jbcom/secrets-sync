@@ -13,12 +13,12 @@ The Python bindings expose the core SecretSync functionality:
 
 ## Installation Options
 
-### Option 1: Via vendor-connectors (Recommended)
+### Option 1: Via extended-data (Recommended)
 
-The easiest way to use SecretSync from Python is via the [vendor-connectors](https://github.com/jbcom/extended-data-library/tree/main/packages/vendor-connectors) library:
+The easiest way to use SecretSync from Python is via the [extended-data](https://github.com/jbcom/extended-data) library:
 
 ```bash
-pip install vendor-connectors[secrets]
+pip install extended-data[secrets]
 ```
 
 This provides:
@@ -41,8 +41,8 @@ go install golang.org/x/tools/cmd/goimports@latest
 go install github.com/go-python/gopy@latest
 
 # Clone and build
-git clone https://github.com/jbcom/extended-data-library.git
-cd extended-data-library/packages/secretssync
+git clone https://github.com/jbcom/secrets-sync.git
+cd secrets-sync
 make python-bindings
 make python-install
 ```
@@ -52,8 +52,8 @@ make python-install
 If you have the `secretsync` CLI installed, the Python connector will use it automatically:
 
 ```bash
-go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
-pip install vendor-connectors[secrets]
+go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+pip install extended-data[secrets]
 ```
 
 ## Usage
@@ -61,7 +61,7 @@ pip install vendor-connectors[secrets]
 ### Basic Usage
 
 ```python
-from vendor_connectors.secrets import SecretsConnector
+from extended_data.secrets import SecretsConnector
 
 # Initialize connector
 connector = SecretsConnector()
@@ -86,7 +86,7 @@ print(f"Targets: {info.targets}")
 Preview changes without executing:
 
 ```python
-from vendor_connectors.secrets import SecretsConnector
+from extended_data.secrets import SecretsConnector
 
 connector = SecretsConnector()
 result = connector.dry_run("pipeline.yaml")
@@ -106,7 +106,7 @@ if result.diff_output:
 ### Running the Pipeline
 
 ```python
-from vendor_connectors.secrets import (
+from extended_data.secrets import (
     SecretsConnector,
     SyncOptions,
     SyncOperation,
@@ -137,7 +137,7 @@ else:
 Run phases independently:
 
 ```python
-from vendor_connectors.secrets import SecretsConnector
+from extended_data.secrets import SecretsConnector
 
 connector = SecretsConnector()
 
@@ -153,7 +153,7 @@ sync_result = connector.sync("pipeline.yaml", dry_run=False)
 ### LangChain
 
 ```python
-from vendor_connectors.secrets import get_langchain_tools
+from extended_data.secrets import get_langchain_tools
 
 tools = get_langchain_tools()
 
@@ -165,7 +165,7 @@ from langchain.agents import AgentExecutor
 ### CrewAI
 
 ```python
-from vendor_connectors.secrets import get_crewai_tools
+from extended_data.secrets import get_crewai_tools
 from crewai import Agent, Task, Crew
 
 tools = get_crewai_tools()
@@ -180,7 +180,7 @@ secrets_agent = Agent(
 ### AWS Strands
 
 ```python
-from vendor_connectors.secrets import get_strands_tools
+from extended_data.secrets import get_strands_tools
 
 tools = get_strands_tools()
 # Use as plain functions with Strands agents
@@ -189,7 +189,7 @@ tools = get_strands_tools()
 ### Auto-detection
 
 ```python
-from vendor_connectors.secrets import get_tools
+from extended_data.secrets import get_tools
 
 # Automatically detects installed framework
 tools = get_tools()
@@ -208,10 +208,10 @@ tools = get_tools()
 
 ## MCP Server
 
-The secrets connector is automatically exposed via the vendor-connectors MCP server:
+The secrets connector is automatically exposed via the extended-data MCP server:
 
 ```bash
-vendor-connectors-mcp
+extended-data-mcp
 ```
 
 Configure in your MCP client:
@@ -219,8 +219,8 @@ Configure in your MCP client:
 ```json
 {
   "mcpServers": {
-    "vendor-connectors": {
-      "command": "vendor-connectors-mcp"
+    "extended-data": {
+      "command": "extended-data-mcp"
     }
   }
 }
@@ -238,7 +238,7 @@ The connector automatically uses native bindings when available.
 ## Error Handling
 
 ```python
-from vendor_connectors.secrets import SecretsConnector, SyncResult
+from extended_data.secrets import SecretsConnector, SyncResult
 
 connector = SecretsConnector()
 result = connector.run_pipeline("pipeline.yaml")

@@ -40,14 +40,14 @@ Yes! SecretSync v1.2.0 is production-ready with:
 Multiple installation options:
 ```bash
 # Go install
-go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
 
 # Docker
 docker pull jbcom/secretssync:v1
 
 # Build from source
-git clone https://github.com/jbcom/extended-data-library.git
-cd extended-data-library/packages/secretssync
+git clone https://github.com/jbcom/secrets-sync.git
+cd secrets-sync
 make build
 ```
 
@@ -231,7 +231,7 @@ Use the GitHub Action:
 
 ```yaml
 - name: Sync Secrets
-  uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
+  uses: jbcom/secrets-sync@secretssync-v2.0.2
   with:
     config: config.yaml
     dry-run: 'false'
@@ -423,7 +423,7 @@ secretsync pipeline --config config.yaml --dry-run --show-values
 
 ### How do I report security issues?
 
-Use [GitHub Security Advisories](https://github.com/jbcom/extended-data-library/security/advisories) to report security vulnerabilities privately.
+Use [GitHub Security Advisories](https://github.com/jbcom/secrets-sync/security/advisories) to report security vulnerabilities privately.
 
 ## Development
 
@@ -465,14 +465,14 @@ go test -race ./...
 
 ### Where can I get help?
 
-- **Documentation**: [docs/](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/docs)
+- **Documentation**: [docs/](https://github.com/jbcom/secrets-sync/docs)
 - **GitHub Issues**: For bugs, questions, and feature requests
-- **Examples**: [examples/](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync/examples)
+- **Examples**: [examples/](https://github.com/jbcom/secrets-sync/examples)
 
 ### How do I request a feature?
 
-1. Check existing [issues](https://github.com/jbcom/extended-data-library/issues)
-2. Create a [feature request](https://github.com/jbcom/extended-data-library/issues/new/choose)
+1. Check existing [issues](https://github.com/jbcom/secrets-sync/issues)
+2. Create a [feature request](https://github.com/jbcom/secrets-sync/issues/new/choose)
 3. Provide detailed use case and requirements
 
 ### Is there a roadmap?
@@ -481,4 +481,4 @@ See [ROADMAP.md](./ROADMAP.md) for planned features and timeline.
 
 ---
 
-**Didn't find your question?** [Open an issue](https://github.com/jbcom/extended-data-library/issues/new/choose).
+**Didn't find your question?** [Open an issue](https://github.com/jbcom/secrets-sync/issues/new/choose).

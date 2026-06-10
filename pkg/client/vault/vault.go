@@ -10,10 +10,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/circuitbreaker"
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/driver"
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/observability"
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/utils"
+	"github.com/jbcom/secrets-sync/pkg/circuitbreaker"
+	"github.com/jbcom/secrets-sync/pkg/driver"
+	"github.com/jbcom/secrets-sync/pkg/observability"
+	"github.com/jbcom/secrets-sync/pkg/utils"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/hashicorp/vault/api"

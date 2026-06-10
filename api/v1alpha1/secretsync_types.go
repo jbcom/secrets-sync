@@ -3,9 +3,9 @@
 package v1alpha1
 
 import (
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/client/aws"
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/client/vault"
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/discovery/identitycenter"
+	"github.com/jbcom/secrets-sync/pkg/client/aws"
+	"github.com/jbcom/secrets-sync/pkg/client/vault"
+	"github.com/jbcom/secrets-sync/pkg/discovery/identitycenter"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

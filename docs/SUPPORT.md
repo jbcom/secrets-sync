@@ -21,7 +21,7 @@ Start with our comprehensive documentation:
 
 Use repo issues for bug reports, feature ideas, and how-to questions:
 
-**[GitHub Issues](https://github.com/jbcom/extended-data-library/issues)**
+**[GitHub Issues](https://github.com/jbcom/secrets-sync/issues)**
 
 Before opening an issue:
 1. Search existing issues to avoid duplicates
@@ -62,7 +62,7 @@ What actually happens
 ### How to Report Security Issues
 
 1. **GitHub Security Advisories** (Recommended)
-   - Go to: https://github.com/jbcom/extended-data-library/security/advisories
+   - Go to: https://github.com/jbcom/secrets-sync/security/advisories
    - Click "Report a vulnerability"
    - Provide details privately
 
@@ -93,7 +93,7 @@ When reporting bugs, please include:
    
    # If using GitHub Action
    # Include the version/tag from your workflow
-   uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
+   uses: jbcom/secrets-sync@secretssync-v2.0.2
    ```
 
 2. **Configuration** (sanitized - remove secrets!)
@@ -232,19 +232,19 @@ Yes! SecretSync is production-ready. Many organizations use it daily.
 For GitHub Actions:
 ```yaml
 # Pin to the current package release tag (recommended)
-uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
+uses: jbcom/secrets-sync@secretssync-v2.0.2
 
 # Pin to an exact package release tag (most stable)
-uses: jbcom/extended-data-library/packages/secretssync@secretssync-v2.0.2
+uses: jbcom/secrets-sync@secretssync-v2.0.2
 
 # Track the branch tip (not recommended for production)
-uses: jbcom/extended-data-library/packages/secretssync@main
+uses: jbcom/secrets-sync@main
 ```
 
 For CLI:
 ```bash
 # Use go install
-go install github.com/jbcom/extended-data-library/packages/secretssync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
 ```
 
 ### Where do I report a security issue?
@@ -267,9 +267,9 @@ Your feedback helps us improve! Please:
 
 ## 🔗 Links
 
-- **Repository**: [SecretSync package](https://github.com/jbcom/extended-data-library/tree/main/packages/secretssync)
-- **Issues**: [GitHub Issues](https://github.com/jbcom/extended-data-library/issues)
-- **Releases**: [Release list](https://github.com/jbcom/extended-data-library/releases)
+- **Repository**: [SecretSync package](https://github.com/jbcom/secrets-sync)
+- **Issues**: [GitHub Issues](https://github.com/jbcom/secrets-sync/issues)
+- **Releases**: [Release list](https://github.com/jbcom/secrets-sync/releases)
 - **License**: [MIT License](../LICENSE)
 
 ---

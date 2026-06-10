@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/diff"
-	"github.com/jbcom/extended-data-library/packages/secretssync/pkg/pipeline"
+	"github.com/jbcom/secrets-sync/pkg/diff"
+	"github.com/jbcom/secrets-sync/pkg/pipeline"
 )
 
 // Version of the Python bindings
