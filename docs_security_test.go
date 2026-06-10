@@ -52,3 +52,20 @@ func TestSecurityDocsUseProjectReportingContacts(t *testing.T) {
 		}
 	}
 }
+
+func TestSecurityPolicyDocumentsCurrentMajorOnly(t *testing.T) {
+	content, err := os.ReadFile("SECURITY.md")
+	if err != nil {
+		t.Fatalf("read SECURITY.md: %v", err)
+	}
+
+	text := string(content)
+	if !strings.Contains(text, "| 2.x") {
+		t.Fatalf("SECURITY.md should document current 2.x support")
+	}
+	for _, oldVersion := range []string{"| 1.2.x", "| 1.1.x", "| 1.0.x"} {
+		if strings.Contains(text, oldVersion) {
+			t.Fatalf("SECURITY.md should not advertise old support line %q", oldVersion)
+		}
+	}
+}

@@ -6,10 +6,8 @@ We actively support the following versions of SecretSync with security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.2.x   | ✅ Yes             |
-| 1.1.x   | ✅ Yes             |
-| 1.0.x   | ⚠️ Critical fixes only |
-| < 1.0   | ❌ No              |
+| 2.x     | ✅ Yes             |
+| < 2.0   | ❌ No              |
 
 ## Reporting a Vulnerability
 
