@@ -159,7 +159,13 @@ func NewClient(cfg *AwsClient) (*AwsClient, error) {
 	breakerName := fmt.Sprintf("aws-secretsmanager-%s-%s", vc.Name, vc.Region)
 	vc.breaker = circuitbreaker.New(circuitbreaker.DefaultConfig(breakerName))
 
-	l.Debugf("client=%+v", vc)
+	l.WithFields(log.Fields{
+		"name":      vc.Name,
+		"region":    vc.Region,
+		"roleArn":   vc.RoleArn,
+		"cacheTTL":  vc.CacheTTL,
+		"hasKmsKey": vc.EncryptionKey != "",
+	}).Debug("client initialized")
 	l.Trace("end")
 	return vc, nil
 }
