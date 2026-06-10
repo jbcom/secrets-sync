@@ -53,6 +53,25 @@ func TestSecurityDocsUseProjectReportingContacts(t *testing.T) {
 	}
 }
 
+func TestPublicUsageDocsDoNotUseForkEraOwners(t *testing.T) {
+	for _, path := range []string{"docs/USAGE.md"} {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+
+		text := string(content)
+		for _, forbidden := range []string{
+			"robertlestak",
+			"vault-secret-sync",
+		} {
+			if strings.Contains(text, forbidden) {
+				t.Fatalf("%s should not use fork-era owner or package identifier %q", path, forbidden)
+			}
+		}
+	}
+}
+
 func TestSecurityPolicyDocumentsCurrentMajorOnly(t *testing.T) {
 	content, err := os.ReadFile("SECURITY.md")
 	if err != nil {

@@ -15,7 +15,7 @@ spec:
   source:
     address: "https://vault.example.com"
     path: "foo/bar/(.*)"
-    namespace: "robertlestak/example"
+    namespace: "platform/secrets"
   filters:
     regex:
       include:
@@ -31,7 +31,7 @@ spec:
   - vault:
       address: "https://vault2.example.com"
       path: "hello/world/$1"
-      namespace: "robertlestak/example"
+      namespace: "platform/secrets"
   - vault:
       address: "https://vault3.example.com"
       path: "another/vault"
@@ -43,7 +43,7 @@ spec:
       replicaRegions: ["us-east-1"]
   - github:
       repo: "example-repo"
-      owner: "robertlestak"
+      owner: "platform-team"
   - gcp:
       project: "example-project"
       name: "example-secret"
@@ -157,7 +157,7 @@ The GitHub destination driver will write the secret to a GitHub repository or or
   - github:
       repo: "example-repo"
       env: "" # optional, default empty. Set to a specific environment to sync to within a repo if needed
-      owner: "robertlestak" # optional, will default to the company org
+      owner: "platform-team" # optional, will default to the company org
       org: false # optional, default false. set to true to set org secret rather than repo secret
       merge: false # optional, default true. false will overwrite existing secrets with values from vault, merge will merge the two
 ```
@@ -271,7 +271,7 @@ spec:
   dest:
   - github:
       repo: "example-repo"
-      owner: "robertlestak"
+      owner: "platform-team"
   - aws:
       name: "example-secret"
       region: "us-west-2"

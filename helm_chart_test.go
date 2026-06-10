@@ -10,6 +10,7 @@ func TestHelmChartUsesSecretSyncAPI(t *testing.T) {
 	paths := []string{
 		"deploy/charts/secretsync/charts/secretsync-operator/crds/secretsync.extendeddata.dev_secretsyncs.yaml",
 		"deploy/charts/secretsync/charts/secretsync-operator/templates/clusterrole.yaml",
+		"docs/architecture/HLA-microservice.drawio",
 		"docs/USAGE.md",
 	}
 
