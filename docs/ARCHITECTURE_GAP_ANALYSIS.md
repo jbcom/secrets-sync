@@ -46,9 +46,6 @@ The main runtime path is the two-phase pipeline:
 
 ## Known Remaining Work
 
-- Some historical docs still describe webhook/operator deployment models. Treat
-  those pages as legacy unless they are refreshed against the current CLI
-  pipeline.
 - The Marketplace and action docs should continue to use the component release
   tag placeholder until the first standalone repository release exists.
 - The Docker action should eventually move to a digest-pinned image reference
