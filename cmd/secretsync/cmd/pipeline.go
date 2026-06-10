@@ -194,13 +194,12 @@ func runPipeline(cmd *cobra.Command, args []string) error {
 	// Determine exit behavior
 	hasErrors := pipelineHadErrors(err, results)
 	if exitCodeMode {
-		if hasErrors {
-			cancel()
-			os.Exit(2)
+		diffExitCode := 0
+		if !hasErrors {
+			diffExitCode = p.ExitCode()
 		}
-		exitCode := p.ExitCode()
+		exitCode := pipelineExitCode(hasErrors, diffExitCode)
 		if exitCode != 0 {
-			cancel()
 			os.Exit(exitCode)
 		}
 		return nil
@@ -231,6 +230,13 @@ func pipelineHadErrors(err error, results []pipeline.Result) bool {
 	}
 
 	return false
+}
+
+func pipelineExitCode(hasErrors bool, diffExitCode int) int {
+	if hasErrors {
+		return 2
+	}
+	return diffExitCode
 }
 
 // parseOutputFormat converts string to OutputFormat

@@ -165,3 +165,41 @@ func TestPipelineHadErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestPipelineExitCode(t *testing.T) {
+	tests := map[string]struct {
+		hasErrors    bool
+		diffExitCode int
+		want         int
+	}{
+		"pipeline errors exit as execution errors": {
+			hasErrors:    true,
+			diffExitCode: 0,
+			want:         2,
+		},
+		"execution errors win over changed diff": {
+			hasErrors:    true,
+			diffExitCode: 1,
+			want:         2,
+		},
+		"changed diff preserves diff exit code": {
+			diffExitCode: 1,
+			want:         1,
+		},
+		"diff errors preserve diff error exit code": {
+			diffExitCode: 2,
+			want:         2,
+		},
+		"clean run exits zero": {
+			want: 0,
+		},
+	}
+
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			if got := pipelineExitCode(tc.hasErrors, tc.diffExitCode); got != tc.want {
+				t.Fatalf("pipelineExitCode() = %d, want %d", got, tc.want)
+			}
+		})
+	}
+}
