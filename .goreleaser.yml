@@ -94,7 +94,7 @@ release:
   prerelease: auto
   mode: replace
   header: |
-    ## secretsync {{ .Tag }}
+    ## SecretSync {{ .Tag }}
 
     ### Installation
 
