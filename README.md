@@ -206,80 +206,73 @@ secretsync pipeline --config pipeline.yaml --dry-run --output side-by-side
 secretsync pipeline --config pipeline.yaml --metrics-port 9090
 
 # CI/CD mode (exit codes: 0=no changes, 1=changes, 2=errors)
-secretsync pipeline --config pipeline.yaml --dry-run --exit-code
+secretsync pipeline --config pipeline.yaml --dry-run --diff --output json --exit-code
 
-# Version management
-secretsync versions --secret-path "app/database/password"
-secretsync sync --version 5 --target production
+# Inspect dependency order
+secretsync graph --config pipeline.yaml
 ```
 
 ### Example Configuration
 
 ```yaml
-# pipeline.yaml - advanced features
 vault:
-  address: "https://vault.example.com"
-  namespace: "admin"
+  address: https://vault.example.com/
+  namespace: admin
+  auth:
+    approle:
+      role_id: ${VAULT_ROLE_ID}
+      secret_id: ${VAULT_SECRET_ID}
 
 aws:
-  region: "us-east-1"
-  execution_role_pattern: "arn:aws:iam::{account_id}:role/SecretsSync"
-
-# Advanced discovery
-discovery:
-  aws_organizations:
+  region: us-east-1
+  execution_context:
+    type: delegated_admin
+    account_id: "123456789012"
+  control_tower:
     enabled: true
-    tag_filters:
-      - key: "Environment"
-        values: ["production", "staging"]
-        operator: "equals"
-      - key: "Team"
-        values: ["platform*"]
-        operator: "contains"
-    organizational_units:
-      - "ou-production-12345"
-    tag_logic: "AND"
-    cache_ttl: "1h"
-  
-  identity_center:
-    enabled: true
-    region: "us-east-1"
-    cache_ttl: "30m"
-
-# Secret versioning
-versioning:
-  enabled: true
-  s3_bucket: "company-secretsync-versions"
-  retention_days: 90
-
-# Observability
-observability:
-  metrics:
-    enabled: true
-    port: 9090
-    address: "0.0.0.0"
+    execution_role:
+      name: AWSControlTowerExecution
 
 merge_store:
-  vault:
-    mount: "secret/merged"
+  s3:
+    bucket: company-secretsync-merge-store
+    prefix: merged/
+    versioning:
+      enabled: true
+      retain_versions: 90
 
 sources:
   api-keys:
     vault:
-      path: "secret/api-keys"
+      mount: secret
+      paths: [api-keys]
   database:
     vault:
-      path: "secret/database"
+      mount: secret
+      paths: [database]
 
 targets:
-  Staging:
-    imports: [api-keys, database]
+  staging:
     account_id: "111111111111"
-  
-  Production:
-    inherits: Staging
-    imports: [production-overrides]
+    imports: [api-keys, database]
+
+  production:
     account_id: "222222222222"
+    imports: [staging, production-overrides]
+
+dynamic_targets:
+  production-accounts:
+    discovery:
+      organizations:
+        ous: ["ou-production-12345"]
+        tag_filters:
+          - key: Environment
+            values: ["production"]
+            operator: equals
+        recursive: true
+    imports: [production]
+    region: us-east-1
+    secret_prefix: platform/
 ```
 
 ## GitHub Actions
@@ -364,15 +357,27 @@ See [GitHub Actions documentation](./docs/GITHUB_ACTIONS.md) for complete usage 
 - [🛡️ Security Policy](./SECURITY.md) - Security reporting
 - [📜 Code of Conduct](./CODE_OF_CONDUCT.md) - Community guidelines
 
-## Helm Deployment
+## Kubernetes
 
-```bash
-# Add Helm repo
-helm repo add secretsync https://jbcom.github.io/secrets-sync
+Run SecretSync as a scheduled pipeline runner. See
+[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for a complete CronJob example.
 
-# Install
-helm install secretsync secretsync/secretsync \
-  --set vault.address=https://vault.example.com
+```yaml
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: secretsync
+spec:
+  schedule: "*/30 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: secretsync
+              image: jbcom/secretssync:v1
+              args: ["pipeline", "--config", "/config/config.yaml", "--diff", "--output", "json"]
 ```
 
 ## Docker

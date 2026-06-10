@@ -69,3 +69,38 @@ func TestDeploymentGuideUsesCurrentPipelineSurface(t *testing.T) {
 		}
 	}
 }
+
+func TestGettingStartedUsesCurrentPipelineConfigShape(t *testing.T) {
+	paths := []string{"README.md", "docs/GETTING_STARTED.md"}
+
+	for _, path := range paths {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+
+		text := string(content)
+		for _, required := range []string{
+			"merge_store:",
+			"account_id:",
+			"secret_prefix:",
+			"dynamic_targets:",
+		} {
+			if !strings.Contains(text, required) {
+				t.Fatalf("%s should document current pipeline config %q", path, required)
+			}
+		}
+		for _, forbidden := range []string{
+			"aws_secretsmanager:",
+			"inherits:",
+			"discovery:\n  aws_organizations:",
+			"versioning:\n  enabled: true\n  s3_bucket:",
+			"secretsync versions",
+			"secretsync sync --version",
+		} {
+			if strings.Contains(text, forbidden) {
+				t.Fatalf("%s should not document stale config shape %q", path, forbidden)
+			}
+		}
+	}
+}
