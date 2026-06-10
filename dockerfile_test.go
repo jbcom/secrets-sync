@@ -32,3 +32,14 @@ func TestOrganizationsTestingDocsDoNotAdvertiseVSSAlias(t *testing.T) {
 		t.Fatalf("%s should advertise secretsync, not vss", path)
 	}
 }
+
+func TestForkBreakScriptIsNotShipped(t *testing.T) {
+	path := "scripts/break-fork.sh"
+	_, err := os.Stat(path)
+	if err == nil {
+		t.Fatalf("%s should not ship in the independent repository", path)
+	}
+	if !os.IsNotExist(err) {
+		t.Fatalf("stat %s: %v", path, err)
+	}
+}

@@ -28,3 +28,27 @@ func TestSecurityDocsDocumentLoggingContract(t *testing.T) {
 		}
 	}
 }
+
+func TestSecurityDocsUseProjectReportingContacts(t *testing.T) {
+	required := []string{
+		"https://github.com/jbcom/secrets-sync/security/advisories",
+		"security@jbcom.dev",
+	}
+
+	for _, path := range []string{"SECURITY.md", "docs/SECURITY.md"} {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+
+		text := string(content)
+		if strings.Contains(text, "robert@lestak.sh") {
+			t.Fatalf("%s should not use the old fork-era security contact", path)
+		}
+		for _, phrase := range required {
+			if !strings.Contains(text, phrase) {
+				t.Fatalf("%s must document reporting contact %q", path, phrase)
+			}
+		}
+	}
+}

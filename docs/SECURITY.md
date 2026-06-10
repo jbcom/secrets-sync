@@ -163,4 +163,10 @@ If you are running in a Kubernetes cluster, you can use the Kubernetes auth meth
 
 ## Vulnerability Reporting
 
-If you believe you have found a security vulnerability in this project, please report it privately to the project maintainers. If you are unsure whether the issue is a security vulnerability, please report it anyway. We take all reports seriously and will respond promptly to your inquiry. Please do not disclose the issue publicly until we have had a chance to address it. You can report a security vulnerability by emailing [robert@lestak.sh](mailto:robert@lestak.sh). Please include the word "SECURITY" in the subject line.
+If you believe you have found a security vulnerability in this project, please
+report it privately through
+[GitHub Security Advisories](https://github.com/jbcom/secrets-sync/security/advisories)
+or email [security@jbcom.dev](mailto:security@jbcom.dev). If you are unsure
+whether the issue is a security vulnerability, please report it anyway. We take
+all reports seriously and will respond promptly to your inquiry. Please do not
+disclose the issue publicly until we have had a chance to address it.
