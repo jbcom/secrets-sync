@@ -281,17 +281,17 @@ EOF
 Once created, the operator will begin syncing secrets from the source to the destination. You can trigger an immediate sync by annotating the `SecretSync` resource with `force-sync`.
 
 ```bash
-kubectl annotate vaultsecretsync example force-sync=$(date +%s) --overwrite
+kubectl annotate secretsync example force-sync=$(date +%s) --overwrite
 ```
 
 To sync all `SecretSync` resources in a namespace, you can use the following command:
 
 ```bash
-kubectl get vaultsecretsync -n example -o name | xargs -I {} kubectl annotate -n example {} force-sync=$(date +%s) --overwrite
+kubectl get secretsyncs -n example -o name | xargs -I {} kubectl annotate -n example {} force-sync=$(date +%s) --overwrite
 ```
 
 To sync all `SecretSync` resources in all namespaces, you can use the following command:
 
 ```bash
-for ns in $(kubectl get ns -o name | cut -d/ -f2); do kubectl get vaultsecretsync -n $ns -o name | xargs -I {} kubectl annotate -n $ns {} force-sync=$(date +%s) --overwrite; done
+for ns in $(kubectl get ns -o name | cut -d/ -f2); do kubectl get secretsyncs -n $ns -o name | xargs -I {} kubectl annotate -n $ns {} force-sync=$(date +%s) --overwrite; done
 ```
