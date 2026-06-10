@@ -63,6 +63,25 @@ Once enabled, metrics are exposed at:
 - **Metrics**: `http://localhost:9090/metrics`
 - **Health check**: `http://localhost:9090/health`
 
+## Logging Safety
+
+Logs and metrics are designed for operational visibility without exposing the
+secret bytes being synchronized. SecretSync records request IDs, operation
+names, durations, counts, paths, targets, account identifiers, and provider
+error context. It must not log raw secret values, raw Vault secret payloads, raw
+AWS secret payloads, or raw client structures.
+
+Use JSON logs when shipping to a centralized platform:
+
+```bash
+secretsync pipeline --config config.yaml --log-format json --log-level info
+```
+
+Debug and trace logging can reveal more operational metadata and should be sent
+only to secured sinks with appropriate retention. If a provider returns
+credentials in an error string, treat that upstream behavior as a provider or
+configuration issue and rotate the exposed credential.
+
 ## Available Metrics
 
 ### Vault Metrics

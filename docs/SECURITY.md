@@ -8,6 +8,21 @@ As this service is effectively an event bus for your various secret stores and t
 
 The service is designed to be secure by default, preferrring more explicit configuration as opposed to insecure defaults. This does mean initial set up will not be one-liner fire-and-forget. That is intentional, as it forces you to think about the security implications of the decisions you are making rather than starting up the process insecurely, forgetting about it, and then being surprised when something goes wrong. If started with no configuration and no command line flags, the service will exit with an error. All components of the service default to disabled, you must explicitly enable the components you wish to use.
 
+### Logging and Diagnostics
+
+SecretSync logs operational metadata for troubleshooting, not secret material.
+Vault and AWS client initialization logs are limited to explicit non-secret
+fields such as address, path, auth method, region, role ARN, cache settings, and
+boolean capability flags. Raw secret values, raw Vault secret response objects,
+raw AWS secret response objects, and raw client structures must not be written
+to logs at any level.
+
+Diagnostics may include secret paths, target names, account IDs, error classes,
+request IDs, durations, counts, and operation names. Treat those logs as
+operationally sensitive, but they should not contain the bytes being synced.
+Keep `--log-level debug` and `--log-level trace` restricted to trusted
+operators and secured log sinks.
+
 ### Segregation of Duties
 
 By default, all components of the app default to disabled. This is to ensure that you are only enabling the components you need. To run in "single binary mode", you must explicitly enable each component. This is to ensure that you are aware of the security implications of each component you are enabling. This also enables you to more easily deploy the service in a microservices architecture, where you can run the webhook service in one container and the sync operator in another.
