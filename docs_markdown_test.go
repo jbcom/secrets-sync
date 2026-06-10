@@ -130,6 +130,35 @@ func TestArchitectureAuditCurrentShapeReferencesExistingPaths(t *testing.T) {
 	}
 }
 
+func TestContributingGuideUsesCurrentRepositoryShape(t *testing.T) {
+	content, err := os.ReadFile("CONTRIBUTING.md")
+	if err != nil {
+		t.Fatalf("read CONTRIBUTING.md: %v", err)
+	}
+
+	text := string(content)
+	for _, required := range []string{
+		"pkg/client/",
+		"pkg/driver",
+		"pkg/pipeline",
+		"driver.DriverName",
+	} {
+		if !strings.Contains(text, required) {
+			t.Fatalf("CONTRIBUTING.md should document current repository shape %q", required)
+		}
+	}
+
+	for _, forbidden := range []string{
+		"stores/newstore",
+		"github.com/jbcom/secrets-sync/pkg/store",
+		"├── stores/",
+	} {
+		if strings.Contains(text, forbidden) {
+			t.Fatalf("CONTRIBUTING.md should not document removed store surface %q", forbidden)
+		}
+	}
+}
+
 func isArchitectureAuditRepoPath(path string) bool {
 	if strings.HasPrefix(path, "jbcom/") || strings.Contains(path, ":") {
 		return false

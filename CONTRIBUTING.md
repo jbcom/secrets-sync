@@ -206,49 +206,47 @@ secretsync/
 ├── cmd/secretsync/           # CLI application
 │   ├── cmd/           # Cobra commands
 │   └── main.go        # Entry point
-├── pkg/               # Public packages
-│   ├── pipeline/      # Pipeline orchestration
-│   ├── diff/          # Diff computation
-│   └── ...
-├── stores/            # Secret store implementations
-│   ├── vault/         # Vault store
-│   ├── aws/           # AWS Secrets Manager
-│   └── ...
-├── internal/          # Private packages
+├── pkg/
+│   ├── client/        # Vault, AWS, and provider clients
+│   ├── discovery/     # AWS Organizations and Identity Center discovery
+│   ├── driver/        # Supported driver names and validation helpers
+│   ├── pipeline/      # Merge, sync, graph, and execution orchestration
+│   ├── diff/          # Diff computation and masking
+│   └── observability/ # Metrics and request tracking
+├── python/            # Optional gopy binding sources
 ├── docs/              # Documentation
 ├── examples/          # Example configurations
 └── deploy/            # Deployment manifests
 ```
 
-## Adding a New Secret Store
+## Adding a New Secret Backend
 
-To add support for a new secret store:
+To add support for a new backend:
 
-1. **Create store package**
+1. **Create a client package**
    ```bash
-   mkdir -p stores/newstore
+   mkdir -p pkg/client/newbackend
    ```
 
-2. **Implement Store interface**
+2. **Implement the current client shape**
    ```go
-   package newstore
+   package newbackend
    
-   import "github.com/jbcom/secrets-sync/pkg/store"
+   import "github.com/jbcom/secrets-sync/pkg/driver"
    
-   type Store struct {
-       // configuration fields
+   type Client struct {
+       Name string `yaml:"name,omitempty" json:"name,omitempty"`
    }
    
-   func (s *Store) Get(ctx context.Context, key string) ([]byte, error) {
-       // implementation
+   func (c *Client) Validate() error {
+       if c.Name == "" {
+           return driver.ErrPathRequired
+       }
+       return nil
    }
    
-   func (s *Store) Set(ctx context.Context, key string, value []byte) error {
-       // implementation
-   }
-   
-   func (s *Store) List(ctx context.Context, prefix string) ([]string, error) {
-       // implementation
+   func (c *Client) Driver() driver.DriverName {
+       return driver.DriverName("newbackend")
    }
    ```
 
@@ -261,9 +259,10 @@ To add support for a new secret store:
    }
    ```
 
-4. **Register store**
-   - Update pipeline config to include new store
-   - Add store initialization logic
+4. **Register the backend**
+   - Add the driver name in `pkg/driver`
+   - Update pipeline config types and validation
+   - Add client initialization logic in the pipeline layer
    - Update documentation
 
 5. **Add examples**
