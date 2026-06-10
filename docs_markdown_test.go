@@ -93,6 +93,55 @@ func TestStaleArchitectureDiagramsAreNotPublished(t *testing.T) {
 	}
 }
 
+func TestArchitectureAuditCurrentShapeReferencesExistingPaths(t *testing.T) {
+	content, err := os.ReadFile("docs/ARCHITECTURE_GAP_ANALYSIS.md")
+	if err != nil {
+		t.Fatalf("read docs/ARCHITECTURE_GAP_ANALYSIS.md: %v", err)
+	}
+
+	text := string(content)
+	start := strings.Index(text, "## Current Shape")
+	end := strings.Index(text, "## Known Remaining Work")
+	if start < 0 || end < 0 || end <= start {
+		t.Fatal("docs/ARCHITECTURE_GAP_ANALYSIS.md should have a current shape section before known remaining work")
+	}
+
+	currentShape := text[start:end]
+	for _, forbidden := range []string{
+		"api/v1alpha1",
+		"Kubernetes API types",
+	} {
+		if strings.Contains(currentShape, forbidden) {
+			t.Fatalf("architecture audit should not document removed current path %q", forbidden)
+		}
+	}
+	if !strings.Contains(currentShape, "deploy/charts/secretsync") {
+		t.Fatal("architecture audit should document the Helm runner chart path")
+	}
+
+	for _, match := range regexp.MustCompile("`([^`]+)`").FindAllStringSubmatch(currentShape, -1) {
+		path := match[1]
+		if !isArchitectureAuditRepoPath(path) {
+			continue
+		}
+		if _, err := os.Stat(path); err != nil {
+			t.Fatalf("architecture audit references missing current path %s: %v", path, err)
+		}
+	}
+}
+
+func isArchitectureAuditRepoPath(path string) bool {
+	if strings.HasPrefix(path, "jbcom/") || strings.Contains(path, ":") {
+		return false
+	}
+	for _, prefix := range []string{"cmd/", "deploy/", "docs/", "pkg/", "python/"} {
+		if strings.HasPrefix(path, prefix) {
+			return true
+		}
+	}
+	return path == "pkg" || path == "action.yml" || strings.HasSuffix(path, ".go")
+}
+
 func TestGettingStartedUsesCurrentPipelineConfigShape(t *testing.T) {
 	paths := []string{"README.md", "docs/GETTING_STARTED.md"}
 

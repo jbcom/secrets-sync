@@ -15,7 +15,8 @@ SecretSync is a standalone Go module with:
 - Circuit breaker, request context, and observability support in `pkg`.
 - Docker action metadata in `action.yml`.
 - Optional Python binding sources under `python/secretssync`.
-- Kubernetes API types under `api/v1alpha1`.
+- Helm runner chart under `deploy/charts/secretsync`, rendering a CronJob and
+  config mount for the same CLI pipeline contract.
 
 The main runtime path is the two-phase pipeline:
 
@@ -50,8 +51,8 @@ The main runtime path is the two-phase pipeline:
   tag placeholder until the first standalone repository release exists.
 - The Docker action should eventually move to a digest-pinned image reference
   once release automation can update that digest as part of publication.
-- Optional Python binding and Kubernetes API surfaces need separate release
-  contracts if they become first-class artifacts.
+- Optional Python binding sources and any future native Kubernetes runtime
+  surface need separate release contracts before becoming first-class artifacts.
 
 ## Development Rule
 
