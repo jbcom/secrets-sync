@@ -14,6 +14,7 @@ func TestDocsDoNotAdvertiseOldCurrentVersion(t *testing.T) {
 			"### v1.3.0",
 			"### v1.4.0",
 			"### v1.5.0",
+			"coming in v1.3.0",
 		},
 		"docs/FAQ.md": {
 			"SecretSync v1.2.0 is production-ready",

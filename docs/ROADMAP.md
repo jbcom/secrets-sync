@@ -130,7 +130,7 @@ Based on community feedback, we're prioritizing:
 - **GitHub Issues**: Share your use cases and requirements
 - **Feature Requests**: Create detailed feature requests with business justification
 - **User Surveys**: Participate in periodic user surveys
-- **Community Calls**: Join monthly community calls (coming in v1.3.0)
+- **Community Calls**: Join monthly community calls when scheduled
 
 ### 🤝 Contributions
 - **Code Contributions**: Implement features you need
