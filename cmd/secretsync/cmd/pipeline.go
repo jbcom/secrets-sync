@@ -180,9 +180,15 @@ func runPipeline(cmd *cobra.Command, args []string) error {
 	}
 
 	// Determine exit behavior
+	hasErrors := pipelineHadErrors(err, results)
 	if exitCodeMode {
+		if hasErrors {
+			cancel()
+			os.Exit(2)
+		}
 		exitCode := p.ExitCode()
 		if exitCode != 0 {
+			cancel()
 			os.Exit(exitCode)
 		}
 		return nil
@@ -193,14 +199,26 @@ func runPipeline(cmd *cobra.Command, args []string) error {
 	}
 
 	// Check for any failures
-	for _, r := range results {
-		if !r.Success {
-			return fmt.Errorf("pipeline completed with errors")
-		}
+	if hasErrors {
+		return fmt.Errorf("pipeline completed with errors")
 	}
 
 	l.Info("Pipeline completed successfully")
 	return nil
+}
+
+func pipelineHadErrors(err error, results []pipeline.Result) bool {
+	if err != nil {
+		return true
+	}
+
+	for _, r := range results {
+		if !r.Success {
+			return true
+		}
+	}
+
+	return false
 }
 
 // parseOutputFormat converts string to OutputFormat
