@@ -666,7 +666,7 @@ runs:
 
 ## Support
 
-- **Documentation**: [Full docs](https://github.com/jbcom/secrets-sync/docs)
+- **Documentation**: [Full docs](https://github.com/jbcom/secrets-sync/tree/main/docs)
 - **Issues**: [GitHub Issues](https://github.com/jbcom/secrets-sync/issues)
 
 ## License

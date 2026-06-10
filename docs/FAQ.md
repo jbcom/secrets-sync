@@ -487,9 +487,9 @@ go test -race ./...
 
 ### Where can I get help?
 
-- **Documentation**: [docs/](https://github.com/jbcom/secrets-sync/docs)
+- **Documentation**: [docs/](https://github.com/jbcom/secrets-sync/tree/main/docs)
 - **GitHub Issues**: For bugs, questions, and feature requests
-- **Examples**: [examples/](https://github.com/jbcom/secrets-sync/examples)
+- **Examples**: [examples/](https://github.com/jbcom/secrets-sync/tree/main/examples)
 
 ### How do I request a feature?
 

@@ -159,6 +159,37 @@ func TestContributingGuideUsesCurrentRepositoryShape(t *testing.T) {
 	}
 }
 
+func TestPublicGitHubDirectoryLinksUseTreeURLs(t *testing.T) {
+	brokenDirectoryLink := regexp.MustCompile(`https://github\.com/jbcom/secrets-sync/(docs|examples)(?:[)\s]|$)`)
+	var offenders []string
+
+	for _, root := range []string{"README.md", "docs", "CONTRIBUTING.md", "SECURITY.md"} {
+		err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if entry.IsDir() || filepath.Ext(path) != ".md" {
+				return nil
+			}
+			content, readErr := os.ReadFile(path)
+			if readErr != nil {
+				return readErr
+			}
+			if brokenDirectoryLink.Match(content) {
+				offenders = append(offenders, path)
+			}
+			return nil
+		})
+		if err != nil {
+			t.Fatalf("walk %s: %v", root, err)
+		}
+	}
+
+	if len(offenders) > 0 {
+		t.Fatalf("GitHub directory links should use /tree/main/... URLs:\n%s", strings.Join(offenders, "\n"))
+	}
+}
+
 func isArchitectureAuditRepoPath(path string) bool {
 	if strings.HasPrefix(path, "jbcom/") || strings.Contains(path, ":") {
 		return false
