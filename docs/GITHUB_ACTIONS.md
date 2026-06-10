@@ -21,16 +21,16 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: config.yaml
 ```
@@ -81,16 +81,16 @@ jobs:
       pull-requests: write  # For PR comments
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
       
       - name: Validate Changes (Dry Run)
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: config.yaml
           dry-run: 'true'
@@ -128,16 +128,16 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: config.yaml
           targets: ${{ github.event.inputs.targets != 'all' && github.event.inputs.targets || '' }}
@@ -163,10 +163,10 @@ jobs:
   merge:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Merge Secrets
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: config.yaml
           merge-only: 'true'
@@ -195,16 +195,16 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
       
       - name: Sync with Discovery
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: config.yaml
           discover: 'true'
@@ -235,17 +235,17 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
       
       - name: Check for Changes
         id: check
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: config.yaml
           dry-run: 'true'
@@ -258,7 +258,7 @@ jobs:
       
       - name: Apply Changes
         if: steps.check.outcome == 'failure'
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: config.yaml
           output-format: 'github'
@@ -295,16 +295,16 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: configs/${{ github.event.inputs.environment }}.yaml
           output-format: 'github'
@@ -363,7 +363,7 @@ targets:
 **Recommended:**
 ```yaml
 - name: Configure AWS Credentials
-  uses: aws-actions/configure-aws-credentials@v4
+  uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
   with:
     role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
     aws-region: us-east-1
@@ -396,7 +396,7 @@ jobs:
   sync-production:
     environment: production  # Requires approval
     steps:
-      - uses: jbcom/secrets-sync@secretssync-v2.0.2
+      - uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: production.yaml
 ```
@@ -516,9 +516,9 @@ Example policy:
 Ensure your config file is in the repository and the path is correct:
 
 ```yaml
-- uses: actions/checkout@v4  # Required to access repository files
+- uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: path/to/config.yaml  # Relative to repo root
 ```
@@ -528,7 +528,7 @@ Ensure your config file is in the repository and the path is correct:
 Verify environment variables are set correctly:
 
 ```yaml
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
     log-level: debug  # Enable debug logging
@@ -550,7 +550,7 @@ Check:
 Ensure `output-format` is set to `github`:
 
 ```yaml
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     output-format: 'github'  # Enables GitHub Actions annotations
 ```
@@ -570,7 +570,7 @@ Example using exit codes:
 ```yaml
 - name: Check for Changes
   id: check
-  uses: jbcom/secrets-sync@secretssync-v2.0.2
+  uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     dry-run: 'true'
     exit-code: 'true'
@@ -603,16 +603,16 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets[format('AWS_ROLE_{0}', matrix.environment)] }}
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: configs/${{ matrix.environment }}.yaml
 ```
@@ -632,7 +632,7 @@ jobs:
   sync:
     if: github.ref == 'refs/heads/main'
     steps:
-      - uses: jbcom/secrets-sync@secretssync-v2.0.2
+      - uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
 ```
 
 ### Composite Actions
@@ -650,12 +650,12 @@ inputs:
 runs:
   using: composite
   steps:
-    - uses: aws-actions/configure-aws-credentials@v4
+    - uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
       with:
         role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
         aws-region: us-east-1
     
-    - uses: jbcom/secrets-sync@secretssync-v2.0.2
+    - uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
       with:
         config: ${{ inputs.config }}
         output-format: 'github'

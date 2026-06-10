@@ -34,10 +34,11 @@ make build
 
 ## GitHub Action
 
-Use the packaged action from this standalone repository and pin to a release tag:
+Use the packaged action from this standalone repository and pin to a release
+tag. Replace `X.Y.Z` with a published release version:
 
 ```yaml
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
 ```

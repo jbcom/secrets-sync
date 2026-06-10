@@ -127,4 +127,4 @@ branding:
 #   VAULT_SECRET_ID         - AppRole secret ID
 #
 # AWS Authentication:
-#   Use aws-actions/configure-aws-credentials@v4 before this action for OIDC
+#   Use aws-actions/configure-aws-credentials pinned to a reviewed commit before this action for OIDC

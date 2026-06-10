@@ -10,7 +10,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/jbcom/secrets-sync)](https://goreportcard.com/report/github.com/jbcom/secrets-sync)
 [![Python Bindings](https://img.shields.io/badge/python-bindings-blue.svg)](./python/)
 
-[Quick Start](#quick-start) • [Package Docs](https://extended-data.dev/packages/secretssync/) • [Repo Docs](./docs/) • [Python Bindings](#python-bindings) • [Examples](./examples/) • [GitHub Action](./docs/GITHUB_ACTIONS.md)
+[Quick Start](#quick-start) • [Repo Docs](./docs/) • [Python Bindings](#python-bindings) • [Examples](./examples/) • [GitHub Action](./docs/GITHUB_ACTIONS.md)
 
 </div>
 
@@ -288,7 +288,7 @@ SecretSync is available as a GitHub Action for seamless CI/CD integration:
 
 ```yaml
 - name: Sync Secrets
-  uses: jbcom/secrets-sync@secretssync-v2.0.2
+  uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
     dry-run: 'false'
@@ -342,7 +342,6 @@ See [GitHub Actions documentation](./docs/GITHUB_ACTIONS.md) for complete usage 
 ## 📚 Documentation
 
 ### Getting Started
-- [🌐 Published Package Docs](https://extended-data.dev/packages/secretssync/) - Public package overview, installation paths, and Python integration guidance
 - [🚀 Getting Started Guide](./docs/GETTING_STARTED.md) - Step-by-step setup tutorial
 - [❓ FAQ](./docs/FAQ.md) - Frequently asked questions
 - [📋 Examples](./examples/) - Complete configuration examples
@@ -505,7 +504,7 @@ For detailed documentation, see [tests/integration/README.md](./tests/integratio
 ## 🌟 Community & Support
 
 ### Getting Help
-- **📚 Documentation**: Start with the [published package docs](https://extended-data.dev/packages/secretssync/) and the repo-local [docs folder](./docs/)
+- **📚 Documentation**: Start with the repo-local [docs folder](./docs/)
 - **🐛 GitHub Issues**: Questions, bug reports, and feature requests
 - **🔒 Security**: Private security vulnerability reporting
 

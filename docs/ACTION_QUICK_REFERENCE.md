@@ -3,14 +3,14 @@
 ## Installation
 
 ```yaml
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
 ```
 
 ## Minimal Example
 
 ```yaml
 - name: Sync Secrets
-  uses: jbcom/secrets-sync@secretssync-v2.0.2
+  uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
   env:
@@ -43,7 +43,7 @@
 ### Dry Run (PR Validation)
 
 ```yaml
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
     dry-run: 'true'
@@ -53,7 +53,7 @@
 ### Specific Targets
 
 ```yaml
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
     targets: 'Staging,Production'
@@ -62,7 +62,7 @@
 ### Merge Only
 
 ```yaml
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
     merge-only: 'true'
@@ -71,7 +71,7 @@
 ### With Exit Codes
 
 ```yaml
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
     dry-run: 'true'
@@ -82,7 +82,7 @@
 ### Debug Mode
 
 ```yaml
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
     log-level: 'debug'
@@ -107,16 +107,16 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Configure AWS
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: config.yaml
         env:
@@ -143,7 +143,7 @@ SecretSync supports all environment variables from the CLI. Common ones:
 
 ```yaml
 - name: Configure AWS Credentials
-  uses: aws-actions/configure-aws-credentials@v4
+  uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
   with:
     role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
     aws-region: us-east-1
@@ -221,7 +221,7 @@ Use with `continue-on-error: true` to handle:
 ```yaml
 - name: Check Changes
   id: check
-  uses: jbcom/secrets-sync@secretssync-v2.0.2
+  uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     dry-run: 'true'
     exit-code: 'true'
@@ -237,8 +237,8 @@ Use with `continue-on-error: true` to handle:
 ### Config File Not Found
 
 ```yaml
-- uses: actions/checkout@v4  # Must checkout first!
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: path/to/config.yaml  # Relative to repo root
 ```
@@ -263,7 +263,7 @@ Ensure OIDC is configured correctly and trust policy allows your repository.
 
 ```yaml
 # Recommended: Pin to a package release tag
-uses: jbcom/secrets-sync@secretssync-v2.0.2
+uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
 
 # Not recommended: Track the branch tip
 uses: jbcom/secrets-sync@main

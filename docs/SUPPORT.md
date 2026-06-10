@@ -93,7 +93,7 @@ When reporting bugs, please include:
    
    # If using GitHub Action
    # Include the version/tag from your workflow
-   uses: jbcom/secrets-sync@secretssync-v2.0.2
+   uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
    ```
 
 2. **Configuration** (sanitized - remove secrets!)
@@ -225,17 +225,16 @@ Yes! SecretSync is free and open source (MIT License).
 
 ### Can I use this in production?
 
-Yes! SecretSync is production-ready. Many organizations use it daily.
+SecretSync is intended for production use when Vault, AWS IAM, OIDC, and
+release pinning are configured for your environment. Run dry-run validation in
+CI before applying changes.
 
 ### How do I upgrade?
 
 For GitHub Actions:
 ```yaml
-# Pin to the current package release tag (recommended)
-uses: jbcom/secrets-sync@secretssync-v2.0.2
-
-# Pin to an exact package release tag (most stable)
-uses: jbcom/secrets-sync@secretssync-v2.0.2
+# Pin to an exact package release tag
+uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
 
 # Track the branch tip (not recommended for production)
 uses: jbcom/secrets-sync@main
