@@ -56,6 +56,10 @@ go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
 pip install extended-data[secrets]
 ```
 
+CLI fallback mode relies on `secretsync pipeline --output json`, which emits
+the same stable result envelope for dry-run and apply runs. Diff data is nested
+under `diff` and `diff_output` when diff computation is enabled.
+
 ## Usage
 
 ### Basic Usage

@@ -194,7 +194,7 @@ func RunPipeline(configPath string, opts *SyncOptions) *SyncResult {
 	}
 
 	// Process results
-	result.TargetCount = len(results)
+	result.TargetCount = countUniqueTargets(results)
 	result.Success = err == nil
 
 	for _, r := range results {
@@ -301,6 +301,16 @@ func splitTargets(targets string) []string {
 		}
 	}
 	return result
+}
+
+func countUniqueTargets(results []pipeline.Result) int {
+	targets := make(map[string]struct{})
+	for _, result := range results {
+		if result.Target != "" {
+			targets[result.Target] = struct{}{}
+		}
+	}
+	return len(targets)
 }
 
 // ConfigInfo returns information about a configuration file

@@ -171,6 +171,10 @@ secretsync pipeline --config config.yaml --dry-run --output side-by-side
 secretsync pipeline --config config.yaml --dry-run --output json
 ```
 
+JSON output is a stable pipeline result envelope with success status, aggregate
+secret counts, per-phase `results`, and nested `diff`/`diff_output` fields when
+diff computation is enabled.
+
 #### 3. Secret Versioning (v1.2.0)
 
 Add to your config:

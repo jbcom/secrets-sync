@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
 	"sort"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/jbcom/secrets-sync/pkg/diff"
 	"github.com/jbcom/secrets-sync/pkg/pipeline"
@@ -52,7 +54,7 @@ Examples:
   # Full pipeline
   secretsync pipeline --config config.yaml
 
-  # Dry run with diff output (validates zero-sum)
+  # Dry run with machine-readable result and nested diff output
   secretsync pipeline --config config.yaml --dry-run --output json
 
   # CI/CD mode with exit codes
@@ -166,11 +168,21 @@ func runPipeline(cmd *cobra.Command, args []string) error {
 	}).Info("Starting pipeline")
 
 	// Run pipeline
+	start := time.Now()
 	results, err := p.Run(ctx, opts)
+	duration := time.Since(start)
 
-	// Print diff output if computed
-	if d := p.Diff(); d != nil {
-		diffOutput := p.FormatDiff(format)
+	// Print machine JSON as a stable result envelope for both diff and non-diff runs.
+	pipelineDiff := p.Diff()
+	diffOutput := ""
+	if pipelineDiff != nil {
+		diffOutput = p.FormatDiff(format)
+	}
+	if format == diff.OutputFormatJSON {
+		if jsonErr := printPipelineJSONSummary(results, err, duration, diffOutput, pipelineDiff); jsonErr != nil {
+			return jsonErr
+		}
+	} else if pipelineDiff != nil {
 		if diffOutput != "" {
 			fmt.Println(diffOutput)
 		}
@@ -293,4 +305,106 @@ func printResults(results []pipeline.Result) {
 
 	fmt.Printf("\nTotal: %d/%d succeeded\n", successCount, len(results))
 	fmt.Println(strings.Repeat("=", 60))
+}
+
+type pipelineJSONSummary struct {
+	Success          bool               `json:"success"`
+	TargetCount      int                `json:"target_count"`
+	SecretsProcessed int                `json:"secrets_processed"`
+	SecretsAdded     int                `json:"secrets_added"`
+	SecretsModified  int                `json:"secrets_modified"`
+	SecretsRemoved   int                `json:"secrets_removed"`
+	SecretsUnchanged int                `json:"secrets_unchanged"`
+	DurationMs       int64              `json:"duration_ms"`
+	ErrorMessage     string             `json:"error_message,omitempty"`
+	Results          []pipelineJSONItem `json:"results"`
+	DiffOutput       string             `json:"diff_output,omitempty"`
+	Diff             *diff.PipelineDiff `json:"diff,omitempty"`
+}
+
+type pipelineJSONItem struct {
+	Target     string                 `json:"target"`
+	Phase      string                 `json:"phase"`
+	Operation  string                 `json:"operation"`
+	Success    bool                   `json:"success"`
+	Error      string                 `json:"error,omitempty"`
+	DurationMs int64                  `json:"duration_ms"`
+	Details    pipeline.ResultDetails `json:"details,omitempty"`
+	Diff       *diff.TargetDiff       `json:"diff,omitempty"`
+}
+
+func printPipelineJSONSummary(
+	results []pipeline.Result,
+	runErr error,
+	duration time.Duration,
+	diffOutput string,
+	pipelineDiff *diff.PipelineDiff,
+) error {
+	payload := newPipelineJSONSummary(results, runErr, duration, diffOutput, pipelineDiff)
+	encoded, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to encode pipeline JSON output: %w", err)
+	}
+	fmt.Println(string(encoded))
+	return nil
+}
+
+func newPipelineJSONSummary(
+	results []pipeline.Result,
+	runErr error,
+	duration time.Duration,
+	diffOutput string,
+	pipelineDiff *diff.PipelineDiff,
+) pipelineJSONSummary {
+	summary := pipelineJSONSummary{
+		Success:    runErr == nil,
+		DurationMs: duration.Milliseconds(),
+		Results:    make([]pipelineJSONItem, 0, len(results)),
+		DiffOutput: diffOutput,
+		Diff:       pipelineDiff,
+	}
+	if runErr != nil {
+		summary.ErrorMessage = runErr.Error()
+	}
+
+	targetsSeen := make(map[string]struct{})
+	for _, result := range results {
+		if result.Target != "" {
+			targetsSeen[result.Target] = struct{}{}
+		}
+
+		summary.SecretsProcessed += result.Details.SecretsProcessed
+		summary.SecretsAdded += result.Details.SecretsAdded
+		summary.SecretsModified += result.Details.SecretsModified
+		summary.SecretsRemoved += result.Details.SecretsRemoved
+		summary.SecretsUnchanged += result.Details.SecretsUnchanged
+
+		item := pipelineJSONItem{
+			Target:     result.Target,
+			Phase:      result.Phase,
+			Operation:  result.Operation,
+			Success:    result.Success,
+			DurationMs: result.Duration.Milliseconds(),
+			Details:    result.Details,
+			Diff:       result.Diff,
+		}
+		if result.Error != nil {
+			item.Error = result.Error.Error()
+		}
+		summary.Results = append(summary.Results, item)
+
+		if !result.Success {
+			summary.Success = false
+			if summary.ErrorMessage == "" {
+				if item.Error != "" {
+					summary.ErrorMessage = item.Error
+				} else {
+					summary.ErrorMessage = "pipeline completed with errors"
+				}
+			}
+		}
+	}
+
+	summary.TargetCount = len(targetsSeen)
+	return summary
 }

@@ -213,19 +213,32 @@ secretsync pipeline --config config.yaml --merge-only
 Both phases support diff computation:
 
 ```bash
-# Dry-run with diff output
+# Dry-run with machine-readable result and nested diff output
 secretsync pipeline --config config.yaml --dry-run --output json
 
 # Output:
 {
-  "dry_run": true,
-  "summary": {
-    "added": 5,
-    "modified": 2,
-    "removed": 0,
-    "unchanged": 43
-  },
-  "targets": [...]
+  "success": true,
+  "target_count": 2,
+  "secrets_processed": 50,
+  "secrets_added": 5,
+  "secrets_modified": 2,
+  "secrets_removed": 0,
+  "secrets_unchanged": 43,
+  "duration_ms": 1284,
+  "results": [...],
+  "diff_output": "{...}",
+  "diff": {
+    "dry_run": true,
+    "summary": {
+      "added": 5,
+      "modified": 2,
+      "removed": 0,
+      "unchanged": 43,
+      "total": 50
+    },
+    "targets": [...]
+  }
 }
 ```
 

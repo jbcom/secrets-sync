@@ -197,7 +197,8 @@ Shows GitHub Actions annotations in workflow logs.
 
 ### `json`
 
-Machine-readable JSON output.
+Machine-readable pipeline result envelope. Diff details are nested under
+`diff` and `diff_output` when diff computation is enabled.
 
 ### `compact`
 
