@@ -269,7 +269,8 @@ dynamic_targets:
   dev_accounts:
     discovery:
       organizations:
-        ou: "ou-xxxx-development"
+        ous:
+          - "ou-xxxx-development"
         recursive: true  # Include accounts in child OUs
     imports:
       - dev-secrets

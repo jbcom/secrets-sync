@@ -209,7 +209,8 @@ dynamic_targets:
   # dev_environments:
   #   discovery:
   #     organizations:
-  #       ou: "ou-xxxx-development"
+  #       ous:
+  #         - "ou-xxxx-development"
   #       # Or by tags:
   #       # tags:
   #       #   Environment: development

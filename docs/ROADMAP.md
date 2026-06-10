@@ -157,19 +157,12 @@ Based on community feedback, we're prioritizing:
 - **Release Candidates**: 1 week before major releases
 - **Early Access**: Available for enterprise partners
 
-## Backwards Compatibility
+## Clean Break Policy
 
-### Compatibility Promise
-- **Configuration**: Backwards compatible within major versions
-- **API**: Semantic versioning with deprecation notices
-- **CLI**: Backwards compatible with deprecation warnings
-- **Migration Tools**: Automated migration for breaking changes
-
-### Deprecation Policy
-- **6 Month Notice**: Minimum 6 months notice for deprecations
-- **Migration Guides**: Detailed migration documentation
-- **Automated Tools**: CLI tools to assist with migrations
-- **Support**: Extended support for deprecated features
+- **Configuration**: Prefer one current shape over compatibility aliases.
+- **API**: Breaking changes are acceptable when they keep the implementation honest.
+- **CLI**: Removed flags and fields should fail loudly with clear replacement guidance.
+- **Migration Docs**: Document replacement configuration rather than carrying shims.
 
 ## Success Metrics
 

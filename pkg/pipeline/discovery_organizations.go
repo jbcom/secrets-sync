@@ -10,7 +10,6 @@ import (
 func (d *DiscoveryService) discoverFromOrganizations(cfg *OrganizationsDiscovery) ([]AccountInfo, error) {
 	l := log.WithFields(log.Fields{
 		"action":    "discoverFromOrganizations",
-		"ou":        cfg.OU,
 		"ous":       cfg.OUs,
 		"recursive": cfg.Recursive,
 	})
@@ -22,12 +21,7 @@ func (d *DiscoveryService) discoverFromOrganizations(cfg *OrganizationsDiscovery
 
 	var accounts []AccountInfo
 
-	// Collect all OUs to process (legacy single OU + new multiple OUs)
-	var ousToProcess []string
-	if cfg.OU != "" {
-		ousToProcess = append(ousToProcess, cfg.OU)
-	}
-	ousToProcess = append(ousToProcess, cfg.OUs...)
+	ousToProcess := cfg.OUs
 
 	// Discover by OUs
 	if len(ousToProcess) > 0 {
@@ -59,12 +53,12 @@ func (d *DiscoveryService) discoverFromOrganizations(cfg *OrganizationsDiscovery
 		accounts = append(accounts, allAccounts...)
 	}
 
-	// Filter by tags if specified (legacy format)
+	// Filter by simple tag map if specified
 	if len(cfg.Tags) > 0 {
 		accounts = filterAccountsByTags(accounts, cfg.Tags)
 	}
 
-	// Filter by enhanced tag filters if specified (v1.2.0)
+	// Filter by tag predicates if specified
 	if len(cfg.TagFilters) > 0 {
 		combination := cfg.TagCombination
 		if combination == "" {

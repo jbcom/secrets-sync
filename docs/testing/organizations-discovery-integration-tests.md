@@ -56,7 +56,8 @@ dynamic_targets:
   test_ou_discovery:
     discovery:
       organizations:
-        ou: "ou-xxxx-development"
+        ous:
+          - "ou-xxxx-development"
     imports:
       - test-secrets
 ```
@@ -84,7 +85,8 @@ dynamic_targets:
   test_recursive_discovery:
     discovery:
       organizations:
-        ou: "ou-xxxx-workloads"
+        ous:
+          - "ou-xxxx-workloads"
         recursive: true
     imports:
       - test-secrets
@@ -148,7 +150,8 @@ dynamic_targets:
   test_combined_filtering:
     discovery:
       organizations:
-        ou: "ou-xxxx-production"
+        ous:
+          - "ou-xxxx-production"
         tags:
           Environment: production
     imports:
@@ -184,7 +187,8 @@ dynamic_targets:
   test_recursive_with_tags:
     discovery:
       organizations:
-        ou: "ou-xxxx-workloads"
+        ous:
+          - "ou-xxxx-workloads"
         recursive: true
         tags:
           AutoManaged: enabled
