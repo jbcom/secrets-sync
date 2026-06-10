@@ -8,9 +8,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub release](https://img.shields.io/github/release/jbcom/secrets-sync.svg)](https://github.com/jbcom/secrets-sync/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jbcom/secrets-sync)](https://goreportcard.com/report/github.com/jbcom/secrets-sync)
-[![Python Bindings](https://img.shields.io/badge/python-bindings-blue.svg)](./python/)
+[![Python Integration](https://img.shields.io/badge/python-integration-blue.svg)](./docs/PYTHON_BINDINGS.md)
 
-[Quick Start](#quick-start) • [Repo Docs](./docs/) • [Python Bindings](#python-bindings) • [Examples](./examples/) • [GitHub Action](./docs/GITHUB_ACTIONS.md)
+[Quick Start](#quick-start) • [Repo Docs](./docs/) • [Python Integration](#python-integration) • [Examples](./examples/) • [GitHub Action](./docs/GITHUB_ACTIONS.md)
 
 </div>
 
@@ -22,7 +22,11 @@ SecretSync provides **fully automated, enterprise-grade secret synchronization**
 
 SecretSync is an independent [jbcom/secrets-sync](https://github.com/jbcom/secrets-sync) repository and MIT-licensed release artifact for secret synchronization workflows.
 
-**🐍 Python Integration**: SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling seamless integration with the [extended-data](https://github.com/jbcom/extended-data) Python package and Python-based AI agents.
+**🐍 Python Integration**: SecretSync is available to Python through the
+[extended-data](https://github.com/jbcom/extended-data) `extended-data[secrets]`
+connector, which executes the supported `secretsync` CLI contract. This repo
+also keeps direct [gopy](https://github.com/go-python/gopy) binding sources for
+local experiments.
 
 **🚀 Perfect for:** Multi-account AWS environments, Kubernetes deployments, CI/CD pipelines, and enterprise secret management at scale.
 
@@ -125,9 +129,15 @@ cd secrets-sync
 make build
 ```
 
-## Python Bindings
+## Python Integration
 
-SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling integration with Python applications and AI agent frameworks.
+The recommended Python surface is the `extended-data[secrets]` connector. It
+uses the `secretsync` CLI and returns mapping-style `ExtendedDict` payloads from
+configuration, dry-run, merge, sync, and full pipeline operations.
+
+The repository also includes direct gopy binding sources under `python/` for
+local binding experiments. Those bindings are not the runtime contract used by
+`extended-data`.
 
 ### Building Python Bindings
 
@@ -153,8 +163,7 @@ pip install extended-data[secrets]
 ```
 
 This installs the Python connector surface. To execute the full pipeline from
-Python, make sure the `secretsync` CLI is installed or the native bindings have
-been built in the current environment.
+Python, make sure the `secretsync` CLI is installed and available on `PATH`.
 
 ```python
 from extended_data.secrets import SecretsConnector
@@ -163,19 +172,21 @@ from extended_data.secrets import SecretsConnector
 connector = SecretsConnector()
 
 # Validate configuration
-is_valid, message = connector.validate_config("pipeline.yaml")
+validation = connector.validate_config("pipeline.yaml")
+if not validation["valid"]:
+    raise SystemExit(validation["message"])
 
 # Dry run to see what would change
 result = connector.dry_run("pipeline.yaml")
-print(f"Would sync {result.secrets_processed} secrets")
-print(f"  Add: {result.secrets_added}")
-print(f"  Modify: {result.secrets_modified}")
-print(f"  Remove: {result.secrets_removed}")
+print(f"Would sync {result['secrets_processed']} secrets")
+print(f"  Add: {result['secrets_added']}")
+print(f"  Modify: {result['secrets_modified']}")
+print(f"  Remove: {result['secrets_removed']}")
 
 # Execute the full pipeline
 result = connector.run_pipeline("pipeline.yaml")
-if result.success:
-    print(f"Successfully synced {result.secrets_added} secrets")
+if result["success"]:
+    print(f"Successfully synced {result['secrets_added']} secrets")
 ```
 
 ### AI Agent Integration

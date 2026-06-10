@@ -1,10 +1,17 @@
-# Python Bindings
+# Python Integration
 
-SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling seamless integration with Python applications, AI agents, and the `extended-data` Python package.
+SecretSync is available to Python through the `extended-data[secrets]`
+connector. That connector executes the supported `secretsync` CLI contract and
+returns mapping-style `ExtendedDict` payloads for configuration inspection,
+dry-run, merge, sync, and full pipeline operations.
+
+This repository also includes direct [gopy](https://github.com/go-python/gopy)
+binding sources under `python/` for local experiments. Those bindings are not
+the runtime adapter contract used by `extended-data`.
 
 ## Overview
 
-The Python bindings expose the core SecretSync functionality:
+The `extended-data` connector exposes the core SecretSync functionality:
 
 - **Pipeline execution**: Run merge, sync, or full pipeline operations
 - **Configuration validation**: Validate YAML configuration files
@@ -22,17 +29,17 @@ pip install extended-data[secrets]
 ```
 
 This provides:
-- Native bindings when available (fastest)
-- CLI fallback when bindings aren't installed
+- CLI execution through the stable `secretsync` command
+- Mapping-style `ExtendedDict` results
 - AI framework integrations (LangChain, CrewAI, Strands)
 - MCP server support
 
 To execute the full pipeline from Python, keep the `secretsync` CLI installed
-or build the native bindings in the current environment.
+and available on `PATH`.
 
-### Option 2: Build Native Bindings
+### Option 2: Build Direct gopy Bindings
 
-For maximum performance, build the native Python bindings:
+For local experiments with direct Go-to-Python bindings:
 
 ```bash
 # Prerequisites
@@ -47,17 +54,17 @@ make python-bindings
 make python-install
 ```
 
-### Option 3: CLI-only Mode
+### CLI Requirement
 
-If you have the `secretsync` CLI installed, the Python connector will use it automatically:
+The `extended-data` connector requires the `secretsync` CLI:
 
 ```bash
 go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
 pip install extended-data[secrets]
 ```
 
-CLI fallback mode relies on `secretsync pipeline --output json`, which emits
-the same stable result envelope for dry-run and apply runs. Diff data is nested
+The connector relies on `secretsync pipeline --output json`, which emits the
+same stable result envelope for dry-run and apply runs. Diff data is nested
 under `diff` and `diff_output` when diff computation is enabled.
 
 ## Usage
@@ -70,19 +77,18 @@ from extended_data.secrets import SecretsConnector
 # Initialize connector
 connector = SecretsConnector()
 
-# Check which mode is active
-print(f"Native bindings: {connector.native_available}")
+# Check that the CLI can be found
 print(f"CLI available: {connector.cli_available}")
 
 # Validate a configuration file
-is_valid, message = connector.validate_config("pipeline.yaml")
-if not is_valid:
-    print(f"Invalid config: {message}")
+validation = connector.validate_config("pipeline.yaml")
+if not validation["valid"]:
+    print(f"Invalid config: {validation['message']}")
 
 # Get configuration info
 info = connector.get_config_info("pipeline.yaml")
-print(f"Sources: {info.sources}")
-print(f"Targets: {info.targets}")
+print(f"Sources: {info['sources']}")
+print(f"Targets: {info['targets']}")
 ```
 
 ### Dry Run
@@ -95,16 +101,16 @@ from extended_data.secrets import SecretsConnector
 connector = SecretsConnector()
 result = connector.dry_run("pipeline.yaml")
 
-print(f"Would process {result.target_count} targets")
-print(f"  Secrets to add: {result.secrets_added}")
-print(f"  Secrets to modify: {result.secrets_modified}")
-print(f"  Secrets to remove: {result.secrets_removed}")
-print(f"  Unchanged: {result.secrets_unchanged}")
+print(f"Would process {result['target_count']} targets")
+print(f"  Secrets to add: {result['secrets_added']}")
+print(f"  Secrets to modify: {result['secrets_modified']}")
+print(f"  Secrets to remove: {result['secrets_removed']}")
+print(f"  Unchanged: {result['secrets_unchanged']}")
 
-# View the diff output
-if result.diff_output:
-    print("\nDiff:")
-    print(result.diff_output)
+# Diff output may contain secret values. Inspect it only in a secure terminal
+# or through a redacted reporting path.
+if result["diff_output"]:
+    print("Diff output returned; not printing it from the example.")
 ```
 
 ### Running the Pipeline
@@ -130,10 +136,10 @@ options = SyncOptions(
 )
 result = connector.run_pipeline("pipeline.yaml", options)
 
-if result.success:
-    print(f"Synced {result.secrets_added} secrets in {result.duration_ms}ms")
+if result["success"]:
+    print(f"Synced {result['secrets_added']} secrets in {result['duration_ms']}ms")
 else:
-    print(f"Error: {result.error_message}")
+    print("Pipeline failed. Re-run secretsync directly in a secure terminal for diagnostics.")
 ```
 
 ### Merge and Sync Phases
@@ -230,33 +236,24 @@ Configure in your MCP client:
 }
 ```
 
-## Performance
-
-| Mode | Relative Speed | Use Case |
-|------|----------------|----------|
-| Native bindings | 1x (fastest) | Production workloads |
-| CLI subprocess | ~2-5x slower | Development and local fallback |
-
-The connector automatically uses native bindings when available.
-
 ## Error Handling
 
 ```python
-from extended_data.secrets import SecretsConnector, SyncResult
+from extended_data.secrets import SecretsConnector
 
 connector = SecretsConnector()
 result = connector.run_pipeline("pipeline.yaml")
 
-if not result.success:
-    print(f"Pipeline failed: {result.error_message}")
+if not result["success"]:
+    print("Pipeline failed. Re-run secretsync directly in a secure terminal for diagnostics.")
     
     # Check detailed results
     import json
-    if result.results_json:
-        details = json.loads(result.results_json)
+    if result["results_json"]:
+        details = json.loads(result["results_json"])
         for target_result in details:
             if not target_result.get("success"):
-                print(f"  {target_result['target']}: {target_result.get('error')}")
+                print(f"  {target_result['target']}: failed")
 ```
 
 ## Environment Variables

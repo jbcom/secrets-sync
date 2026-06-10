@@ -3,6 +3,7 @@ package secretsync_test
 import (
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -101,6 +102,54 @@ func TestGettingStartedUsesCurrentPipelineConfigShape(t *testing.T) {
 			if strings.Contains(text, forbidden) {
 				t.Fatalf("%s should not document stale config shape %q", path, forbidden)
 			}
+		}
+	}
+}
+
+func TestPythonDocsUseExtendedDataCLIContract(t *testing.T) {
+	attributeStyleResult := regexp.MustCompile(`\bresult\.`)
+	paths := []string{"README.md", "docs/PYTHON_BINDINGS.md"}
+	forbidden := []string{
+		"native_available",
+		"Native bindings",
+		"native bindings",
+		"CLI fallback",
+		"bindings aren't installed",
+		"is_valid, message",
+		"print(result[\"diff_output\"])",
+	}
+
+	for _, path := range paths {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+		text := string(content)
+
+		for _, phrase := range forbidden {
+			if strings.Contains(text, phrase) {
+				t.Fatalf("%s should not document stale Python integration surface %q", path, phrase)
+			}
+		}
+		if attributeStyleResult.MatchString(text) {
+			t.Fatalf("%s should use mapping-style result access, not result.attribute examples", path)
+		}
+	}
+
+	content, err := os.ReadFile("docs/PYTHON_BINDINGS.md")
+	if err != nil {
+		t.Fatalf("read docs/PYTHON_BINDINGS.md: %v", err)
+	}
+	text := string(content)
+	for _, required := range []string{
+		"connector.cli_available",
+		"validation = connector.validate_config",
+		"result[\"success\"]",
+		"result['secrets_added']",
+		"secretsync pipeline --output json",
+	} {
+		if !strings.Contains(text, required) {
+			t.Fatalf("docs/PYTHON_BINDINGS.md should document current Python contract %q", required)
 		}
 	}
 }
