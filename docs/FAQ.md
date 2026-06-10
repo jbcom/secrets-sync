@@ -158,9 +158,9 @@ targets:
 
 ## Features
 
-### What's new in v1.2.0?
+### What's included in the current feature set?
 
-Major new features:
+Major features:
 - **Enhanced AWS Organizations Discovery** with tag filtering and wildcards
 - **AWS Identity Center Integration** for permission set discovery
 - **Secret Versioning System** with S3-based storage and rollback

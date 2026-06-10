@@ -150,7 +150,7 @@ aws secretsmanager list-secrets --query 'SecretList[?starts_with(Name, `myapp/`)
 
 ### Enable Advanced Features
 
-#### 1. Add Observability (v1.1.0)
+#### 1. Add Observability
 
 ```bash
 # Run with metrics endpoint
@@ -161,7 +161,7 @@ curl http://localhost:9090/metrics
 curl http://localhost:9090/health
 ```
 
-#### 2. Enhanced Diff Output (v1.2.0)
+#### 2. Enhanced Diff Output
 
 ```bash
 # Side-by-side comparison
@@ -175,7 +175,7 @@ JSON output is a stable pipeline result envelope with success status, aggregate
 secret counts, per-phase `results`, and nested `diff`/`diff_output` fields when
 diff computation is enabled.
 
-#### 3. Secret Versioning (v1.2.0)
+#### 3. Secret Versioning
 
 Add to your config:
 ```yaml
@@ -185,7 +185,7 @@ versioning:
   retention_days: 90
 ```
 
-#### 4. AWS Organizations Discovery (v1.2.0)
+#### 4. AWS Organizations Discovery
 
 ```yaml
 discovery:

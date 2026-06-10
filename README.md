@@ -39,24 +39,24 @@ SecretSync is an independent [jbcom/secrets-sync](https://github.com/jbcom/secre
 
 ## ✨ Key Features
 
-### 🔍 **Advanced Discovery** (v1.2.0)
+### 🔍 **Advanced Discovery**
 - **AWS Organizations Integration**: Discover accounts with tag filtering, wildcards, and OU-based selection
 - **AWS Identity Center**: Permission set discovery and account assignment mapping
 - **Smart Caching**: Multi-level caching for optimal performance at scale
 
-### 📚 **Secret Versioning** (v1.2.0)
+### 📚 **Secret Versioning**
 - **Complete Audit Trail**: Track every secret change with metadata
 - **S3-Based Storage**: Reliable, scalable version history
 - **Rollback Capability**: CLI support for version rollback
 - **Retention Policies**: Configurable cleanup of old versions
 
-### 🎨 **Enhanced Diff Output** (v1.2.0)
+### 🎨 **Enhanced Diff Output**
 - **Side-by-Side Comparison**: Visual diff with aligned columns and color coding
 - **Intelligent Masking**: Automatic detection and masking of sensitive values
 - **Multiple Formats**: Human, JSON, GitHub Actions, and compact outputs
 - **Rich Statistics**: Detailed change counts, sizes, and timing
 
-### 🛡️ **Enterprise Reliability** (v1.1.0)
+### 🛡️ **Enterprise Reliability**
 - **Circuit Breakers**: Automatic failure detection and recovery
 - **Prometheus Metrics**: Production-ready observability with `/metrics` endpoint
 - **Request Tracking**: Unique request IDs and duration tracking
@@ -199,16 +199,16 @@ crewai_tools = get_tools("crewai")
 # Validate configuration
 secretsync validate --config pipeline.yaml
 
-# Dry run with enhanced diff output (v1.2.0)
+# Dry run with enhanced diff output
 secretsync pipeline --config pipeline.yaml --dry-run --output side-by-side
 
-# Full pipeline execution with metrics (v1.1.0)
+# Full pipeline execution with metrics
 secretsync pipeline --config pipeline.yaml --metrics-port 9090
 
 # CI/CD mode (exit codes: 0=no changes, 1=changes, 2=errors)
 secretsync pipeline --config pipeline.yaml --dry-run --exit-code
 
-# Version management (v1.2.0)
+# Version management
 secretsync versions --secret-path "app/database/password"
 secretsync sync --version 5 --target production
 ```
@@ -216,7 +216,7 @@ secretsync sync --version 5 --target production
 ### Example Configuration
 
 ```yaml
-# pipeline.yaml - v1.2.0 with advanced features
+# pipeline.yaml - advanced features
 vault:
   address: "https://vault.example.com"
   namespace: "admin"
@@ -225,7 +225,7 @@ aws:
   region: "us-east-1"
   execution_role_pattern: "arn:aws:iam::{account_id}:role/SecretsSync"
 
-# Advanced discovery (v1.2.0)
+# Advanced discovery
 discovery:
   aws_organizations:
     enabled: true
@@ -246,13 +246,13 @@ discovery:
     region: "us-east-1"
     cache_ttl: "30m"
 
-# Secret versioning (v1.2.0)
+# Secret versioning
 versioning:
   enabled: true
   s3_bucket: "company-secretsync-versions"
   retention_days: 90
 
-# Observability (v1.1.0)
+# Observability
 observability:
   metrics:
     enabled: true
@@ -327,17 +327,17 @@ See [GitHub Actions documentation](./docs/GITHUB_ACTIONS.md) for complete usage 
     secretsync pipeline --config pipeline.yaml
 ```
 
-### Output Formats (Enhanced in v1.2.0)
+### Output Formats
 
 | Format | Use Case | Features |
 |--------|----------|----------|
 | `human` | Interactive terminal output | Color coding, readable layout |
-| `side-by-side` | **NEW** Visual comparison | Aligned columns, intelligent masking |
+| `side-by-side` | Visual comparison | Aligned columns, intelligent masking |
 | `json` | Machine parsing, logging | Structured data with metadata |
 | `github` | GitHub Actions annotations | PR comments, file annotations |
 | `compact` | One-line CI status | Minimal output for scripts |
 
-**Value Masking (v1.2.0)**: Sensitive values are automatically masked by default. Use `--show-values` flag to display actual values (use with caution in CI/CD).
+**Value Masking**: Sensitive values are automatically masked by default. Use `--show-values` flag to display actual values (use with caution in CI/CD).
 
 ## 📚 Documentation
 
