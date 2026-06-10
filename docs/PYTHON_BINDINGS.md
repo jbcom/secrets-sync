@@ -235,7 +235,7 @@ Configure in your MCP client:
 | Mode | Relative Speed | Use Case |
 |------|----------------|----------|
 | Native bindings | 1x (fastest) | Production workloads |
-| CLI subprocess | ~2-5x slower | Development, compatibility |
+| CLI subprocess | ~2-5x slower | Development and local fallback |
 
 The connector automatically uses native bindings when available.
 

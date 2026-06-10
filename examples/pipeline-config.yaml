@@ -117,11 +117,11 @@ sources:
   #     mount: secrets
 
   # Import existing secrets from AWS account
-  # legacy-secrets:
+  # imported-secrets:
   #   aws:
   #     account_id: "999999999999"
   #     region: us-east-1
-  #     prefix: "/legacy/"
+  #     prefix: "/imported/"
 
 # =============================================================================
 # Merge Store

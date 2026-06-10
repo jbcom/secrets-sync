@@ -135,14 +135,14 @@ func TestDiffSecrets_ComplexScenario(t *testing.T) {
 		"api-keys/stripe":   map[string]interface{}{"KEY": "sk_xxx"},
 		"api-keys/datadog":  map[string]interface{}{"API_KEY": "dd_xxx"},
 		"database/postgres": map[string]interface{}{"HOST": "old.db.com", "PASSWORD": "old"},
-		"legacy/config":     map[string]interface{}{"OLD": "value"},
+		"retired/config":    map[string]interface{}{"OLD": "value"},
 	}
 	desired := map[string]interface{}{
 		"api-keys/stripe":   map[string]interface{}{"KEY": "sk_xxx"},                         // unchanged
 		"api-keys/datadog":  map[string]interface{}{"API_KEY": "dd_yyy"},                     // modified
 		"database/postgres": map[string]interface{}{"HOST": "new.db.com", "PASSWORD": "new"}, // modified
 		"api-keys/newrelic": map[string]interface{}{"KEY": "nr_xxx"},                         // added
-		// legacy/config removed
+		// retired/config removed
 	}
 
 	changes := DiffSecrets(current, desired)

@@ -68,7 +68,8 @@ dynamic_targets:
   dev_accounts:
     discovery:
       organizations:
-        ou: "ou-xxxx-development"
+        ous:
+          - "ou-xxxx-development"
         recursive: true
         # Fuzzy match account names to target configs
         name_matching:

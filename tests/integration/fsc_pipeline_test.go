@@ -1,4 +1,4 @@
-// Package integration provides FSC-compatible end-to-end tests.
+// Package integration provides FSC pipeline-shape end-to-end tests.
 // These tests validate the complete pipeline with realistic patterns:
 // - Multi-tier target inheritance (Staging → Production → Demo)
 // - Deepmerge strategies (list append, dict merge, scalar override)
@@ -46,8 +46,8 @@ type AccountData struct {
 	} `json:"organizational_units"`
 }
 
-// TestFSCCompatibilityFullPipeline validates the complete FSC-compatible workflow
-func TestFSCCompatibilityFullPipeline(t *testing.T) {
+// TestFSCPipelineFullFlow validates the complete FSC-style workflow.
+func TestFSCPipelineFullFlow(t *testing.T) {
 	skipIfNoIntegrationEnv(t)
 	ctx := context.Background()
 

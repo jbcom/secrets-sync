@@ -150,7 +150,7 @@ They can, but documentation should recommend a component release tag because
 ### Should we publish a `v1` alias?
 
 Only if maintainers decide to update that alias intentionally for every
-compatible release. Release-please will not maintain it automatically.
+supported release. Release-please will not maintain it automatically.
 
 ### Does the Marketplace release publish binary assets?
 

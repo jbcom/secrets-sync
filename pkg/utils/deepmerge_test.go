@@ -374,8 +374,8 @@ func TestDeepMerge_MultipleImports(t *testing.T) {
 	}
 }
 
-// TestDeepMerge_FSCCompatibility tests specific FSC use cases for FlipsideCrypto compatibility
-func TestDeepMerge_FSCCompatibility(t *testing.T) {
+// TestDeepMerge_FSCUseCases tests specific FSC deep-merge use cases.
+func TestDeepMerge_FSCUseCases(t *testing.T) {
 	t.Run("3+ level deep nesting", func(t *testing.T) {
 		// FSC has deeply nested config structures
 		dst := map[string]interface{}{
@@ -553,7 +553,7 @@ func TestDeepMerge_FSCCompatibility(t *testing.T) {
 		}
 	})
 
-	t.Run("JSON round-trip compatibility", func(t *testing.T) {
+	t.Run("JSON round trip", func(t *testing.T) {
 		// Verify that merging works correctly through JSON serialization
 		dstJSON := []byte(`{
 			"api_keys": {"stripe": "sk_test_123"},
