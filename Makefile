@@ -40,8 +40,8 @@ python-bindings:
 	@mkdir -p $(PYTHON_OUTPUT)
 	$(GOPY) pkg -output=$(PYTHON_OUTPUT) -vm=$(PYTHON) -name=$(PYTHON_PKG) \
 		-version=$(VERSION) \
-		-author="Extended Data Library" \
-		-email="support@extended-data.dev" \
+		-author="jbcom" \
+		-email="jon@jonbogaty.com" \
 		-url="https://github.com/jbcom/secrets-sync" \
 		-desc="Enterprise-grade secret synchronization pipeline with Python bindings" \
 		./python/secretssync

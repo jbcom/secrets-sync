@@ -18,11 +18,11 @@
 
 SecretSync provides **fully automated, enterprise-grade secret synchronization** across multiple cloud providers and secret stores. Built for scale with a **two-phase pipeline architecture** (merge → sync), it supports inheritance, dynamic target discovery, and CI/CD-friendly diff reporting.
 
-## 🏢 Part of Extended Data Library
+## 🏢 Independent Repository, Extended Data Integration
 
-SecretSync is part of the [Extended Data Library](https://github.com/jbcom/secrets-sync) ecosystem - a collection of high-performance, enterprise-grade tools for data management, secret handling, and infrastructure automation.
+SecretSync is an independent [jbcom/secrets-sync](https://github.com/jbcom/secrets-sync) repository and MIT-licensed release artifact for secret synchronization workflows.
 
-**🐍 Python Integration**: SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling seamless integration with the [extended-data](https://github.com/jbcom/extended-data) library and Python-based AI agents.
+**🐍 Python Integration**: SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling seamless integration with the [extended-data](https://github.com/jbcom/extended-data) Python package and Python-based AI agents.
 
 **🚀 Perfect for:** Multi-account AWS environments, Kubernetes deployments, CI/CD pipelines, and enterprise secret management at scale.
 
@@ -381,7 +381,7 @@ helm install secretsync secretsync/secretsync \
 ```bash
 # Run with config file
 docker run -v $(pwd)/config.yaml:/config.yaml \
-  jbcom/secrets-sync-secretssync pipeline --config /config.yaml
+  jbcom/secretssync:v1 pipeline --config /config.yaml
 
 # Multi-arch images available: linux/amd64, linux/arm64
 ```

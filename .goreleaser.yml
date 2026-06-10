@@ -98,23 +98,18 @@ release:
 
     ### Installation
 
-    **Docker:**
-    ```bash
-    docker pull jbcom/secretssync:{{ .Version }}
-    ```
-
-    **Helm (OCI):**
-    ```bash
-    helm install secretsync oci://registry-1.docker.io/jbcom/secretssync --version {{ .Version }}
-    ```
-
     **Binary:**
     Download from the assets below for your platform.
+
+    **Go install:**
+    ```bash
+    go install github.com/jbcom/secrets-sync/cmd/secretsync@{{ .Tag }}
+    ```
 
   footer: |
     ---
     **Full Changelog**: https://github.com/jbcom/secrets-sync/compare/{{ .PreviousTag }}...{{ .Tag }}
 
-# Docker images and Helm charts are built/pushed separately
-# via dedicated workflow jobs for better control
+# Container and chart artifacts are outside this binary release workflow.
+# Keep release notes limited to artifacts built here.
 dockers: []

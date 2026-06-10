@@ -1,6 +1,6 @@
 # Python Bindings
 
-SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling seamless integration with Python applications, AI agents, and the Extended Data Library packages.
+SecretSync provides Python bindings via [gopy](https://github.com/go-python/gopy), enabling seamless integration with Python applications, AI agents, and the `extended-data` Python package.
 
 ## Overview
 

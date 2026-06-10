@@ -8,7 +8,7 @@
 ## Install the CLI
 
 ```bash
-# Install the latest CLI from the monorepo module path
+# Install the latest CLI from the standalone module path
 go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
 ```
 
@@ -34,7 +34,7 @@ make build
 
 ## GitHub Action
 
-Use the packaged action from the monorepo subdirectory and pin to a package tag:
+Use the packaged action from this standalone repository and pin to a release tag:
 
 ```yaml
 - uses: jbcom/secrets-sync@secretssync-v2.0.2
