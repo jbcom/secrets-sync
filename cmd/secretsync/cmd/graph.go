@@ -21,8 +21,8 @@ The graph shows:
 - Execution order (by dependency level)
 
 Examples:
-  vss graph --config config.yaml
-  vss graph --config config.yaml --format dot`,
+  secretsync graph --config config.yaml
+  secretsync graph --config config.yaml --format dot`,
 	RunE: runGraph,
 }
 

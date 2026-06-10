@@ -71,7 +71,7 @@ dynamic_targets:
 **Validation:**
 ```bash
 # Run the pipeline in dry-run mode
-./vss pipeline --config test-config.yaml --dry-run
+secretsync pipeline --config test-config.yaml --dry-run
 
 # Verify discovered targets in output
 # Should show accounts directly in the OU only
@@ -106,7 +106,7 @@ aws organizations list-organizational-units-for-parent --parent-id ou-xxxx-workl
 # Then check each child OU
 
 # Compare with discovery output
-./vss pipeline --config test-config.yaml --dry-run | grep "Discovered target"
+secretsync pipeline --config test-config.yaml --dry-run | grep "Discovered target"
 ```
 
 ### Test 3: Tag-Based Filtering (All Accounts)
@@ -139,7 +139,7 @@ for account in $(aws organizations list-accounts --query 'Accounts[].Id' --outpu
 done
 
 # Compare with discovery output
-./vss pipeline --config test-config.yaml --dry-run
+secretsync pipeline --config test-config.yaml --dry-run
 ```
 
 ### Test 4: Combined OU and Tag Filtering
@@ -176,7 +176,7 @@ for account in $(aws organizations list-accounts-for-parent --parent-id ou-xxxx-
 done
 
 # Run discovery
-./vss pipeline --config test-config.yaml --dry-run
+secretsync pipeline --config test-config.yaml --dry-run
 ```
 
 ### Test 5: Recursive OU with Tag Filtering
@@ -206,7 +206,7 @@ dynamic_targets:
 ```bash
 # This requires checking all accounts in the OU hierarchy
 # and verifying they have the required tags
-./vss pipeline --config test-config.yaml --dry-run --log-level debug
+secretsync pipeline --config test-config.yaml --dry-run --log-level debug
 ```
 
 ### Test 6: Account Name Resolution
@@ -231,7 +231,7 @@ dynamic_targets:
 **Validation:**
 ```bash
 # Check that discovered targets have meaningful names
-./vss pipeline --config test-config.yaml --dry-run | grep "Discovered target"
+secretsync pipeline --config test-config.yaml --dry-run | grep "Discovered target"
 
 # Names should be sanitized:
 # "Analytics Sandbox" → "Analytics_Sandbox"
@@ -260,7 +260,7 @@ dynamic_targets:
 ### Enable Debug Logging
 
 ```bash
-./vss pipeline --config config.yaml --dry-run --log-level debug
+secretsync pipeline --config config.yaml --dry-run --log-level debug
 ```
 
 ### Common Issues

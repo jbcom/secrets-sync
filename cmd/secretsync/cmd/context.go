@@ -25,8 +25,8 @@ This shows:
 Understanding your execution context is critical for multi-account operations.
 
 Examples:
-  vss context
-  vss context --config config.yaml`,
+  secretsync context
+  secretsync context --config config.yaml`,
 	RunE: runContext,
 }
 

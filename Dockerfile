@@ -59,8 +59,6 @@ WORKDIR /app
 RUN mkdir -p /etc/ssl/certs
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /out/secretsync /usr/local/bin/secretsync
-# Keep vss as a symlink for backwards compatibility
-RUN ln -s /usr/local/bin/secretsync /usr/local/bin/vss
 
 # Default command - Viper reads SECRETSYNC_* env vars directly
 ENTRYPOINT ["/usr/local/bin/secretsync"]

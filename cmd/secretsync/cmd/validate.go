@@ -22,8 +22,8 @@ Checks:
 - AWS execution context (optional)
 
 Examples:
-  vss validate --config config.yaml
-  vss validate --config config.yaml --check-aws`,
+  secretsync validate --config config.yaml
+  secretsync validate --config config.yaml --check-aws`,
 	RunE: runValidate,
 }
 
