@@ -38,24 +38,32 @@ func TestMarkdownFencedCodeBlocksAreBalanced(t *testing.T) {
 }
 
 func TestDeploymentGuideUsesCurrentPipelineSurface(t *testing.T) {
-	content, err := os.ReadFile("docs/DEPLOYMENT.md")
-	if err != nil {
-		t.Fatalf("read docs/DEPLOYMENT.md: %v", err)
-	}
-
-	text := string(content)
+	paths := []string{"docs/ARCHITECTURE.md", "docs/DEPLOYMENT.md"}
 	for _, required := range []string{
 		"secretsync pipeline",
 		"--dry-run",
 		"--diff",
 		"--output json",
 		"kind: CronJob",
-		"jbcom/secrets-sync@secrets-sync-vX.Y.Z",
 	} {
-		if !strings.Contains(text, required) {
-			t.Fatalf("docs/DEPLOYMENT.md should document current deployment surface %q", required)
+		for _, path := range paths {
+			content, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatalf("read %s: %v", path, err)
+			}
+			if !strings.Contains(string(content), required) {
+				t.Fatalf("%s should document current deployment surface %q", path, required)
+			}
 		}
 	}
+	deploymentGuide, err := os.ReadFile("docs/DEPLOYMENT.md")
+	if err != nil {
+		t.Fatalf("read docs/DEPLOYMENT.md: %v", err)
+	}
+	if !strings.Contains(string(deploymentGuide), "jbcom/secrets-sync@secrets-sync-vX.Y.Z") {
+		t.Fatal("docs/DEPLOYMENT.md should document the GitHub Action release tag")
+	}
+
 	for _, forbidden := range []string{
 		"Vault Secrets Sync service",
 		"Event Server",
@@ -64,10 +72,24 @@ func TestDeploymentGuideUsesCurrentPipelineSurface(t *testing.T) {
 		"-events",
 		"memory queue",
 		"microservices mode",
+		"REST webhook endpoint",
+		"SecretSync resources",
 	} {
-		if strings.Contains(text, forbidden) {
-			t.Fatalf("docs/DEPLOYMENT.md should not document stale deployment surface %q", forbidden)
+		for _, path := range paths {
+			content, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatalf("read %s: %v", path, err)
+			}
+			if strings.Contains(string(content), forbidden) {
+				t.Fatalf("%s should not document stale deployment surface %q", path, forbidden)
+			}
 		}
+	}
+}
+
+func TestStaleArchitectureDiagramsAreNotPublished(t *testing.T) {
+	if _, err := os.Stat("docs/architecture"); !os.IsNotExist(err) {
+		t.Fatal("docs/architecture should not publish stale operator architecture diagrams")
 	}
 }
 

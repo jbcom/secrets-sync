@@ -12,7 +12,6 @@ func TestHelmChartUsesSecretSyncAPI(t *testing.T) {
 	paths := []string{
 		"deploy/charts/secretsync/Chart.yaml",
 		"deploy/charts/secretsync/values.yaml",
-		"docs/architecture/HLA-microservice.drawio",
 		"docs/USAGE.md",
 	}
 
