@@ -1,10 +1,12 @@
----
+{{- if and .Values.pipeline.enabled (not .Values.pipeline.existingConfigMap) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "secretsync.configMapName" . }}
   labels:
     {{- include "secretsync.labels" . | nindent 4 }}
+    {{- include "secretsync.selectorLabels" . | nindent 4 }}
 data:
   config.yaml: |
-  {{- .Values.config | toYaml | nindent 4 }}
+  {{- .Values.pipeline.config | toYaml | nindent 4 }}
+{{- end }}

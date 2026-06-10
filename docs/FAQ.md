@@ -96,17 +96,30 @@ path "secret/metadata/*" {
 Inheritance allows targets to import configuration from other targets:
 
 ```yaml
+sources:
+  common-secrets:
+    vault:
+      mount: common
+  staging-overrides:
+    vault:
+      mount: staging
+  prod-overrides:
+    vault:
+      mount: production
+
 targets:
   base:
     imports: [common-secrets]
   
   staging:
-    inherits: base  # Gets everything from base
-    imports: [staging-overrides]  # Plus staging-specific secrets
+    imports:
+      - base
+      - staging-overrides
   
   production:
-    inherits: staging  # Gets base + staging
-    imports: [prod-overrides]  # Plus production-specific secrets
+    imports:
+      - staging
+      - prod-overrides
 ```
 
 ### Can I sync to multiple AWS accounts?
@@ -116,14 +129,16 @@ Yes! Use cross-account IAM roles:
 ```yaml
 targets:
   dev-account:
-    aws_secretsmanager:
-      role_arn: "arn:aws:iam::111111111111:role/SecretSyncRole"
-      region: "us-east-1"
+    account_id: "111111111111"
+    role_arn: "arn:aws:iam::111111111111:role/SecretSyncRole"
+    region: "us-east-1"
+    imports: [shared-secrets]
   
   prod-account:
-    aws_secretsmanager:
-      role_arn: "arn:aws:iam::222222222222:role/SecretSyncRole"
-      region: "us-east-1"
+    account_id: "222222222222"
+    role_arn: "arn:aws:iam::222222222222:role/SecretSyncRole"
+    region: "us-east-1"
+    imports: [shared-secrets]
 ```
 
 ### How do I handle different environments?
@@ -199,8 +214,9 @@ targets:
     imports: [base-secrets]
   
   production:
-    inherits: staging  # Reads from merge store
-    imports: [prod-overrides]
+    imports:
+      - staging
+      - prod-overrides
 ```
 
 ### How does AWS Organizations discovery work?
@@ -208,19 +224,23 @@ targets:
 Automatically discover and sync to accounts based on tags and OUs:
 
 ```yaml
-discovery:
-  aws_organizations:
-    enabled: true
-    tag_filters:
-      - key: "Environment"
-        values: ["production", "staging"]
-        operator: "equals"
-      - key: "Team"
-        values: ["platform*"]
-        operator: "contains"
-    organizational_units:
-      - "ou-production-12345"
-    tag_logic: "AND"
+dynamic_targets:
+  production_and_staging:
+    discovery:
+      organizations:
+        ous:
+          - ou-production-12345
+        recursive: true
+        tag_filters:
+          - key: Environment
+            values: ["production", "staging"]
+            operator: equals
+          - key: Team
+            values: ["platform*"]
+            operator: contains
+        tag_combination: AND
+    imports:
+      - shared-secrets
 ```
 
 ## Operations
@@ -339,13 +359,15 @@ Common causes and solutions:
 3. **Region mismatch**:
    ```yaml
    # Ensure regions match
-   aws:
-     region: "us-east-1"
-   targets:
-     production:
-       aws_secretsmanager:
-         region: "us-east-1"  # Must match
-   ```
+  aws:
+    region: "us-east-1"
+  targets:
+    production:
+      account_id: "222222222222"
+      region: "us-east-1"
+      imports:
+        - shared-secrets
+  ```
 
 ### "Secret not found in Vault"
 

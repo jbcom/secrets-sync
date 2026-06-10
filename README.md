@@ -78,15 +78,16 @@ SecretSync originated as a fork of [robertlestak/vault-secret-sync](https://gith
 - Dynamic target discovery (AWS Organizations, Identity Center)
 - Comprehensive diff/dry-run system with CI/CD integration
 - DeepMerge semantics for secret aggregation
-- Kubernetes operator with CRD support
+- Kubernetes CronJob and Helm pipeline-runner deployment
 
 ## Supported Secret Stores
 
-| Store | Source | Target | Merge Store |
-|-------|--------|--------|-------------|
-| HashiCorp Vault (KV2) | ✅ | ✅ | ✅ |
+| Store | Source | Sync Target | Merge Store |
+|-------|--------|-------------|-------------|
+| HashiCorp Vault (KV2) | ✅ | ❌ | ✅ |
 | AWS Secrets Manager | ✅ | ✅ | ❌ |
 | AWS S3 | ❌ | ❌ | ✅ |
+| AWS Organizations | Discovery | ❌ | ❌ |
 | AWS Identity Center | Discovery | ❌ | ❌ |
 
 ## Two-Phase Pipeline Architecture
@@ -104,8 +105,7 @@ SecretSync originated as a fork of [robertlestak/vault-secret-sync](https://gith
 │                        SYNC PHASE                                │
 │  Merge Store ──┬──▶ AWS Account 1 (via STS AssumeRole)          │
 │  (or Source)   ├──▶ AWS Account 2                                │
-│                ├──▶ Vault Cluster                                │
-│                └──▶ GCP Project                                  │
+│                └──▶ AWS Account 3                                │
 └─────────────────────────────────────────────────────────────────┘
 ```
 

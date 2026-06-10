@@ -41,8 +41,10 @@ dynamic_targets:
     discovery:
       organizations:
         tags:
-          Environment: production
-          ManagedBy: platform-team
+          Environment:
+            - production
+          ManagedBy:
+            - platform-team
     imports:
       - prod-secrets
       - compliance-keys
@@ -59,8 +61,10 @@ dynamic_targets:
         ous:
           - "ou-xxxx-production"
         tags:
-          Workload: web-application
-          CostCenter: engineering
+          Workload:
+            - web-application
+          CostCenter:
+            - engineering
     imports:
       - web-app-secrets
       - ssl-certificates
@@ -76,8 +80,10 @@ dynamic_targets:
           - "ou-xxxx-sandboxes"
         recursive: true  # Search all child OUs too
         tags:
-          AutoCleanup: enabled
-          Owner: analytics-team
+          AutoCleanup:
+            - enabled
+          Owner:
+            - analytics-team
     imports:
       - sandbox-defaults
       - testing-credentials
@@ -113,8 +119,10 @@ dynamic_targets:
       # Second: also get accounts from Organizations by tags
       organizations:
         tags:
-          Platform: analytics
-          Environment: shared
+          Platform:
+            - analytics
+          Environment:
+            - shared
       # Third: also get accounts from an SSM parameter
       accounts_list:
         source: "ssm:/platform/analytics-accounts"
@@ -136,7 +144,8 @@ dynamic_targets:
           - "ou-xxxx-dev"
         recursive: true
         tags:
-          AutoProvision: enabled
+          AutoProvision:
+            - enabled
     imports:
       - dev-shared-config
       - testing-data
@@ -149,7 +158,8 @@ dynamic_targets:
         ous:
           - "ou-xxxx-staging"
         tags:
-          Environment: staging
+          Environment:
+            - staging
     imports:
       - dev-shared-config  # Inherit from dev
       - staging-specific   # Add staging-specific secrets
@@ -162,8 +172,10 @@ dynamic_targets:
         ous:
           - "ou-xxxx-production"
         tags:
-          Environment: production
-          Compliance: required
+          Environment:
+            - production
+          Compliance:
+            - required
     imports:
       - prod-secrets
       - pci-compliance-keys

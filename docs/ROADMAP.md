@@ -75,11 +75,11 @@ the independent SecretSync repository.
 - **Real-time Monitoring**: Live pipeline execution monitoring
 - **User Management**: Built-in user authentication and authorization
 
-#### 🔧 Operator Enhancements
-- **Kubernetes Operator v2**: Enhanced CRD-based management
-- **GitOps Integration**: ArgoCD/Flux integration for configuration management
+#### 🔧 Kubernetes Runtime
+- **GitOps Examples**: ArgoCD/Flux examples for scheduled pipeline runners
 - **Helm Chart Improvements**: Advanced deployment options
-- **Multi-Cluster Support**: Manage secrets across multiple clusters
+- **Multi-Cluster Patterns**: Run scoped pipeline jobs per cluster or account boundary
+- **Native API Research**: Evaluate a future controller only if it can be owned end to end
 
 #### 🌐 API & Integrations
 - **REST API**: Full REST API for programmatic access

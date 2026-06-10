@@ -5,7 +5,7 @@
 The secrets synchronization pipeline operates in two distinct phases:
 
 1. **MERGE Phase** (optional): Aggregate secrets from multiple sources into a unified pool
-2. **SYNC Phase**: Propagate secrets from source(s) to target(s)
+2. **SYNC Phase**: Propagate merged bundles into AWS Secrets Manager targets
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -25,7 +25,7 @@ The secrets synchronization pipeline operates in two distinct phases:
 │  │   └─────────┘  │     │  • Aggregation   │                           │    │
 │  │   ┌─────────┐  │     │  • Deduplication │                           │    │
 │  │   │ Source3 │──┘     │  • Inheritance   │                           │    │
-│  │   │ (HTTP)  │        │  • DeepMerge     │                           │    │
+│  │   │ (Vault) │        │  • DeepMerge     │                           │    │
 │  │   └─────────┘        └────────┬─────────┘                           │    │
 │  │                               │                                      │    │
 │  └───────────────────────────────┼──────────────────────────────────────┘    │
@@ -40,10 +40,10 @@ The secrets synchronization pipeline operates in two distinct phases:
 │  │   │   SOURCE         │────▶│  Target1 (AWS)  │                       │    │
 │  │   │   (Merge Store   │     └─────────────────┘                       │    │
 │  │   │    or Direct)    │     ┌─────────────────┐                       │    │
-│  │   │                  │────▶│  Target2 (Vault)│                       │    │
+│  │   │                  │────▶│ Target2 (AWS)   │                       │    │
 │  │   │                  │     └─────────────────┘                       │    │
 │  │   │                  │     ┌─────────────────┐                       │    │
-│  │   │                  │────▶│  Target3 (GCP)  │                       │    │
+│  │   │                  │────▶│ Target3 (AWS)   │                       │    │
 │  │   └──────────────────┘     └─────────────────┘                       │    │
 │  │                                                                       │    │
 │  └───────────────────────────────────────────────────────────────────────┘    │
@@ -84,23 +84,19 @@ For each target in topological order:
 
 ### SYNC Phase
 
-**Purpose**: Propagate secrets from source to target stores.
+**Purpose**: Propagate merged secrets into AWS Secrets Manager targets.
 
 **Source determination**:
 - If MERGE phase ran: Merge store becomes the source automatically
 - If SYNC-only: Explicitly configured source
 
 **Supported Store Combinations**:
-| Source | Target | Status |
-|--------|--------|--------|
-| Vault | AWS Secrets Manager | ✅ Supported |
-| Vault | Vault | ✅ Supported |
-| Vault | GCP Secret Manager | ✅ Supported |
-| Vault | GitHub Secrets | ✅ Supported |
-| Vault | Kubernetes Secrets | ✅ Supported |
-| AWS SM | AWS SM | ✅ Supported |
-| AWS SM | Vault | ✅ Supported |
-| S3 | AWS SM | ✅ Supported (via S3 merge store) |
+| Source or Merge Store | Target | Status |
+|-----------------------|--------|--------|
+| Vault KV2 | AWS Secrets Manager | ✅ Supported |
+| AWS Secrets Manager | AWS Secrets Manager | ✅ Supported |
+| Vault merge store | AWS Secrets Manager | ✅ Supported |
+| S3 merge store | AWS Secrets Manager | ✅ Supported |
 
 **Sync Process**:
 ```
@@ -276,12 +272,14 @@ targets:
     imports: [common-secrets]
   
   Staging:
-    inherits: Base
-    imports: [staging-secrets]
+    imports:
+      - Base
+      - staging-secrets
   
   Production:
-    inherits: Staging
-    imports: [production-secrets]
+    imports:
+      - Staging
+      - production-secrets
 ```
 
 **Processing Order**:
