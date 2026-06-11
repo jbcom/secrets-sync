@@ -12,6 +12,7 @@ func TestSecurityDocsDocumentLoggingContract(t *testing.T) {
 		"raw Vault secret",
 		"raw AWS secret",
 		"raw client structures",
+		"machine-readable `secretsync pipeline --output json` result envelopes redact",
 	}
 
 	for _, path := range []string{"docs/SECURITY.md", "docs/OBSERVABILITY.md"} {

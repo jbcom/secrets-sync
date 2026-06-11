@@ -82,6 +82,12 @@ only to secured sinks with appropriate retention. If a provider returns
 credentials in an error string, treat that upstream behavior as a provider or
 configuration issue and rotate the exposed credential.
 
+Machine-readable `secretsync pipeline --output json` result envelopes redact
+common secret-bearing fragments from top-level and per-target error strings
+before serialization. Treat `error_message`, per-target `error`, and
+`diff_output` as operationally sensitive when forwarding them to logs,
+dashboards, CI comments, or chat systems.
+
 ## Available Metrics
 
 ### Vault Metrics

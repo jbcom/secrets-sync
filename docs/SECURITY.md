@@ -23,6 +23,14 @@ operationally sensitive, but they should not contain the bytes being synced.
 Keep `--log-level debug` and `--log-level trace` restricted to trusted
 operators and secured log sinks.
 
+Machine-readable `secretsync pipeline --output json` result envelopes redact
+common secret-bearing diagnostic fragments in top-level and per-target error
+strings before serialization, including bearer tokens, password or token
+assignments, API key assignments, client secrets, and matching URL query
+parameters. Downstream consumers should still treat `error_message`, per-target
+`error`, and `diff_output` as operationally sensitive and avoid copying them to
+untrusted logs, comments, or chat systems without their own policy checks.
+
 ### Segregation of Duties
 
 SecretSync runs as an explicit pipeline command. Split duties by separating

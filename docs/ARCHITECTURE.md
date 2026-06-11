@@ -90,6 +90,9 @@ secretsync pipeline --config pipeline.yaml --output json
 ```
 
 The JSON result envelope contains pipeline success, target count, secret change
-counts, duration, per-target results, and optional diff output. Consumers should
-treat diff and error fields as potentially sensitive and redact or suppress
-them before writing logs, CI comments, or chat responses.
+counts, duration, per-target results, and optional diff output. SecretSync
+redacts common bearer tokens, password or token assignments, API key
+assignments, client secrets, and matching URL query parameters from top-level
+and per-target error strings before serializing this envelope. Consumers should
+still treat diff and error fields as operationally sensitive and apply their own
+policy before writing logs, CI comments, or chat responses.
