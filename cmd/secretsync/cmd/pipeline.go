@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"regexp"
 	"sort"
 	"strings"
 	"syscall"
@@ -28,6 +29,12 @@ var (
 	exitCodeMode    bool
 	continueOnError bool
 	parallelism     int
+)
+
+var (
+	bearerTokenPattern           = regexp.MustCompile(`(?i)\bBearer\s+[A-Za-z0-9._~+/=-]+`)
+	sensitiveAssignmentPattern   = regexp.MustCompile(`(?i)\b(password|passwd|secret|secret_id|client_secret|api[_-]?key|access[_-]?key|token|authorization)(\s*[:=]\s*)(Bearer\s+\[REDACTED\]|\[[^\]]+\]|"[^"]*"|'[^']*'|[^\s,;}\]]+)`)
+	sensitiveURLParameterPattern = regexp.MustCompile(`(?i)([?&](?:password|passwd|secret|secret_id|client_secret|api[_-]?key|access[_-]?key|token|authorization)=)(\[[^\]]+\]|[^&#\s]+)`)
 )
 
 // pipelineCmd runs the full merge-then-sync pipeline
@@ -370,7 +377,7 @@ func newPipelineJSONSummary(
 		Diff:       pipelineDiff,
 	}
 	if runErr != nil {
-		summary.ErrorMessage = runErr.Error()
+		summary.ErrorMessage = redactPipelineDiagnostic(runErr.Error())
 	}
 
 	targetsSeen := make(map[string]struct{})
@@ -395,7 +402,7 @@ func newPipelineJSONSummary(
 			Diff:       result.Diff,
 		}
 		if result.Error != nil {
-			item.Error = result.Error.Error()
+			item.Error = redactPipelineDiagnostic(result.Error.Error())
 		}
 		summary.Results = append(summary.Results, item)
 
@@ -413,4 +420,23 @@ func newPipelineJSONSummary(
 
 	summary.TargetCount = len(targetsSeen)
 	return summary
+}
+
+func redactPipelineDiagnostic(value string) string {
+	if value == "" {
+		return ""
+	}
+
+	redacted := bearerTokenPattern.ReplaceAllString(value, "Bearer [REDACTED]")
+	redacted = sensitiveURLParameterPattern.ReplaceAllString(redacted, "${1}[REDACTED]")
+	return sensitiveAssignmentPattern.ReplaceAllStringFunc(redacted, func(match string) string {
+		if strings.Contains(match, "[REDACTED]") {
+			return match
+		}
+		parts := sensitiveAssignmentPattern.FindStringSubmatch(match)
+		if len(parts) != 4 {
+			return "[REDACTED]"
+		}
+		return parts[1] + parts[2] + "[REDACTED]"
+	})
 }

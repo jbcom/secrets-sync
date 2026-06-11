@@ -134,6 +134,58 @@ func TestNewPipelineJSONSummaryReportsFailures(t *testing.T) {
 	}
 }
 
+func TestNewPipelineJSONSummaryRedactsDiagnosticSecrets(t *testing.T) {
+	results := []pipeline.Result{
+		{
+			Target:  "prod",
+			Phase:   "sync",
+			Success: false,
+			Error: errors.New(
+				"write failed api_key=key_123 Authorization: Bearer raw_token callback=https://example.test/hook?token=tok_456",
+			),
+		},
+	}
+
+	summary := newPipelineJSONSummary(
+		results,
+		errors.New("pipeline failed password=hunter2 client_secret=secret_123"),
+		time.Second,
+		"",
+		nil,
+	)
+
+	if summary.Success {
+		t.Fatal("Success = true, want false")
+	}
+	for _, raw := range []string{"hunter2", "secret_123", "key_123", "raw_token", "tok_456"} {
+		if strings.Contains(summary.ErrorMessage, raw) {
+			t.Fatalf("ErrorMessage leaked %q: %s", raw, summary.ErrorMessage)
+		}
+		if strings.Contains(summary.Results[0].Error, raw) {
+			t.Fatalf("Results[0].Error leaked %q: %s", raw, summary.Results[0].Error)
+		}
+	}
+	if !strings.Contains(summary.ErrorMessage, "[REDACTED]") {
+		t.Fatalf("ErrorMessage missing redaction marker: %s", summary.ErrorMessage)
+	}
+	if !strings.Contains(summary.Results[0].Error, "[REDACTED]") {
+		t.Fatalf("Results[0].Error missing redaction marker: %s", summary.Results[0].Error)
+	}
+	if strings.Contains(summary.Results[0].Error, "[REDACTED] [REDACTED]") || strings.Contains(summary.Results[0].Error, "[REDACTED]]") {
+		t.Fatalf("Results[0].Error should not double-redact already redacted segments: %s", summary.Results[0].Error)
+	}
+
+	encoded, err := json.Marshal(summary)
+	if err != nil {
+		t.Fatalf("json.Marshal(summary) failed: %v", err)
+	}
+	for _, raw := range []string{"hunter2", "secret_123", "key_123", "raw_token", "tok_456"} {
+		if strings.Contains(string(encoded), raw) {
+			t.Fatalf("encoded summary leaked %q: %s", raw, encoded)
+		}
+	}
+}
+
 func TestPipelineHadErrors(t *testing.T) {
 	tests := map[string]struct {
 		err     error
