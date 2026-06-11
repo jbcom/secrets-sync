@@ -54,6 +54,47 @@ func TestPublishingChecklistMatchesWorkflowActionPins(t *testing.T) {
 	}
 }
 
+func TestMaintainedDocsPinThirdPartyActions(t *testing.T) {
+	paths := markdownAndExampleWorkflowFiles(t)
+	var offenders []string
+
+	for _, path := range paths {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+
+		for index, line := range strings.Split(string(content), "\n") {
+			matches := actionRefPattern.FindStringSubmatch(line)
+			if matches == nil {
+				continue
+			}
+
+			uses := strings.TrimSpace(matches[1])
+			if shouldSkipDocumentedActionPin(uses) {
+				continue
+			}
+
+			_, ref, found := strings.Cut(uses, "@")
+			version := ""
+			if len(matches) > 2 {
+				version = matches[2]
+			}
+			if !found || !pinnedSHAPattern.MatchString(ref) {
+				offenders = append(offenders, path+":"+itoa(index+1)+": "+uses)
+				continue
+			}
+			if !actionVersionCommentPattern.MatchString(version) {
+				offenders = append(offenders, path+":"+itoa(index+1)+": missing stable version comment for "+uses)
+			}
+		}
+	}
+
+	if len(offenders) > 0 {
+		t.Fatalf("maintained docs/examples must pin third-party actions to exact commit SHAs:\n%s", strings.Join(offenders, "\n"))
+	}
+}
+
 func workflowActionPins(t *testing.T) map[string]workflowActionPin {
 	t.Helper()
 
@@ -118,6 +159,50 @@ func workflowActionPins(t *testing.T) map[string]workflowActionPin {
 		t.Fatalf("workflow actions must be pinned to exact commit SHAs:\n%s", strings.Join(offenders, "\n"))
 	}
 	return pins
+}
+
+func markdownAndExampleWorkflowFiles(t *testing.T) []string {
+	t.Helper()
+
+	roots := []string{"README.md", "docs", "examples"}
+	var paths []string
+	for _, root := range roots {
+		info, err := os.Stat(root)
+		if err != nil {
+			t.Fatalf("stat %s: %v", root, err)
+		}
+		if !info.IsDir() {
+			paths = append(paths, root)
+			continue
+		}
+		err = filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if entry.IsDir() {
+				return nil
+			}
+			switch filepath.Ext(path) {
+			case ".md", ".yml", ".yaml":
+				paths = append(paths, path)
+			}
+			return nil
+		})
+		if err != nil {
+			t.Fatalf("walk %s: %v", root, err)
+		}
+	}
+	return paths
+}
+
+func shouldSkipDocumentedActionPin(uses string) bool {
+	if strings.HasPrefix(uses, "./") || strings.HasPrefix(uses, "docker://") {
+		return true
+	}
+	if strings.HasPrefix(uses, "jbcom/secrets-sync@") {
+		return true
+	}
+	return false
 }
 
 func publishingChecklistPins(t *testing.T) map[string]workflowActionPin {
