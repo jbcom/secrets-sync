@@ -30,6 +30,8 @@ assignments, API key assignments, client secrets, and matching URL query
 parameters. Downstream consumers should still treat `error_message`, per-target
 `error`, and `diff_output` as operationally sensitive and avoid copying them to
 untrusted logs, comments, or chat systems without their own policy checks.
+GitHub Actions annotation output escapes workflow-command data in target names
+and secret paths before writing groups, notices, or warnings.
 
 ### Segregation of Duties
 

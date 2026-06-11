@@ -401,17 +401,18 @@ func formatGitHub(diff *PipelineDiff) string {
 			continue
 		}
 
-		sb.WriteString(fmt.Sprintf("::group::Target: %s (%d changes)\n", td.Target,
+		sb.WriteString(fmt.Sprintf("::group::Target: %s (%d changes)\n", escapeGitHubCommandData(td.Target),
 			td.Summary.Added+td.Summary.Removed+td.Summary.Modified))
 
 		for _, c := range td.Changes {
+			safePath := escapeGitHubCommandData(c.Path)
 			switch c.ChangeType {
 			case ChangeTypeAdded:
-				sb.WriteString(fmt.Sprintf("::notice::+ %s (new secret)\n", c.Path))
+				sb.WriteString(fmt.Sprintf("::notice::+ %s (new secret)\n", safePath))
 			case ChangeTypeRemoved:
-				sb.WriteString(fmt.Sprintf("::warning::- %s (removed)\n", c.Path))
+				sb.WriteString(fmt.Sprintf("::warning::- %s (removed)\n", safePath))
 			case ChangeTypeModified:
-				sb.WriteString(fmt.Sprintf("::notice::~ %s (modified)\n", c.Path))
+				sb.WriteString(fmt.Sprintf("::notice::~ %s (modified)\n", safePath))
 			}
 		}
 
@@ -419,6 +420,15 @@ func formatGitHub(diff *PipelineDiff) string {
 	}
 
 	return sb.String()
+}
+
+func escapeGitHubCommandData(value string) string {
+	replacer := strings.NewReplacer(
+		"%", "%25",
+		"\r", "%0D",
+		"\n", "%0A",
+	)
+	return replacer.Replace(value)
 }
 
 func formatCompact(diff *PipelineDiff) string {

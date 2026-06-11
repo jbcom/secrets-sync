@@ -262,6 +262,38 @@ func TestFormatDiff_GitHub(t *testing.T) {
 	}
 }
 
+func TestFormatDiff_GitHubEscapesCommandData(t *testing.T) {
+	diff := &PipelineDiff{
+		Targets: []TargetDiff{
+			{
+				Target: "prod%\n::warning::injected",
+				Changes: []SecretChange{
+					{
+						Path:       "app/secret%\r\n::error::leak",
+						ChangeType: ChangeTypeModified,
+					},
+				},
+				Summary: ChangeSummary{Modified: 1, Total: 1},
+			},
+		},
+		Summary: ChangeSummary{Modified: 1, Total: 1},
+	}
+
+	output := FormatDiff(diff, OutputFormatGitHub)
+
+	if strings.Contains(output, "prod%\n") || strings.Contains(output, "app/secret%\r\n") {
+		t.Fatalf("GitHub command data was not escaped:\n%s", output)
+	}
+	if strings.Contains(output, "\n::warning::injected") || strings.Contains(output, "\n::error::leak") {
+		t.Fatalf("GitHub command data allowed injected workflow command:\n%s", output)
+	}
+	for _, expected := range []string{"prod%25%0A::warning::injected", "app/secret%25%0D%0A::error::leak"} {
+		if !strings.Contains(output, expected) {
+			t.Fatalf("GitHub output missing escaped value %q:\n%s", expected, output)
+		}
+	}
+}
+
 func TestFormatDiff_GitHubZeroSum(t *testing.T) {
 	diff := &PipelineDiff{
 		Summary: ChangeSummary{Unchanged: 5, Total: 5},

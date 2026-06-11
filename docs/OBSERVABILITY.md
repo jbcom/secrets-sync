@@ -87,6 +87,8 @@ common secret-bearing fragments from top-level and per-target error strings
 before serialization. Treat `error_message`, per-target `error`, and
 `diff_output` as operationally sensitive when forwarding them to logs,
 dashboards, CI comments, or chat systems.
+GitHub Actions annotation output escapes workflow-command data in target names
+and secret paths before writing groups, notices, or warnings.
 
 ## Available Metrics
 
