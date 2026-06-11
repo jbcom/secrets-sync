@@ -136,6 +136,18 @@ func TestArchitectureAuditDoesNotKeepMigrationGapFilename(t *testing.T) {
 	}
 }
 
+func TestArchitectureAuditIsDiscoverableFromPublicDocs(t *testing.T) {
+	for _, path := range []string{"README.md", "docs/ARCHITECTURE.md"} {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+		if !strings.Contains(string(content), "ARCHITECTURE_AUDIT.md") {
+			t.Fatalf("%s should link to docs/ARCHITECTURE_AUDIT.md", path)
+		}
+	}
+}
+
 func TestContributingGuideUsesCurrentRepositoryShape(t *testing.T) {
 	content, err := os.ReadFile("CONTRIBUTING.md")
 	if err != nil {

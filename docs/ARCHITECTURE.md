@@ -5,6 +5,9 @@ executing a configured merge, sync, or full pipeline operation. Kubernetes and
 GitHub Actions deployments wrap that same CLI contract instead of introducing a
 separate controller API.
 
+See [Architecture Audit](./ARCHITECTURE_AUDIT.md) for the current
+implementation-status checklist and release-contract notes.
+
 ## Runtime Shape
 
 ```text

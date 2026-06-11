@@ -352,6 +352,7 @@ See [GitHub Actions documentation](./docs/GITHUB_ACTIONS.md) for complete usage 
 
 ### Core Documentation
 - [🏗️ Architecture Overview](./docs/ARCHITECTURE.md) - System design and components
+- [🔎 Architecture Audit](./docs/ARCHITECTURE_AUDIT.md) - Current implementation and release-contract status
 - [🔄 Two-Phase Pipeline](./docs/TWO_PHASE_ARCHITECTURE.md) - Merge → Sync architecture
 - [⚙️ Pipeline Configuration](./docs/PIPELINE.md) - Configuration reference
 - [🚀 Deployment Guide](./docs/DEPLOYMENT.md) - Production deployment patterns
