@@ -94,16 +94,16 @@ func TestStaleArchitectureDiagramsAreNotPublished(t *testing.T) {
 }
 
 func TestArchitectureAuditCurrentShapeReferencesExistingPaths(t *testing.T) {
-	content, err := os.ReadFile("docs/ARCHITECTURE_GAP_ANALYSIS.md")
+	content, err := os.ReadFile("docs/ARCHITECTURE_AUDIT.md")
 	if err != nil {
-		t.Fatalf("read docs/ARCHITECTURE_GAP_ANALYSIS.md: %v", err)
+		t.Fatalf("read docs/ARCHITECTURE_AUDIT.md: %v", err)
 	}
 
 	text := string(content)
 	start := strings.Index(text, "## Current Shape")
-	end := strings.Index(text, "## Known Remaining Work")
+	end := strings.Index(text, "## Future Release Work")
 	if start < 0 || end < 0 || end <= start {
-		t.Fatal("docs/ARCHITECTURE_GAP_ANALYSIS.md should have a current shape section before known remaining work")
+		t.Fatal("docs/ARCHITECTURE_AUDIT.md should have a current shape section before future release work")
 	}
 
 	currentShape := text[start:end]
@@ -127,6 +127,12 @@ func TestArchitectureAuditCurrentShapeReferencesExistingPaths(t *testing.T) {
 		if _, err := os.Stat(path); err != nil {
 			t.Fatalf("architecture audit references missing current path %s: %v", path, err)
 		}
+	}
+}
+
+func TestArchitectureAuditDoesNotKeepMigrationGapFilename(t *testing.T) {
+	if _, err := os.Stat("docs/ARCHITECTURE_GAP_ANALYSIS.md"); !os.IsNotExist(err) {
+		t.Fatal("docs/ARCHITECTURE_GAP_ANALYSIS.md should not be published in the standalone repository")
 	}
 }
 

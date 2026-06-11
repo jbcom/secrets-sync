@@ -1,8 +1,8 @@
 # Architecture Audit
 
 This file records the current architecture status of the standalone
-`jbcom/secrets-sync` repository. It replaces the earlier migration-era gap
-analysis that referenced old monorepo paths such as `stores/vault/vault.go`.
+`jbcom/secrets-sync` repository. It replaces earlier migration-era notes that
+referenced old monorepo paths such as `stores/vault/vault.go`.
 
 ## Current Shape
 
@@ -45,7 +45,7 @@ The main runtime path is the two-phase pipeline:
 - The Docker action image tag remains `jbcom/secretssync:v1` until digest
   refresh can be automated.
 
-## Known Remaining Work
+## Future Release Work
 
 - The Marketplace and action docs should continue to use the component release
   tag placeholder until the first standalone repository release exists.
