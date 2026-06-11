@@ -3,6 +3,8 @@ package cmd
 import (
 	"encoding/json"
 	"errors"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -253,5 +255,53 @@ func TestPipelineExitCode(t *testing.T) {
 				t.Fatalf("pipelineExitCode() = %d, want %d", got, tc.want)
 			}
 		})
+	}
+}
+
+func TestWriteGitHubDiffOutputs(t *testing.T) {
+	pipelineDiff := &diff.PipelineDiff{
+		Summary: diff.ChangeSummary{
+			Added:     2,
+			Removed:   1,
+			Modified:  3,
+			Unchanged: 5,
+			Total:     11,
+		},
+	}
+	outputPath := filepath.Join(t.TempDir(), "github_output")
+
+	if err := writeGitHubDiffOutputs(outputPath, pipelineDiff); err != nil {
+		t.Fatalf("writeGitHubDiffOutputs() failed: %v", err)
+	}
+
+	content, err := os.ReadFile(outputPath)
+	if err != nil {
+		t.Fatalf("read GitHub output file: %v", err)
+	}
+
+	text := string(content)
+	for _, expected := range []string{
+		"changes=6\n",
+		"added=2\n",
+		"removed=1\n",
+		"modified=3\n",
+		"unchanged=5\n",
+		"zero_sum=false\n",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Fatalf("GitHub output missing %q:\n%s", expected, text)
+		}
+	}
+	if strings.Contains(text, "::set-output") {
+		t.Fatalf("GitHub output file should not contain deprecated commands:\n%s", text)
+	}
+}
+
+func TestWriteGitHubDiffOutputsNoopsWithoutOutputFile(t *testing.T) {
+	if err := writeGitHubDiffOutputs("", &diff.PipelineDiff{}); err != nil {
+		t.Fatalf("writeGitHubDiffOutputs() with empty path failed: %v", err)
+	}
+	if err := writeGitHubDiffOutputs(filepath.Join(t.TempDir(), "github_output"), nil); err != nil {
+		t.Fatalf("writeGitHubDiffOutputs() with nil diff failed: %v", err)
 	}
 }

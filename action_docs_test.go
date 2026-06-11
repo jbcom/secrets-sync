@@ -9,11 +9,16 @@ import (
 )
 
 type actionMetadata struct {
-	Inputs map[string]actionInput `yaml:"inputs"`
+	Inputs  map[string]actionInput  `yaml:"inputs"`
+	Outputs map[string]actionOutput `yaml:"outputs"`
 }
 
 type actionInput struct {
 	Default string `yaml:"default"`
+}
+
+type actionOutput struct {
+	Description string `yaml:"description"`
 }
 
 func TestActionInputDocsMatchMetadata(t *testing.T) {
@@ -33,7 +38,38 @@ func TestActionInputDocsMatchMetadata(t *testing.T) {
 	}
 }
 
+func TestActionOutputDocsMatchMetadata(t *testing.T) {
+	metadata := readActionMetadata(t)
+	if len(metadata.Outputs) == 0 {
+		t.Fatal("action.yml should declare outputs")
+	}
+
+	for _, path := range []string{"docs/GITHUB_ACTIONS.md", "docs/ACTION_QUICK_REFERENCE.md"} {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+		text := string(content)
+		for name := range metadata.Outputs {
+			if !strings.Contains(text, "`"+name+"`") {
+				t.Fatalf("%s should document action output %q", path, name)
+			}
+		}
+	}
+}
+
 func readActionInputDefaults(t *testing.T) map[string]string {
+	t.Helper()
+
+	metadata := readActionMetadata(t)
+	inputs := make(map[string]string, len(metadata.Inputs))
+	for name, input := range metadata.Inputs {
+		inputs[name] = input.Default
+	}
+	return inputs
+}
+
+func readActionMetadata(t *testing.T) actionMetadata {
 	t.Helper()
 
 	content, err := os.ReadFile("action.yml")
@@ -45,12 +81,7 @@ func readActionInputDefaults(t *testing.T) map[string]string {
 	if err := yaml.Unmarshal(content, &metadata); err != nil {
 		t.Fatalf("parse action.yml: %v", err)
 	}
-
-	inputs := make(map[string]string, len(metadata.Inputs))
-	for name, input := range metadata.Inputs {
-		inputs[name] = input.Default
-	}
-	return inputs
+	return metadata
 }
 
 func readDocumentedInputDefaults(t *testing.T, path string, heading string) map[string]string {

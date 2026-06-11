@@ -555,6 +555,31 @@ Ensure `output-format` is set to `github`:
     output-format: 'github'  # Enables GitHub Actions annotations
 ```
 
+When diff computation is enabled, the action also writes modern
+`$GITHUB_OUTPUT` values:
+
+| Output | Description |
+| --- | --- |
+| `changes` | Total added, removed, and modified secrets |
+| `added` | Secrets that would be added or were added |
+| `removed` | Secrets that would be removed or were removed |
+| `modified` | Secrets that would be modified or were modified |
+| `unchanged` | Secrets with no detected changes |
+| `zero_sum` | `true` when no changes are detected |
+
+```yaml
+- name: Check for Changes
+  id: check
+  uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+  with:
+    dry-run: 'true'
+    compute-diff: 'true'
+    output-format: 'github'
+
+- name: Report Summary
+  run: echo "Changed secrets: ${{ steps.check.outputs.changes }}"
+```
+
 ## Exit Codes
 
 When `exit-code: 'true'` is enabled:

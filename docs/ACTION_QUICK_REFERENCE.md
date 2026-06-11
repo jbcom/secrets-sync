@@ -193,7 +193,17 @@ env:
 
 ### `github` (Default for Action)
 
-Shows GitHub Actions annotations in workflow logs.
+Shows GitHub Actions annotations in workflow logs and writes these action
+outputs when diff computation is enabled:
+
+| Output | Description |
+| --- | --- |
+| `changes` | Total added, removed, and modified secrets |
+| `added` | Secrets that would be added or were added |
+| `removed` | Secrets that would be removed or were removed |
+| `modified` | Secrets that would be modified or were modified |
+| `unchanged` | Secrets with no detected changes |
+| `zero_sum` | `true` when no changes are detected |
 
 ### `json`
 

@@ -254,11 +254,8 @@ func TestFormatDiff_GitHub(t *testing.T) {
 
 	output := FormatDiff(diff, OutputFormatGitHub)
 
-	if !strings.Contains(output, "::set-output name=changes::3") {
-		t.Error("expected changes output")
-	}
-	if !strings.Contains(output, "::set-output name=zero_sum::false") {
-		t.Error("expected zero_sum output")
+	if strings.Contains(output, "::set-output") {
+		t.Error("GitHub format should not use deprecated set-output commands")
 	}
 	if !strings.Contains(output, "::warning::") {
 		t.Error("expected warning annotation")
@@ -272,8 +269,8 @@ func TestFormatDiff_GitHubZeroSum(t *testing.T) {
 
 	output := FormatDiff(diff, OutputFormatGitHub)
 
-	if !strings.Contains(output, "::set-output name=zero_sum::true") {
-		t.Error("expected zero_sum=true output")
+	if strings.Contains(output, "::set-output") {
+		t.Error("GitHub format should not use deprecated set-output commands")
 	}
 	if !strings.Contains(output, "::notice::") {
 		t.Error("expected notice annotation for zero-sum")

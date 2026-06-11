@@ -185,6 +185,11 @@ func runPipeline(cmd *cobra.Command, args []string) error {
 	if pipelineDiff != nil {
 		diffOutput = p.FormatDiff(format)
 	}
+	if format == diff.OutputFormatGitHub {
+		if outputErr := writeGitHubDiffOutputs(os.Getenv("GITHUB_OUTPUT"), pipelineDiff); outputErr != nil {
+			return outputErr
+		}
+	}
 	if format == diff.OutputFormatJSON {
 		if jsonErr := printPipelineJSONSummary(results, err, duration, diffOutput, pipelineDiff); jsonErr != nil {
 			return jsonErr
@@ -244,6 +249,39 @@ func pipelineExitCode(hasErrors bool, diffExitCode int) int {
 		return 2
 	}
 	return diffExitCode
+}
+
+func writeGitHubDiffOutputs(outputPath string, pipelineDiff *diff.PipelineDiff) error {
+	if outputPath == "" || pipelineDiff == nil {
+		return nil
+	}
+
+	outputFile, err := os.OpenFile(outputPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o600)
+	if err != nil {
+		return fmt.Errorf("failed to open GitHub output file: %w", err)
+	}
+	defer outputFile.Close()
+
+	changed := pipelineDiff.Summary.Added + pipelineDiff.Summary.Removed + pipelineDiff.Summary.Modified
+	outputs := []struct {
+		name  string
+		value string
+	}{
+		{name: "changes", value: fmt.Sprint(changed)},
+		{name: "added", value: fmt.Sprint(pipelineDiff.Summary.Added)},
+		{name: "removed", value: fmt.Sprint(pipelineDiff.Summary.Removed)},
+		{name: "modified", value: fmt.Sprint(pipelineDiff.Summary.Modified)},
+		{name: "unchanged", value: fmt.Sprint(pipelineDiff.Summary.Unchanged)},
+		{name: "zero_sum", value: fmt.Sprintf("%t", pipelineDiff.IsZeroSum())},
+	}
+
+	for _, output := range outputs {
+		if _, err := fmt.Fprintf(outputFile, "%s=%s\n", output.name, output.value); err != nil {
+			return fmt.Errorf("failed to write GitHub output %q: %w", output.name, err)
+		}
+	}
+
+	return nil
 }
 
 // parseOutputFormat converts string to OutputFormat

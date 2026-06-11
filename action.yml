@@ -63,6 +63,19 @@ inputs:
     description: "Log format: text or json"
     required: false
     default: "text"
+outputs:
+  changes:
+    description: "Total changed secrets when diff output is computed"
+  added:
+    description: "Secrets that would be added or were added"
+  removed:
+    description: "Secrets that would be removed or were removed"
+  modified:
+    description: "Secrets that would be modified or were modified"
+  unchanged:
+    description: "Secrets with no detected changes"
+  zero_sum:
+    description: "true when the computed diff has no changes"
 runs:
   using: "docker"
   # Prefer a digest-pinned image once the release workflow can refresh the

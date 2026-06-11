@@ -387,14 +387,6 @@ func formatHuman(diff *PipelineDiff) string {
 func formatGitHub(diff *PipelineDiff) string {
 	var sb strings.Builder
 
-	// Summary as workflow output
-	sb.WriteString(fmt.Sprintf("::set-output name=changes::%d\n", diff.Summary.Added+diff.Summary.Removed+diff.Summary.Modified))
-	sb.WriteString(fmt.Sprintf("::set-output name=added::%d\n", diff.Summary.Added))
-	sb.WriteString(fmt.Sprintf("::set-output name=removed::%d\n", diff.Summary.Removed))
-	sb.WriteString(fmt.Sprintf("::set-output name=modified::%d\n", diff.Summary.Modified))
-	sb.WriteString(fmt.Sprintf("::set-output name=unchanged::%d\n", diff.Summary.Unchanged))
-	sb.WriteString(fmt.Sprintf("::set-output name=zero_sum::%t\n", diff.IsZeroSum()))
-
 	if diff.IsZeroSum() {
 		sb.WriteString("::notice::✅ Zero-sum: No changes detected\n")
 	} else {
