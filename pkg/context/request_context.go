@@ -10,7 +10,7 @@ import (
 // RequestContextKey is the key for storing RequestContext in context.Context
 type contextKey string
 
-const requestContextKey contextKey = "secretsync_request_context"
+const requestContextKey contextKey = "secrets_sync_request_context"
 
 // RequestContext contains metadata for tracking operations across the pipeline
 type RequestContext struct {

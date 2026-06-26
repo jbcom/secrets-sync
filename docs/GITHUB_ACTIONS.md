@@ -665,7 +665,7 @@ jobs:
 Create reusable workflows:
 
 ```yaml
-# .github/actions/secretsync/action.yml
+# .github/actions/secrets-sync/action.yml
 name: 'SecretSync Wrapper'
 description: 'Configured SecretSync action'
 inputs:

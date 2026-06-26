@@ -50,9 +50,9 @@ sources:
 
 merge_store:
   s3:
-    bucket: secretsync-merge-store
+    bucket: secrets-sync-merge-store
     prefix: merged/
-    kms_key_id: alias/secretsync-merge-store
+    kms_key_id: alias/secrets-sync-merge-store
     versioning:
       enabled: true
       retain_versions: 20

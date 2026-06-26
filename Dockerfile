@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 ###
-# Build a static secretsync binary for the requested platform.
+# Build a static secrets-sync binary for the requested platform.
 # Tests now run in CI (outside Docker), so this Dockerfile focuses purely
 # on compiling and packaging the runtime image.
 ###
@@ -37,7 +37,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     GOARM=${TARGETVARIANT#v} \
     go build -trimpath \
       -ldflags="-s -w" \
-      -o /out/secretsync ./cmd/secretsync
+      -o /out/secrets-sync ./cmd/secrets-sync
 
 ###
 # Runtime image: tiny BusyBox container that only carries the binary and certs.
@@ -45,12 +45,12 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM busybox:1.37.0-musl AS runtime
 
 ARG VERSION=dev
-ARG SECRETSYNC_CONFIG=/etc/secretsync/config.yaml
+ARG SECRETS_SYNC_CONFIG=/etc/secrets-sync/config.yaml
 
-ENV SECRETSYNC_CONFIG=${SECRETSYNC_CONFIG} \
-    SECRETSYNC_VERSION=${VERSION}
+ENV SECRETS_SYNC_CONFIG=${SECRETS_SYNC_CONFIG} \
+    SECRETS_SYNC_VERSION=${VERSION}
 
-LABEL org.opencontainers.image.title="secretsync" \
+LABEL org.opencontainers.image.title="secrets-sync" \
       org.opencontainers.image.source="https://github.com/jbcom/secrets-sync" \
       org.opencontainers.image.version=${VERSION}
 
@@ -58,8 +58,8 @@ WORKDIR /app
 
 RUN mkdir -p /etc/ssl/certs
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=builder /out/secretsync /usr/local/bin/secretsync
+COPY --from=builder /out/secrets-sync /usr/local/bin/secrets-sync
 
-# Default command - Viper reads SECRETSYNC_* env vars directly
-ENTRYPOINT ["/usr/local/bin/secretsync"]
+# Default command - Viper reads SECRETS_SYNC_* env vars directly
+ENTRYPOINT ["/usr/local/bin/secrets-sync"]
 CMD ["pipeline"]

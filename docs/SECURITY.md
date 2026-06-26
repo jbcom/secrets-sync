@@ -23,7 +23,7 @@ operationally sensitive, but they should not contain the bytes being synced.
 Keep `--log-level debug` and `--log-level trace` restricted to trusted
 operators and secured log sinks.
 
-Machine-readable `secretsync pipeline --output json` result envelopes redact
+Machine-readable `secrets-sync pipeline --output json` result envelopes redact
 common secret-bearing diagnostic fragments in top-level and per-target error
 strings before serialization, including bearer tokens, password or token
 assignments, API key assignments, client secrets, and matching URL query
@@ -44,7 +44,7 @@ and narrowly scoped projected credentials.
 
 ### Pipeline Runner
 
-The supported runtime surface is `secretsync pipeline`. It does not expose an
+The supported runtime surface is `secrets-sync pipeline`. It does not expose an
 ingress API by default. Network access should be outbound-only to the configured
 secret stores and cloud provider APIs unless your environment adds its own
 wrapping service.
@@ -122,7 +122,7 @@ and an example trusted entity configuration:
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::1234567890:role/secretsync"
+        "AWS": "arn:aws:iam::1234567890:role/secrets-sync"
       },
       "Action": ["sts:AssumeRole", "sts:TagSession"],
     }

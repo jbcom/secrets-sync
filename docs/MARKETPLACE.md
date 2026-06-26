@@ -20,8 +20,8 @@ environments, AWS Organizations discovery, and CI/CD validation workflows.
 ## Supported Runtime Surface
 
 - GitHub Action using `action.yml`.
-- Docker image `jbcom/secretssync:v1`.
-- Go CLI `secretsync`.
+- Docker image `jbcom/secrets-sync:v1`.
+- Go CLI `secrets-sync`.
 - Vault KV2 sources.
 - AWS Secrets Manager targets.
 - Vault or S3 merge stores.
@@ -39,7 +39,7 @@ Marketplace examples should therefore use component release tags:
 - uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
 ```
 
-Do not document old monorepo package tags using the `secretssync-v...` shape.
+Do not document old monorepo package tags using the `secrets-sync-v...` shape.
 
 `@main` may be useful for development testing, but it is not a stable
 Marketplace recommendation. Moving major aliases such as `@v1` should only be
@@ -138,7 +138,7 @@ Also check:
 - Marketplace page links to the standalone repository.
 - The README usage example references `secrets-sync-vX.Y.Z`.
 - Inputs shown by Marketplace match `action.yml`.
-- No docs mention old `secretssync-v...` monorepo package tags.
+- No docs mention old `secrets-sync-v...` monorepo package tags.
 
 ## FAQ
 

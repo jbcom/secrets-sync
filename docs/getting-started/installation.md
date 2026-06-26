@@ -9,16 +9,16 @@
 
 ```bash
 # Install the latest CLI from the standalone module path
-go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 ```
 
 ## Run with Docker
 
 ```bash
-docker pull jbcom/secretssync:v1
+docker pull jbcom/secrets-sync:v1
 
 # Example alias for local CLI-style usage
-alias secretsync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secretssync:v1'
+alias secrets-sync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secrets-sync:v1'
 ```
 
 ## Build from Source
@@ -28,8 +28,8 @@ git clone https://github.com/jbcom/secrets-sync.git
 cd secrets-sync
 make build
 
-# The compiled binary is written to ./bin/secretsync
-./bin/secretsync version
+# The compiled binary is written to ./bin/secrets-sync
+./bin/secrets-sync version
 ```
 
 ## GitHub Action

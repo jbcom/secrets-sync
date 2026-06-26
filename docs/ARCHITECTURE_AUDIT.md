@@ -8,14 +8,14 @@ referenced old monorepo paths such as `stores/vault/vault.go`.
 
 SecretSync is a standalone Go module with:
 
-- CLI entry point in `cmd/secretsync`.
+- CLI entry point in `cmd/secrets-sync`.
 - Pipeline orchestration in `pkg/pipeline`.
 - Vault and AWS clients in `pkg/client`.
 - Diffing and exit-code behavior in `pkg/diff`.
 - Circuit breaker, request context, and observability support in `pkg`.
 - Docker action metadata in `action.yml`.
-- Optional Python binding sources under `python/secretssync`.
-- Helm runner chart under `deploy/charts/secretsync`, rendering a CronJob and
+- Optional Python binding sources under `python/secrets_sync`.
+- Helm runner chart under `deploy/charts/secrets-sync`, rendering a CronJob and
   config mount for the same CLI pipeline contract.
 
 The main runtime path is the two-phase pipeline:
@@ -35,14 +35,14 @@ The main runtime path is the two-phase pipeline:
 | JSON-aware idempotency | Implemented through `SkipUnchanged` and JSON-normalized comparison. | `pkg/client/aws/aws.go`, `pkg/utils/deepmerge.go` |
 | Target inheritance | Implemented with cycle detection and merge-store source paths. | `pkg/pipeline/inheritance.go`, `pkg/pipeline/graph.go` |
 | Diff exit codes | Implemented and tested: no changes, changes, and error states map to stable exit codes. | `pkg/diff`, `pkg/pipeline/diff_integration_test.go` |
-| Stable pipeline result output | Implemented for machine-readable action and CLI use. | `cmd/secretsync/cmd`, `pkg/pipeline` |
+| Stable pipeline result output | Implemented for machine-readable action and CLI use. | `cmd/secrets-sync/cmd`, `pkg/pipeline` |
 
 ## Release And Action Status
 
 - CI and release workflows are SHA-pinned to current stable action releases.
 - Release-please owns the `secrets-sync-vX.Y.Z` component tag shape.
 - GoReleaser builds binary release artifacts from release-created tags.
-- The Docker action image tag remains `jbcom/secretssync:v1` until digest
+- The Docker action image tag remains `jbcom/secrets-sync:v1` until digest
   refresh can be automated.
 
 ## Future Release Work

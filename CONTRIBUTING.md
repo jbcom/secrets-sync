@@ -202,8 +202,8 @@ func TestMyFunction(t *testing.T) {
 ## Project Structure
 
 ```
-secretsync/
-├── cmd/secretsync/           # CLI application
+secrets-sync/
+├── cmd/secrets-sync/           # CLI application
 │   ├── cmd/           # Cobra commands
 │   └── main.go        # Entry point
 ├── pkg/

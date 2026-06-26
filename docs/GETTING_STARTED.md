@@ -16,19 +16,19 @@ Manager.
 Choose one runtime:
 
 ```bash
-go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 ```
 
 ```bash
-docker pull jbcom/secretssync:v1
-alias secretsync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secretssync:v1'
+docker pull jbcom/secrets-sync:v1
+alias secrets-sync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secrets-sync:v1'
 ```
 
 ```bash
 git clone https://github.com/jbcom/secrets-sync.git
 cd secrets-sync
 make build
-./bin/secretsync version
+./bin/secrets-sync version
 ```
 
 ## Step 2: Create A Pipeline Config
@@ -112,8 +112,8 @@ AWS access keys only when your environment cannot provide an identity.
 ## Step 4: Validate And Inspect
 
 ```bash
-secretsync validate --config config.yaml
-secretsync graph --config config.yaml
+secrets-sync validate --config config.yaml
+secrets-sync graph --config config.yaml
 ```
 
 Validation checks the config structure and dependency graph. Add `--check-aws`
@@ -122,7 +122,7 @@ when you want validation to test AWS credentials and access.
 ## Step 5: Dry Run
 
 ```bash
-secretsync pipeline --config config.yaml --dry-run --diff --output json --exit-code
+secrets-sync pipeline --config config.yaml --dry-run --diff --output json --exit-code
 ```
 
 Exit codes are stable for automation:
@@ -136,7 +136,7 @@ Exit codes are stable for automation:
 After reviewing the dry-run diff, run the apply path:
 
 ```bash
-secretsync pipeline --config config.yaml --diff --output json
+secrets-sync pipeline --config config.yaml --diff --output json
 ```
 
 ## Common Patterns
@@ -191,9 +191,9 @@ targets:
 ```yaml
 merge_store:
   s3:
-    bucket: my-secretsync-merge-store
+    bucket: my-secrets-sync-merge-store
     prefix: merged/
-    kms_key_id: alias/secretsync
+    kms_key_id: alias/secrets-sync
     versioning:
       enabled: true
       retain_versions: 90
@@ -222,7 +222,7 @@ dynamic_targets:
 Run with discovery enabled:
 
 ```bash
-secretsync pipeline --config config.yaml --discover --dry-run --diff
+secrets-sync pipeline --config config.yaml --discover --dry-run --diff
 ```
 
 ## GitHub Actions
@@ -276,7 +276,7 @@ jobs:
 
 - Run with `--output side-by-side` for a human diff.
 - Check target imports and source path spelling.
-- Run `secretsync graph --config config.yaml` to verify dependency order.
+- Run `secrets-sync graph --config config.yaml` to verify dependency order.
 
 ## Next Steps
 

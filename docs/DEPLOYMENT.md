@@ -1,6 +1,6 @@
 # Deployment
 
-SecretSync deploys as a `secretsync pipeline` runner. The current production
+SecretSync deploys as a `secrets-sync pipeline` runner. The current production
 surface is the CLI, the Docker image, the GitHub Action, or a Kubernetes
 workload that invokes the same pipeline command with a mounted configuration
 file.
@@ -60,8 +60,8 @@ targets:
 Validate before deploying:
 
 ```bash
-secretsync validate --config config.yaml
-secretsync graph --config config.yaml
+secrets-sync validate --config config.yaml
+secrets-sync graph --config config.yaml
 ```
 
 ## Local Or VM Runner
@@ -69,9 +69,9 @@ secretsync graph --config config.yaml
 Install the binary and run the same command used in CI:
 
 ```bash
-go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 
-secretsync pipeline \
+secrets-sync pipeline \
   --config config.yaml \
   --dry-run \
   --diff \
@@ -82,7 +82,7 @@ secretsync pipeline \
 For an apply run, remove `--dry-run` after reviewing the diff:
 
 ```bash
-secretsync pipeline --config config.yaml --diff --output json
+secrets-sync pipeline --config config.yaml --diff --output json
 ```
 
 ## Docker Runner
@@ -96,12 +96,12 @@ docker run --rm \
   -e VAULT_ADDR=https://vault.example.com \
   -e VAULT_ROLE_ID="$VAULT_ROLE_ID" \
   -e VAULT_SECRET_ID="$VAULT_SECRET_ID" \
-  jbcom/secretssync:v1 \
+  jbcom/secrets-sync:v1 \
   pipeline --config /config.yaml --dry-run --diff --output json
 ```
 
 Use the same image for scheduled container platforms. The image entry point is
-`secretsync`, and the default command is `pipeline`.
+`secrets-sync`, and the default command is `pipeline`.
 
 ## GitHub Actions
 
@@ -144,7 +144,7 @@ ConfigMap or Secret and provide credentials through your cluster identity model.
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: secretsync
+  name: secrets-sync
 spec:
   schedule: "*/30 * * * *"
   jobTemplate:
@@ -152,10 +152,10 @@ spec:
       template:
         spec:
           restartPolicy: Never
-          serviceAccountName: secretsync
+          serviceAccountName: secrets-sync
           containers:
-            - name: secretsync
-              image: jbcom/secretssync:v1
+            - name: secrets-sync
+              image: jbcom/secrets-sync:v1
               args:
                 - pipeline
                 - --config
@@ -170,7 +170,7 @@ spec:
           volumes:
             - name: config
               configMap:
-                name: secretsync-config
+                name: secrets-sync-config
 ```
 
 For Kubernetes-authenticated Vault access, configure the `vault.auth.kubernetes`
@@ -184,13 +184,13 @@ Enable metrics when the runner stays alive long enough to be scraped, or when a
 platform sidecar captures process metrics:
 
 ```bash
-secretsync pipeline --config config.yaml --metrics-addr 0.0.0.0 --metrics-port 9090
+secrets-sync pipeline --config config.yaml --metrics-addr 0.0.0.0 --metrics-port 9090
 ```
 
 Use JSON logs in centralized logging environments:
 
 ```bash
-secretsync pipeline --config config.yaml --log-format json --log-level info
+secrets-sync pipeline --config config.yaml --log-format json --log-level info
 ```
 
 SecretSync logs operational metadata, paths, targets, counts, durations, and
@@ -199,8 +199,8 @@ payloads, raw AWS secret payloads, or raw client structures.
 
 ## Rollout Checklist
 
-1. Validate the configuration with `secretsync validate`.
-2. Render and review the dependency graph with `secretsync graph`.
+1. Validate the configuration with `secrets-sync validate`.
+2. Render and review the dependency graph with `secrets-sync graph`.
 3. Run a dry-run diff with machine-readable output.
 4. Confirm AWS role assumption and Vault authentication from the runner.
 5. Run the apply command with `--diff` enabled for auditability.

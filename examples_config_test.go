@@ -1,4 +1,4 @@
-package secretsync_test
+package secrets_sync_test
 
 import (
 	"os"
@@ -33,13 +33,13 @@ func TestExamplePipelineConfigsLoadAndValidate(t *testing.T) {
 
 func TestPublicDocsAndExamplesDoNotAdvertiseRemovedAPISurfaces(t *testing.T) {
 	forbidden := []string{
-		"apiVersion: secretsync.extendeddata.dev",
+		"apiVersion: secrets-sync.extendeddata.dev",
 		"kind: SecretSync",
 		"aws_secretsmanager:",
 		"inherits:",
 		"Kubernetes operator with CRD support",
-		"secretsync-events",
-		"secretsync-operator",
+		"secrets-sync-events",
+		"secrets-sync-operator",
 		"Event Server",
 		"Sync Operator",
 		"memory queue",

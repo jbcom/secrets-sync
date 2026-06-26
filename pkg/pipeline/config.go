@@ -49,7 +49,7 @@ func LoadConfig(path string) (*Config, error) {
 	// Also load via Viper for explicit env var overrides
 	v := viper.New()
 	v.SetConfigFile(path)
-	v.SetEnvPrefix("SECRETSYNC")
+	v.SetEnvPrefix("SECRETS_SYNC")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
 

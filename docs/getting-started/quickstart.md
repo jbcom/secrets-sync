@@ -6,7 +6,7 @@ of the package example configs.
 ## 1. Install the CLI
 
 ```bash
-go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 ```
 
 ## 2. Start from an example config
@@ -35,19 +35,19 @@ If you are not using ambient AWS credentials or OIDC, also export
 ## 4. Validate before syncing
 
 ```bash
-secretsync validate --config pipeline.yaml
+secrets-sync validate --config pipeline.yaml
 ```
 
 ## 5. Run a dry run
 
 ```bash
-secretsync pipeline --config pipeline.yaml --dry-run --output compact
+secrets-sync pipeline --config pipeline.yaml --dry-run --output compact
 ```
 
 ## 6. Apply the pipeline
 
 ```bash
-secretsync pipeline --config pipeline.yaml
+secrets-sync pipeline --config pipeline.yaml
 ```
 
 ## Next Steps

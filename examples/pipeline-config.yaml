@@ -29,7 +29,7 @@ vault:
     
     # Alternative: Kubernetes authentication
     # kubernetes:
-    #   role: secretsync
+    #   role: secrets-sync
     #   mount_path: kubernetes
 
 # =============================================================================

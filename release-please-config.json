@@ -1,10 +1,18 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "bootstrap-sha": "5216e0136e357d6dac81ad80f9cf22dbff718049",
+  "include-component-in-tag": true,
   "packages": {
     ".": {
       "package-name": "secrets-sync",
+      "component": "secrets-sync",
       "release-type": "go",
+      "changelog-path": "CHANGELOG.md"
+    },
+    "packages/secrets-sync-bridge": {
+      "package-name": "secrets-sync-bridge",
+      "component": "secrets-sync-bridge",
+      "release-type": "python",
       "changelog-path": "CHANGELOG.md"
     }
   },

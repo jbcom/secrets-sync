@@ -1,6 +1,6 @@
 # Architecture
 
-SecretSync is a pipeline runner. The supported runtime is the `secretsync` CLI
+SecretSync is a pipeline runner. The supported runtime is the `secrets-sync` CLI
 executing a configured merge, sync, or full pipeline operation. Kubernetes and
 GitHub Actions deployments wrap that same CLI contract instead of introducing a
 separate controller API.
@@ -14,7 +14,7 @@ implementation-status checklist and release-contract notes.
 pipeline.yaml
     |
     v
-secretsync pipeline --config pipeline.yaml
+secrets-sync pipeline --config pipeline.yaml
     |
     +--> merge phase: source secrets -> merge store
     |
@@ -30,7 +30,7 @@ sync-only operation, or the full merge-plus-sync pipeline.
 
 ## Core Components
 
-- **CLI entrypoint**: `cmd/secretsync` exposes `validate`, `pipeline`, and
+- **CLI entrypoint**: `cmd/secrets-sync` exposes `validate`, `pipeline`, and
   graph-related commands for local, CI, and scheduled execution.
 - **Pipeline package**: `pkg/pipeline` owns config loading, validation,
   inheritance resolution, discovery, merge, sync, diff integration, and result
@@ -42,8 +42,9 @@ sync-only operation, or the full merge-plus-sync pipeline.
 - **GitHub Action**: `action.yml` packages the CLI contract for CI/CD workflows.
 - **Helm chart**: the chart renders a Kubernetes `CronJob` plus ConfigMap or
   existing config mount for scheduled pipeline execution.
-- **Python integration**: `extended-data[secrets]` calls the supported CLI and
-  consumes the JSON result envelope as mapping-style Python data.
+- **Python integration**: `secrets-sync-bridge` exposes one Python API over
+  local `secrets_sync_native` gopy bindings and the supported CLI JSON result
+  envelope.
 
 ## Deployment Models
 
@@ -53,9 +54,9 @@ Run the CLI directly when an operator or engineer controls the execution
 environment:
 
 ```bash
-secretsync validate --config pipeline.yaml
-secretsync pipeline --config pipeline.yaml --dry-run --diff --output json
-secretsync pipeline --config pipeline.yaml --output json
+secrets-sync validate --config pipeline.yaml
+secrets-sync pipeline --config pipeline.yaml --dry-run --diff --output json
+secrets-sync pipeline --config pipeline.yaml --output json
 ```
 
 GitHub Actions uses the same contract through the published action. The action
@@ -71,7 +72,7 @@ identity model.
 ```text
 kind: CronJob
   -> Pod
-    -> secretsync pipeline --config /config/config.yaml
+    -> secrets-sync pipeline --config /config/config.yaml
       -> Vault / AWS Secrets Manager / S3 / AWS discovery APIs
 ```
 
@@ -82,14 +83,14 @@ new public runtime contract.
 ## Integration Boundaries
 
 SecretSync owns the Go CLI, pipeline packages, release artifact, Docker action,
-and Helm runner chart. Python applications should use the `extended-data`
-connector unless they are explicitly experimenting with the local gopy binding
-sources in this repository.
+Helm runner chart, and `secrets-sync-bridge` package. Python applications should
+use the bridge; direct generated bindings install as `secrets_sync_native` and
+are selected through the bridge's `backend` option.
 
 The stable cross-language contract is:
 
 ```bash
-secretsync pipeline --config pipeline.yaml --output json
+secrets-sync pipeline --config pipeline.yaml --output json
 ```
 
 The JSON result envelope contains pipeline success, target count, secret change

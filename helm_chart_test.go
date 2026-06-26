@@ -1,4 +1,4 @@
-package secretsync_test
+package secrets_sync_test
 
 import (
 	"io/fs"
@@ -10,8 +10,8 @@ import (
 
 func TestHelmChartUsesSecretSyncAPI(t *testing.T) {
 	paths := []string{
-		"deploy/charts/secretsync/Chart.yaml",
-		"deploy/charts/secretsync/values.yaml",
+		"deploy/charts/secrets-sync/Chart.yaml",
+		"deploy/charts/secrets-sync/values.yaml",
 		"docs/USAGE.md",
 	}
 
@@ -38,16 +38,16 @@ func TestHelmChartUsesSecretSyncAPI(t *testing.T) {
 
 func TestHelmChartUsesPipelineRunner(t *testing.T) {
 	files := map[string]string{
-		"chart":     readTestFile(t, "deploy/charts/secretsync/Chart.yaml"),
-		"values":    readTestFile(t, "deploy/charts/secretsync/values.yaml"),
-		"configmap": readTestFile(t, "deploy/charts/secretsync/templates/configmap.yaml"),
-		"cronjob":   readTestFile(t, "deploy/charts/secretsync/templates/cronjob.yaml"),
+		"chart":     readTestFile(t, "deploy/charts/secrets-sync/Chart.yaml"),
+		"values":    readTestFile(t, "deploy/charts/secrets-sync/values.yaml"),
+		"configmap": readTestFile(t, "deploy/charts/secrets-sync/templates/configmap.yaml"),
+		"cronjob":   readTestFile(t, "deploy/charts/secrets-sync/templates/cronjob.yaml"),
 	}
 
 	for _, forbidden := range []string{
 		"dependencies:",
-		"secretsync-events",
-		"secretsync-operator",
+		"secrets-sync-events",
+		"secrets-sync-operator",
 		"Legacy config format",
 		"Kubernetes operator",
 		"-operator",
@@ -93,8 +93,8 @@ func TestHelmChartUsesPipelineRunner(t *testing.T) {
 
 func TestHelmChartDoesNotShipDeadSubcharts(t *testing.T) {
 	for _, path := range []string{
-		"deploy/charts/secretsync/charts/secretsync-events",
-		"deploy/charts/secretsync/charts/secretsync-operator",
+		"deploy/charts/secrets-sync/charts/secrets-sync-events",
+		"deploy/charts/secrets-sync/charts/secrets-sync-operator",
 	} {
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
 			t.Fatalf("%s should not exist after removing the unsupported operator/events runtimes", path)
@@ -103,7 +103,7 @@ func TestHelmChartDoesNotShipDeadSubcharts(t *testing.T) {
 }
 
 func TestHelmTemplatesDoNotUseRemovedCLIFlags(t *testing.T) {
-	err := filepath.WalkDir("deploy/charts/secretsync", func(path string, entry fs.DirEntry, err error) error {
+	err := filepath.WalkDir("deploy/charts/secrets-sync", func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}

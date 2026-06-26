@@ -1,4 +1,4 @@
-package secretsync_test
+package secrets_sync_test
 
 import (
 	"os"
@@ -12,7 +12,7 @@ func TestSecurityDocsDocumentLoggingContract(t *testing.T) {
 		"raw Vault secret",
 		"raw AWS secret",
 		"raw client structures",
-		"machine-readable `secretsync pipeline --output json` result envelopes redact",
+		"machine-readable `secrets-sync pipeline --output json` result envelopes redact",
 		"GitHub Actions annotation output escapes workflow-command data",
 	}
 

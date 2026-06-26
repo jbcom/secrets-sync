@@ -1,4 +1,4 @@
-package secretsync_test
+package secrets_sync_test
 
 import (
 	"os"
@@ -40,7 +40,7 @@ func TestMarkdownFencedCodeBlocksAreBalanced(t *testing.T) {
 func TestDeploymentGuideUsesCurrentPipelineSurface(t *testing.T) {
 	paths := []string{"docs/ARCHITECTURE.md", "docs/DEPLOYMENT.md"}
 	for _, required := range []string{
-		"secretsync pipeline",
+		"secrets-sync pipeline",
 		"--dry-run",
 		"--diff",
 		"--output json",
@@ -115,7 +115,7 @@ func TestArchitectureAuditCurrentShapeReferencesExistingPaths(t *testing.T) {
 			t.Fatalf("architecture audit should not document removed current path %q", forbidden)
 		}
 	}
-	if !strings.Contains(currentShape, "deploy/charts/secretsync") {
+	if !strings.Contains(currentShape, "deploy/charts/secrets-sync") {
 		t.Fatal("architecture audit should document the Helm runner chart path")
 	}
 
@@ -245,8 +245,8 @@ func TestGettingStartedUsesCurrentPipelineConfigShape(t *testing.T) {
 			"inherits:",
 			"discovery:\n  aws_organizations:",
 			"versioning:\n  enabled: true\n  s3_bucket:",
-			"secretsync versions",
-			"secretsync sync --version",
+			"secrets-sync versions",
+			"secrets-sync sync --version",
 		} {
 			if strings.Contains(text, forbidden) {
 				t.Fatalf("%s should not document stale config shape %q", path, forbidden)
@@ -255,15 +255,12 @@ func TestGettingStartedUsesCurrentPipelineConfigShape(t *testing.T) {
 	}
 }
 
-func TestPythonDocsUseExtendedDataCLIContract(t *testing.T) {
+func TestPythonDocsUseBridgeRuntimeContract(t *testing.T) {
 	attributeStyleResult := regexp.MustCompile(`\bresult\.`)
 	paths := []string{"README.md", "docs/PYTHON_BINDINGS.md"}
 	forbidden := []string{
-		"native_available",
-		"Native bindings",
-		"native bindings",
-		"CLI fallback",
 		"bindings aren't installed",
+		"from secrets_sync import get_tools",
 		"is_valid, message",
 		"print(result[\"diff_output\"])",
 	}
@@ -291,14 +288,41 @@ func TestPythonDocsUseExtendedDataCLIContract(t *testing.T) {
 	}
 	text := string(content)
 	for _, required := range []string{
-		"connector.cli_available",
-		"validation = connector.validate_config",
+		"backend=\"auto\"",
+		"bridge.cli_available",
+		"bridge.native_available",
+		"secrets_sync_native",
+		"validation = bridge.validate_config",
 		"result[\"success\"]",
-		"result['secrets_added']",
-		"secretsync pipeline --output json",
+		"result[\"secrets_processed\"]",
+		"from secrets_sync import SecretsSyncBridge",
+		"agentic-crew[secrets-sync]",
+		"secrets-sync pipeline --output json",
 	} {
 		if !strings.Contains(text, required) {
 			t.Fatalf("docs/PYTHON_BINDINGS.md should document current Python contract %q", required)
+		}
+	}
+}
+
+func TestOwnershipMapDocumentsSplitBoundaries(t *testing.T) {
+	content, err := os.ReadFile("docs/OWNERSHIP.md")
+	if err != nil {
+		t.Fatalf("read docs/OWNERSHIP.md: %v", err)
+	}
+	text := string(content)
+
+	for _, required := range []string{
+		"cmd/secrets-sync",
+		"packages/secrets-sync-bridge",
+		"secrets_sync_native",
+		"jbcom/extended-data",
+		"jbcom/vendor-connectors",
+		"jbcom/agentic-crew",
+		"agentic-crew[secrets-sync]",
+	} {
+		if !strings.Contains(text, required) {
+			t.Fatalf("docs/OWNERSHIP.md should document boundary %q", required)
 		}
 	}
 }

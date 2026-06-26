@@ -1,4 +1,4 @@
-package secretsync_test
+package secrets_sync_test
 
 import (
 	"os"
@@ -31,7 +31,7 @@ func TestOrganizationsTestingDocsDoNotAdvertiseVSSAlias(t *testing.T) {
 	text := strings.ToLower(strings.Join(strings.Fields(string(content)), " "))
 	vssToken := regexp.MustCompile(`\bvss\b`)
 	if strings.Contains(text, "./vss") || vssToken.MatchString(text) {
-		t.Fatalf("%s should advertise secretsync, not vss", path)
+		t.Fatalf("%s should advertise secrets-sync, not vss", path)
 	}
 }
 

@@ -264,7 +264,7 @@ Ensure OIDC is configured correctly and trust policy allows your repository.
 ## Resources
 
 - **Full Documentation**: [docs/GITHUB_ACTIONS.md](./GITHUB_ACTIONS.md)
-- **Examples**: [examples/](../examples/)
+- **Examples**: [examples/](https://github.com/jbcom/secrets-sync/tree/main/examples)
 - **Support**: [docs/SUPPORT.md](./SUPPORT.md)
 - **Security**: [docs/SECURITY.md](./SECURITY.md)
 - **Marketplace**: [docs/MARKETPLACE.md](./MARKETPLACE.md)

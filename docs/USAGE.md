@@ -33,9 +33,9 @@ sources:
 
 merge_store:
   s3:
-    bucket: secretsync-merge-store
+    bucket: secrets-sync-merge-store
     prefix: merged/
-    kms_key_id: alias/secretsync-merge-store
+    kms_key_id: alias/secrets-sync-merge-store
 
 targets:
   staging:
@@ -86,7 +86,7 @@ target name in `imports`.
 ## Validate
 
 ```bash
-secretsync validate --config config.yaml
+secrets-sync validate --config config.yaml
 ```
 
 Validation checks required targets, account ID formats, merge store settings,
@@ -95,7 +95,7 @@ dynamic discovery settings, and target inheritance cycles.
 ## Plan
 
 ```bash
-secretsync pipeline --config config.yaml --dry-run --diff --output json
+secrets-sync pipeline --config config.yaml --dry-run --diff --output json
 ```
 
 Dry runs load the same configuration and compute the same target graph as an
@@ -104,7 +104,7 @@ apply run, but skip writes to destination stores.
 ## Apply
 
 ```bash
-secretsync pipeline --config config.yaml --diff --output human
+secrets-sync pipeline --config config.yaml --diff --output human
 ```
 
 Use `--targets staging,production` to limit a run to selected targets and their
@@ -114,7 +114,7 @@ needs to split the two phases.
 ## CI/CD
 
 ```bash
-secretsync pipeline --config config.yaml --dry-run --diff --output github --exit-code
+secrets-sync pipeline --config config.yaml --dry-run --diff --output github --exit-code
 ```
 
 `--exit-code` returns `1` when a diff is detected, which lets a workflow require
@@ -123,9 +123,9 @@ review before applying changes.
 ## Kubernetes
 
 The supported Kubernetes deployment model is a scheduled pipeline runner. Use
-the Helm chart in `deploy/charts/secretsync` or render an equivalent CronJob
+the Helm chart in `deploy/charts/secrets-sync` or render an equivalent CronJob
 that runs:
 
 ```bash
-secretsync pipeline --config /config/config.yaml --diff --output json
+secrets-sync pipeline --config /config/config.yaml --diff --output json
 ```

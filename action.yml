@@ -80,11 +80,11 @@ runs:
   using: "docker"
   # Prefer a digest-pinned image once the release workflow can refresh the
   # action reference automatically:
-  # 1. docker pull jbcom/secretssync:v1
-  # 2. docker inspect --format='{{index .RepoDigests 0}}' jbcom/secretssync:v1
-  # 3. image: "docker://jbcom/secretssync:v1@sha256:<digest>"
+  # 1. docker pull jbcom/secrets-sync:v1
+  # 2. docker inspect --format='{{index .RepoDigests 0}}' jbcom/secrets-sync:v1
+  # 3. image: "docker://jbcom/secrets-sync:v1@sha256:<digest>"
   # Until then, keep the release-please-managed tag reference below.
-  image: "docker://jbcom/secretssync:v1" # x-release-please-version
+  image: "docker://jbcom/secrets-sync:v1" # x-release-please-version
   args:
     - "pipeline"
     - "--config"
@@ -115,23 +115,23 @@ branding:
   color: "blue"
 
 # Action inputs are passed to the Docker action as explicit CLI flags.
-# The CLI also supports SECRETSYNC_* environment variables for direct container
+# The CLI also supports SECRETS_SYNC_* environment variables for direct container
 # use; see https://github.com/jbcom/secrets-sync#configuration for full docs.
 #
 # Required:
-#   SECRETSYNC_CONFIG       - Path to config file (default: config.yaml)
+#   SECRETS_SYNC_CONFIG       - Path to config file (default: config.yaml)
 #
 # Optional:
-#   SECRETSYNC_TARGETS      - Comma-separated list of targets (default: all)
-#   SECRETSYNC_DRY_RUN      - Run without making changes (default: false)
-#   SECRETSYNC_MERGE_ONLY   - Only run merge phase (default: false)
-#   SECRETSYNC_SYNC_ONLY    - Only run sync phase (default: false)
-#   SECRETSYNC_DISCOVER     - Enable dynamic target discovery (default: false)
-#   SECRETSYNC_OUTPUT       - Output format: human, json, github, compact, side-by-side (default: github)
-#   SECRETSYNC_DIFF         - Show diff even without dry-run (default: false)
-#   SECRETSYNC_EXIT_CODE    - Use exit codes for CI (default: false)
-#   SECRETSYNC_LOG_LEVEL    - Log level: debug, info, warn, error (default: info)
-#   SECRETSYNC_LOG_FORMAT   - Log format: text, json (default: text)
+#   SECRETS_SYNC_TARGETS      - Comma-separated list of targets (default: all)
+#   SECRETS_SYNC_DRY_RUN      - Run without making changes (default: false)
+#   SECRETS_SYNC_MERGE_ONLY   - Only run merge phase (default: false)
+#   SECRETS_SYNC_SYNC_ONLY    - Only run sync phase (default: false)
+#   SECRETS_SYNC_DISCOVER     - Enable dynamic target discovery (default: false)
+#   SECRETS_SYNC_OUTPUT       - Output format: human, json, github, compact, side-by-side (default: github)
+#   SECRETS_SYNC_DIFF         - Show diff even without dry-run (default: false)
+#   SECRETS_SYNC_EXIT_CODE    - Use exit codes for CI (default: false)
+#   SECRETS_SYNC_LOG_LEVEL    - Log level: debug, info, warn, error (default: info)
+#   SECRETS_SYNC_LOG_FORMAT   - Log format: text, json (default: text)
 #
 # Vault Authentication (one required):
 #   VAULT_ADDR              - Vault server address

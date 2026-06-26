@@ -182,8 +182,8 @@ func TestRecordErrorHelper(t *testing.T) {
 
 func TestMetricsNamespace(t *testing.T) {
 	// Verify metrics use correct namespace
-	if namespace != "secretsync" {
-		t.Errorf("Expected namespace 'secretsync', got '%s'", namespace)
+	if namespace != "secrets_sync" {
+		t.Errorf("Expected namespace 'secrets_sync', got '%s'", namespace)
 	}
 }
 
@@ -237,13 +237,13 @@ func TestMetricsHandler(t *testing.T) {
 	if !strings.Contains(body, "# HELP") {
 		t.Error("Response does not contain Prometheus format")
 	}
-	if !strings.Contains(body, "secretsync_vault_api_call_duration_seconds") {
+	if !strings.Contains(body, "secrets_sync_vault_api_call_duration_seconds") {
 		t.Error("Response does not contain Vault metrics")
 	}
-	if !strings.Contains(body, "secretsync_aws_api_call_duration_seconds") {
+	if !strings.Contains(body, "secrets_sync_aws_api_call_duration_seconds") {
 		t.Error("Response does not contain AWS metrics")
 	}
-	if !strings.Contains(body, "secretsync_pipeline_execution_duration_seconds") {
+	if !strings.Contains(body, "secrets_sync_pipeline_execution_duration_seconds") {
 		t.Error("Response does not contain Pipeline metrics")
 	}
 }

@@ -40,10 +40,10 @@ Yes. The current SecretSync 2.x line is production-ready with:
 Multiple installation options:
 ```bash
 # Go install
-go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 
 # Docker
-docker pull jbcom/secretssync:v1
+docker pull jbcom/secrets-sync:v1
 
 # Build from source
 git clone https://github.com/jbcom/secrets-sync.git
@@ -54,7 +54,7 @@ make build
 ### What permissions does SecretSync need?
 
 **Vault Permissions:**
-```hcl
+```text
 # Read access to secret paths
 path "secret/data/*" {
   capabilities = ["read", "list"]
@@ -187,15 +187,15 @@ SecretSync tracks every secret change with metadata:
 
 ```bash
 # View version history
-secretsync versions --secret-path "app/database/password"
+secrets-sync versions --secret-path "app/database/password"
 
 # Rollback to specific version
-secretsync sync --version 5 --target production
+secrets-sync sync --version 5 --target production
 
 # Configure retention
 versioning:
   enabled: true
-  s3_bucket: "my-secretsync-versions"
+  s3_bucket: "my-secrets-sync-versions"
   retention_days: 90
 ```
 
@@ -264,11 +264,11 @@ Or use exit codes for pipeline control:
 
 ```bash
 # Check for changes (exit code 1 if changes detected)
-secretsync pipeline --config config.yaml --dry-run --exit-code
+secrets-sync pipeline --config config.yaml --dry-run --exit-code
 
 # Apply changes only if needed
 if [ $? -eq 1 ]; then
-  secretsync pipeline --config config.yaml
+  secrets-sync pipeline --config config.yaml
 fi
 ```
 
@@ -277,14 +277,14 @@ fi
 Enable Prometheus metrics:
 
 ```bash
-secretsync pipeline --config config.yaml --metrics-port 9090
+secrets-sync pipeline --config config.yaml --metrics-port 9090
 ```
 
 Available metrics:
-- `secretsync_vault_api_call_duration_seconds`
-- `secretsync_aws_api_call_duration_seconds`
-- `secretsync_pipeline_execution_duration_seconds`
-- `secretsync_pipeline_errors_total`
+- `secrets_sync_vault_api_call_duration_seconds`
+- `secrets_sync_aws_api_call_duration_seconds`
+- `secrets_sync_pipeline_execution_duration_seconds`
+- `secrets_sync_pipeline_errors_total`
 
 ### What happens if SecretSync fails?
 
@@ -437,10 +437,10 @@ Secrets are masked by default in diff output:
 
 ```bash
 # Masked (default)
-secretsync pipeline --config config.yaml --dry-run
+secrets-sync pipeline --config config.yaml --dry-run
 
 # Show values (use with caution)
-secretsync pipeline --config config.yaml --dry-run --show-values
+secrets-sync pipeline --config config.yaml --dry-run --show-values
 ```
 
 ### How do I report security issues?
@@ -456,7 +456,7 @@ Use [GitHub Security Advisories](https://github.com/jbcom/secrets-sync/security/
 3. Make your changes with tests
 4. Submit a pull request
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](https://github.com/jbcom/secrets-sync/blob/main/CONTRIBUTING.md) for detailed guidelines.
 
 ### How do I add a new secret store?
 
@@ -465,7 +465,7 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
 3. Write comprehensive tests
 4. Update documentation
 
-See the [development guide](../CONTRIBUTING.md#adding-a-new-secret-store) for details.
+See the [development guide](https://github.com/jbcom/secrets-sync/blob/main/CONTRIBUTING.md#adding-a-new-secret-store) for details.
 
 ### How do I run tests?
 

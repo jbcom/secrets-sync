@@ -1,0 +1,116 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "secrets-sync-bridge"
+version = "0.1.0"
+description = "Python bridge for SecretSync CLI and native runtimes"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+readme = "README.md"
+authors = [{ name = "Jon Bogaty", email = "jon@jonbogaty.com" }]
+maintainers = [{ name = "Jon Bogaty", email = "jon@jonbogaty.com" }]
+keywords = ["secrets", "vault", "aws", "automation", "bridge"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+]
+dependencies = [
+    "extended-data>=7.0.0,<8.0.0",
+]
+
+[project.urls]
+Documentation = "https://jbcom.github.io/secrets-sync/"
+Issues = "https://github.com/jbcom/secrets-sync/issues"
+Source = "https://github.com/jbcom/secrets-sync"
+Changelog = "https://github.com/jbcom/secrets-sync/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+tests = [
+    "coverage[toml]>=7.6.0",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "pytest-mock>=3.15.1",
+    "pyyaml>=6.0.3",
+]
+typing = [
+    "mypy>=1.20.1",
+    "types-PyYAML>=6.0.12.20240724",
+]
+docs = [
+    "furo>=2025.12.19",
+    "myst-parser>=4.0.1,<6.0.0",
+    "sphinx>=8.2.3,<9.0.0",
+    "sphinx-autodoc2>=0.5.0",
+    "sphinx-copybutton>=0.5.2",
+]
+dev = [
+    "secrets-sync-bridge[tests,typing,docs]",
+    "ruff>=0.8.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/secrets_sync"]
+
+[tool.pytest.ini_options]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
+testpaths = ["tests"]
+xfail_strict = true
+
+[tool.coverage.run]
+branch = true
+parallel = true
+source = ["secrets_sync"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "tests", "docs"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "ANN",
+    "ARG",
+    "BLE001",
+    "COM",
+    "D205",
+    "D415",
+    "D417",
+    "E501",
+    "EM",
+    "FBT",
+    "FIX",
+    "PLR0913",
+    "PTH",
+    "TRY003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D", "INP001", "PLR2004", "PT", "S"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+lines-between-types = 1
+lines-after-imports = 2
+
+[tool.mypy]
+strict = true
+pretty = true
+show_error_codes = true
+ignore_missing_imports = true
+warn_return_any = false

@@ -18,15 +18,16 @@
 
 SecretSync provides **fully automated, enterprise-grade secret synchronization** across multiple cloud providers and secret stores. Built for scale with a **two-phase pipeline architecture** (merge → sync), it supports inheritance, dynamic target discovery, and CI/CD-friendly diff reporting.
 
-## 🏢 Independent Repository, Extended Data Integration
+## 🏢 Independent Repository, Python Bridge
 
 SecretSync is an independent [jbcom/secrets-sync](https://github.com/jbcom/secrets-sync) repository and MIT-licensed release artifact for secret synchronization workflows.
 
 **🐍 Python Integration**: SecretSync is available to Python through the
-[extended-data](https://github.com/jbcom/extended-data) `extended-data[secrets]`
-connector, which executes the supported `secretsync` CLI contract. This repo
-also keeps direct [gopy](https://github.com/go-python/gopy) binding sources for
-local experiments.
+`secrets-sync-bridge` package, which can use local `secrets_sync_native` gopy
+bindings or the supported `secrets-sync` CLI contract and returns redacted
+`ExtendedDict` payloads. The bridge depends on
+[extended-data](https://github.com/jbcom/extended-data) for data boundaries and
+redaction, but it remains a standalone package.
 
 **🚀 Perfect for:** Multi-account AWS environments, Kubernetes deployments, CI/CD pipelines, and enterprise secret management at scale.
 
@@ -121,7 +122,7 @@ See [Two-Phase Architecture](./docs/TWO_PHASE_ARCHITECTURE.md) for detailed docu
 
 ```bash
 # Go install
-go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 
 # Or build from a local checkout
 git clone https://github.com/jbcom/secrets-sync.git
@@ -131,13 +132,14 @@ make build
 
 ## Python Integration
 
-The recommended Python surface is the `extended-data[secrets]` connector. It
-uses the `secretsync` CLI and returns mapping-style `ExtendedDict` payloads from
-configuration, dry-run, merge, sync, and full pipeline operations.
+The recommended Python surface is the `secrets-sync-bridge` package. It exposes
+one `secrets_sync` import over the `secrets-sync` CLI and local gopy bindings,
+returning mapping-style `ExtendedDict` payloads from configuration, dry-run,
+merge, sync, and full pipeline operations.
 
-The repository also includes direct gopy binding sources under `python/` for
-local binding experiments. Those bindings are not the runtime contract used by
-`extended-data`.
+The repository also includes direct gopy binding sources under
+`python/secrets_sync`. Generated bindings use the separate
+`secrets_sync_native` import so they do not collide with the bridge package.
 
 ### Building Python Bindings
 
@@ -154,73 +156,60 @@ make python-bindings
 make python-install
 ```
 
-### Using via extended-data
+### Using secrets-sync-bridge
 
-The recommended way to use SecretSync from Python is via the [extended-data](https://github.com/jbcom/extended-data) library:
+The recommended way to use SecretSync from Python is the bridge package:
 
 ```bash
-pip install extended-data[secrets]
+pip install secrets-sync-bridge
 ```
 
-This installs the Python connector surface. To execute the full pipeline from
-Python, make sure the `secretsync` CLI is installed and available on `PATH`.
+By default, the bridge uses `backend="auto"`: it runs through
+`secrets_sync_native` when that generated package is installed and otherwise
+falls back to the `secrets-sync` CLI on `PATH`. Use `backend="cli"` or
+`backend="native"` to require one runtime explicitly.
 
 ```python
-from extended_data.secrets import SecretsConnector
+from secrets_sync import SecretsSyncBridge
 
-# Initialize connector
-connector = SecretsConnector()
+bridge = SecretsSyncBridge()
 
-# Validate configuration
-validation = connector.validate_config("pipeline.yaml")
+validation = bridge.validate_config("pipeline.yaml")
 if not validation["valid"]:
     raise SystemExit(validation["message"])
 
-# Dry run to see what would change
-result = connector.dry_run("pipeline.yaml")
-print(f"Would sync {result['secrets_processed']} secrets")
-print(f"  Add: {result['secrets_added']}")
-print(f"  Modify: {result['secrets_modified']}")
-print(f"  Remove: {result['secrets_removed']}")
+result = bridge.dry_run("pipeline.yaml")
 
-# Execute the full pipeline
-result = connector.run_pipeline("pipeline.yaml")
-if result["success"]:
-    print(f"Successfully synced {result['secrets_added']} secrets")
+assert "secrets_processed" in result
+assert "diff_output" in result
+
+if not result["success"]:
+    raise SystemExit("Dry run failed; run secrets-sync directly in a secure terminal for diagnostics.")
 ```
 
 ### AI Agent Integration
 
-SecretSync tools are available for LangChain, CrewAI, and AWS Strands:
-
-```python
-from extended_data.secrets import get_tools
-
-# Auto-detect framework
-tools = get_tools()
-
-# Or specify framework
-langchain_tools = get_tools("langchain")
-crewai_tools = get_tools("crewai")
-```
+SecretSync agent tools are owned by `agentic-crew`, not this repository. Install
+`agentic-crew[secrets-sync]` when a CrewAI, LangChain, LangGraph, or Strands
+workflow needs to validate configs, run dry-runs, or execute pipelines.
 
 ### Basic Usage
 
 ```bash
 # Validate configuration
-secretsync validate --config pipeline.yaml
+secrets-sync validate --config pipeline.yaml
 
 # Dry run with enhanced diff output
-secretsync pipeline --config pipeline.yaml --dry-run --output side-by-side
+secrets-sync pipeline --config pipeline.yaml --dry-run --output side-by-side
 
 # Full pipeline execution with metrics
-secretsync pipeline --config pipeline.yaml --metrics-port 9090
+secrets-sync pipeline --config pipeline.yaml --metrics-port 9090
 
 # CI/CD mode (exit codes: 0=no changes, 1=changes, 2=errors)
-secretsync pipeline --config pipeline.yaml --dry-run --diff --output json --exit-code
+secrets-sync pipeline --config pipeline.yaml --dry-run --diff --output json --exit-code
 
 # Inspect dependency order
-secretsync graph --config pipeline.yaml
+secrets-sync graph --config pipeline.yaml
 ```
 
 ### Example Configuration
@@ -246,7 +235,7 @@ aws:
 
 merge_store:
   s3:
-    bucket: company-secretsync-merge-store
+    bucket: company-secrets-sync-merge-store
     prefix: merged/
     versioning:
       enabled: true
@@ -323,12 +312,12 @@ See [GitHub Actions documentation](./docs/GITHUB_ACTIONS.md) for complete usage 
 ```yaml
 - name: Validate secrets pipeline
   run: |
-    secretsync pipeline --config pipeline.yaml --dry-run --output github --exit-code
+    secrets-sync pipeline --config pipeline.yaml --dry-run --output github --exit-code
   
 - name: Apply secrets (on merge to main)
   if: github.ref == 'refs/heads/main'
   run: |
-    secretsync pipeline --config pipeline.yaml
+    secrets-sync pipeline --config pipeline.yaml
 ```
 
 ### Output Formats
@@ -378,7 +367,7 @@ Run SecretSync as a scheduled pipeline runner. See
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: secretsync
+  name: secrets-sync
 spec:
   schedule: "*/30 * * * *"
   jobTemplate:
@@ -387,8 +376,8 @@ spec:
         spec:
           restartPolicy: Never
           containers:
-            - name: secretsync
-              image: jbcom/secretssync:v1
+            - name: secrets-sync
+              image: jbcom/secrets-sync:v1
               args: ["pipeline", "--config", "/config/config.yaml", "--diff", "--output", "json"]
 ```
 
@@ -397,7 +386,7 @@ spec:
 ```bash
 # Run with config file
 docker run -v $(pwd)/config.yaml:/config.yaml \
-  jbcom/secretssync:v1 pipeline --config /config.yaml
+  jbcom/secrets-sync:v1 pipeline --config /config.yaml
 
 # Multi-arch images available: linux/amd64, linux/arm64
 ```
@@ -410,43 +399,43 @@ SecretSync exposes Prometheus metrics for production monitoring and debugging.
 
 ```bash
 # Enable metrics server on port 9090
-secretsync pipeline --config config.yaml --metrics-port 9090
+secrets-sync pipeline --config config.yaml --metrics-port 9090
 
 # Custom address and port
-secretsync pipeline --config config.yaml --metrics-addr 0.0.0.0 --metrics-port 9090
+secrets-sync pipeline --config config.yaml --metrics-addr 0.0.0.0 --metrics-port 9090
 ```
 
 ### Available Metrics
 
 **Vault Metrics:**
-- `secretsync_vault_api_call_duration_seconds` - Vault API call latency
-- `secretsync_vault_secrets_listed_total` - Total secrets listed from Vault
-- `secretsync_vault_traversal_depth` - BFS traversal depth reached
-- `secretsync_vault_queue_size` - Current traversal queue size
-- `secretsync_vault_errors_total` - Vault error count by operation/type
+- `secrets_sync_vault_api_call_duration_seconds` - Vault API call latency
+- `secrets_sync_vault_secrets_listed_total` - Total secrets listed from Vault
+- `secrets_sync_vault_traversal_depth` - BFS traversal depth reached
+- `secrets_sync_vault_queue_size` - Current traversal queue size
+- `secrets_sync_vault_errors_total` - Vault error count by operation/type
 
 **AWS Metrics:**
-- `secretsync_aws_api_call_duration_seconds` - AWS API call latency
-- `secretsync_aws_pagination_pages` - Number of pagination pages processed
-- `secretsync_aws_cache_hits_total` - Cache hit count
-- `secretsync_aws_cache_misses_total` - Cache miss count
-- `secretsync_aws_secrets_operations_total` - Secret operations (create/update/delete)
+- `secrets_sync_aws_api_call_duration_seconds` - AWS API call latency
+- `secrets_sync_aws_pagination_pages` - Number of pagination pages processed
+- `secrets_sync_aws_cache_hits_total` - Cache hit count
+- `secrets_sync_aws_cache_misses_total` - Cache miss count
+- `secrets_sync_aws_secrets_operations_total` - Secret operations (create/update/delete)
 
 **Pipeline Metrics:**
-- `secretsync_pipeline_execution_duration_seconds` - Pipeline phase duration
-- `secretsync_pipeline_targets_processed_total` - Targets processed by phase
-- `secretsync_pipeline_parallel_workers` - Active parallel workers
-- `secretsync_pipeline_errors_total` - Pipeline error count
+- `secrets_sync_pipeline_execution_duration_seconds` - Pipeline phase duration
+- `secrets_sync_pipeline_targets_processed_total` - Targets processed by phase
+- `secrets_sync_pipeline_parallel_workers` - Active parallel workers
+- `secrets_sync_pipeline_errors_total` - Pipeline error count
 
 **S3 Metrics:**
-- `secretsync_s3_operation_duration_seconds` - S3 operation latency
-- `secretsync_s3_object_size_bytes` - S3 object sizes
+- `secrets_sync_s3_operation_duration_seconds` - S3 operation latency
+- `secrets_sync_s3_object_size_bytes` - S3 object sizes
 
 ### Prometheus Configuration
 
 ```yaml
 scrape_configs:
-  - job_name: 'secretsync'
+  - job_name: 'secrets-sync'
     static_configs:
       - targets: ['localhost:9090']
     metrics_path: '/metrics'

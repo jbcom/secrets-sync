@@ -11,7 +11,7 @@ import (
 
 const (
 	// Namespace for all metrics
-	namespace = "secretsync"
+	namespace = "secrets_sync"
 
 	// Subsystems
 	subsystemVault    = "vault"
