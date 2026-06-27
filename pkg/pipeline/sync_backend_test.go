@@ -12,15 +12,18 @@ import (
 // memAuditSink captures audit entries for assertions.
 type memAuditSink struct{ entries []audit.Entry }
 
-func (m *memAuditSink) Write(e audit.Entry) error { m.entries = append(m.entries, e); return nil }
-func (m *memAuditSink) Close() error              { return nil }
+func (m *memAuditSink) Write(_ context.Context, e audit.Entry) error {
+	m.entries = append(m.entries, e)
+	return nil
+}
+func (m *memAuditSink) Close() error { return nil }
 
 func TestPipelineAuditEmitsChainedEntries(t *testing.T) {
 	sink := &memAuditSink{}
 	p := &Pipeline{auditor: audit.NewLogger(sink)}
 
-	p.audit(audit.Record{Operation: audit.OpWrite, Driver: "aws", Target: "prod", Secret: "db", Success: true})
-	p.audit(audit.Record{Operation: audit.OpWrite, Driver: "aws", Target: "prod", Secret: "api", Success: true})
+	p.audit(context.Background(), audit.Record{Operation: audit.OpWrite, Driver: "aws", Target: "prod", Secret: "db", Success: true})
+	p.audit(context.Background(), audit.Record{Operation: audit.OpWrite, Driver: "aws", Target: "prod", Secret: "api", Success: true})
 
 	if len(sink.entries) != 2 {
 		t.Fatalf("expected 2 audit entries, got %d", len(sink.entries))
@@ -30,7 +33,7 @@ func TestPipelineAuditEmitsChainedEntries(t *testing.T) {
 	}
 
 	// A nil auditor must be a safe no-op.
-	(&Pipeline{}).audit(audit.Record{Operation: audit.OpWrite, Secret: "x"})
+	(&Pipeline{}).audit(context.Background(), audit.Record{Operation: audit.OpWrite, Secret: "x"})
 }
 
 func TestPolicyDenied(t *testing.T) {

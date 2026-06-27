@@ -177,7 +177,7 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 				"destSecret": destName,
 				"driver":     targetBackend.Driver(),
 			}).Error("Failed to write secret to target backend")
-			p.audit(audit.Record{
+			p.audit(ctx, audit.Record{
 				Operation: audit.OpWrite, Driver: string(targetBackend.Driver()),
 				Target: targetName, Secret: destName, Success: false, Error: err.Error(),
 			})
@@ -190,7 +190,7 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 			"destSecret": destName,
 			"driver":     targetBackend.Driver(),
 		}).Debug("Secret synced to target backend")
-		p.audit(audit.Record{
+		p.audit(ctx, audit.Record{
 			Operation: audit.OpWrite, Driver: string(targetBackend.Driver()),
 			Target: targetName, Secret: destName, Success: true,
 		})

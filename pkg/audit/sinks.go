@@ -37,7 +37,7 @@ func NewFileSink(path string) (*FileSink, error) {
 
 // Write appends one JSON-encoded entry followed by a newline and flushes, so an
 // audit record is durable as soon as Log returns.
-func (s *FileSink) Write(e Entry) error {
+func (s *FileSink) Write(_ context.Context, e Entry) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	b, err := json.Marshal(e)
@@ -81,13 +81,13 @@ func NewS3Sink(api s3PutAPI, bucket, prefix string) *S3Sink {
 }
 
 // Write puts the entry as a JSON object at <prefix>/<sequence>.json.
-func (s *S3Sink) Write(e Entry) error {
+func (s *S3Sink) Write(ctx context.Context, e Entry) error {
 	b, err := json.Marshal(e)
 	if err != nil {
 		return err
 	}
 	key := fmt.Sprintf("%s/%020d.json", s.prefix, e.Sequence)
-	_, err = s.api.PutObject(context.Background(), &s3.PutObjectInput{
+	_, err = s.api.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(s.bucket),
 		Key:         aws.String(key),
 		Body:        bytes.NewReader(b),
@@ -127,12 +127,12 @@ func NewCloudWatchSink(api cwAPI, group, stream string) *CloudWatchSink {
 }
 
 // Write emits the entry as a JSON log event.
-func (s *CloudWatchSink) Write(e Entry) error {
+func (s *CloudWatchSink) Write(ctx context.Context, e Entry) error {
 	b, err := json.Marshal(e)
 	if err != nil {
 		return err
 	}
-	_, err = s.api.PutLogEvents(context.Background(), &cloudwatchlogs.PutLogEventsInput{
+	_, err = s.api.PutLogEvents(ctx, &cloudwatchlogs.PutLogEventsInput{
 		LogGroupName:  aws.String(s.group),
 		LogStreamName: aws.String(s.stream),
 		LogEvents: []cwtypes.InputLogEvent{
@@ -157,9 +157,9 @@ type MultiSink struct {
 // NewMultiSink combines sinks.
 func NewMultiSink(sinks ...Sink) *MultiSink { return &MultiSink{sinks: sinks} }
 
-func (m *MultiSink) Write(e Entry) error {
+func (m *MultiSink) Write(ctx context.Context, e Entry) error {
 	for _, s := range m.sinks {
-		if err := s.Write(e); err != nil {
+		if err := s.Write(ctx, e); err != nil {
 			return err
 		}
 	}

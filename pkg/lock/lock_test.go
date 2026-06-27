@@ -14,13 +14,18 @@ import (
 	"github.com/aws/smithy-go"
 )
 
-// fakeS3Lock simulates S3 conditional-create + read/delete semantics in memory.
+// fakeS3Lock simulates S3 conditional-create + read/delete + If-Match semantics
+// in memory, tracking a per-key ETag that changes on every write.
 type fakeS3Lock struct {
 	mu      sync.Mutex
 	objects map[string][]byte
+	etags   map[string]string
+	seq     int
 }
 
-func newFakeS3Lock() *fakeS3Lock { return &fakeS3Lock{objects: map[string][]byte{}} }
+func newFakeS3Lock() *fakeS3Lock {
+	return &fakeS3Lock{objects: map[string][]byte{}, etags: map[string]string{}}
+}
 
 type preconditionErr struct{}
 
@@ -33,8 +38,13 @@ func (f *fakeS3Lock) PutObject(_ context.Context, in *s3.PutObjectInput, _ ...fu
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	key := *in.Key
-	if in.IfNoneMatch != nil {
-		if _, exists := f.objects[key]; exists {
+	_, exists := f.objects[key]
+	if in.IfNoneMatch != nil && exists {
+		return nil, preconditionErr{}
+	}
+	// If-Match: write only if the current ETag matches.
+	if in.IfMatch != nil {
+		if !exists || f.etags[key] != *in.IfMatch {
 			return nil, preconditionErr{}
 		}
 	}
@@ -44,6 +54,8 @@ func (f *fakeS3Lock) PutObject(_ context.Context, in *s3.PutObjectInput, _ ...fu
 		body = b
 	}
 	f.objects[key] = body
+	f.seq++
+	f.etags[key] = fmt.Sprintf("etag-%d", f.seq)
 	return &s3.PutObjectOutput{}, nil
 }
 
@@ -54,7 +66,8 @@ func (f *fakeS3Lock) GetObject(_ context.Context, in *s3.GetObjectInput, _ ...fu
 	if !ok {
 		return nil, fmt.Errorf("NoSuchKey")
 	}
-	return &s3.GetObjectOutput{Body: io.NopCloser(bytes.NewReader(body))}, nil
+	etag := f.etags[*in.Key]
+	return &s3.GetObjectOutput{Body: io.NopCloser(bytes.NewReader(body)), ETag: &etag}, nil
 }
 
 func (f *fakeS3Lock) DeleteObject(_ context.Context, in *s3.DeleteObjectInput, _ ...func(*s3.Options)) (*s3.DeleteObjectOutput, error) {
@@ -109,6 +122,41 @@ func TestS3LockExpiredLeaseTakeover(t *testing.T) {
 	b := NewS3Lock(api, "b", "k", "pod-b", time.Minute)
 	if err := b.Acquire(ctx); err != nil {
 		t.Fatalf("pod-b should take over expired lease, got %v", err)
+	}
+	// pod-c racing for the same now-fresh lease must be rejected.
+	c := NewS3Lock(api, "b", "k", "pod-c", time.Minute)
+	if err := c.Acquire(ctx); !errors.Is(err, ErrLockHeld) {
+		t.Fatalf("pod-c should see ErrLockHeld after pod-b took over, got %v", err)
+	}
+}
+
+func TestS3LockTakeoverRaceOnlyOneWins(t *testing.T) {
+	ctx := context.Background()
+	api := newFakeS3Lock()
+	// Seed an expired lease.
+	past := time.Now().Add(-time.Hour)
+	seed := NewS3Lock(api, "b", "k", "old", time.Minute)
+	seed.now = func() time.Time { return past }
+	if err := seed.Acquire(ctx); err != nil {
+		t.Fatalf("seed acquire: %v", err)
+	}
+
+	// Two replicas read the same expired lease (same ETag) and both attempt
+	// takeover; the If-Match conditional write means exactly one wins.
+	r1 := NewS3Lock(api, "b", "k", "r1", time.Minute)
+	r2 := NewS3Lock(api, "b", "k", "r2", time.Minute)
+	err1 := r1.Acquire(ctx)
+	err2 := r2.Acquire(ctx)
+	wins := 0
+	for _, e := range []error{err1, err2} {
+		if e == nil {
+			wins++
+		} else if !errors.Is(e, ErrLockHeld) {
+			t.Fatalf("unexpected takeover error: %v", e)
+		}
+	}
+	if wins != 1 {
+		t.Fatalf("exactly one replica must win the takeover, got %d", wins)
 	}
 }
 

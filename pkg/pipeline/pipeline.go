@@ -227,10 +227,23 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 // Shutdown flushes and releases pipeline-owned resources (currently the tracer
 // provider). It is safe to call even when tracing was never configured.
 func (p *Pipeline) Shutdown(ctx context.Context) error {
-	if p == nil || p.tracing == nil {
+	if p == nil {
 		return nil
 	}
-	return p.tracing.Shutdown(ctx)
+	var firstErr error
+	// Flush and close the audit sink first so buffered entries (e.g. a
+	// bufio-backed FileSink) are not lost on shutdown.
+	if p.auditor != nil {
+		if err := p.auditor.Close(); err != nil {
+			firstErr = err
+		}
+	}
+	if p.tracing != nil {
+		if err := p.tracing.Shutdown(ctx); err != nil && firstErr == nil {
+			firstErr = err
+		}
+	}
+	return firstErr
 }
 
 func cloneConfig(cfg *Config) (*Config, error) {

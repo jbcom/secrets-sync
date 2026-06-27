@@ -71,7 +71,7 @@ func (l *S3Lock) Acquire(ctx context.Context) error {
 	}
 
 	// The object exists; inspect the lease for staleness.
-	rec, err := l.readLease(ctx)
+	rec, etag, err := l.readLease(ctx)
 	if err != nil {
 		// Couldn't read the lease (e.g. it was just deleted) — treat as contended
 		// so the caller retries rather than assuming ownership.
@@ -80,8 +80,14 @@ func (l *S3Lock) Acquire(ctx context.Context) error {
 	if l.now().Before(rec.ExpiresAt) {
 		return ErrLockHeld
 	}
-	// Lease is expired; take it over with an unconditional overwrite.
-	if err := l.put(ctx, false); err != nil {
+	// Lease is expired; take it over with a conditional overwrite bound to the
+	// version we just read (If-Match: <etag>). If two replicas race to reclaim
+	// the same stale lease, only the one whose write matches the current ETag
+	// wins; the loser gets a precondition failure and is treated as contended.
+	if err := l.putIfMatch(ctx, etag); err != nil {
+		if isLockContended(err) {
+			return ErrLockHeld
+		}
 		return fmt.Errorf("lock: takeover: %w", err)
 	}
 	return nil
@@ -111,10 +117,23 @@ func (l *S3Lock) Release(ctx context.Context) error {
 
 func (l *S3Lock) conditionalPut(ctx context.Context) error { return l.put(ctx, true) }
 
+// leaseBody marshals a fresh lease record. The error is surfaced rather than
+// ignored so a marshal failure can never leave an empty/invalid lock body.
+func (l *S3Lock) leaseBody() ([]byte, error) {
+	body, err := json.Marshal(leaseRecord{Holder: l.holder, ExpiresAt: l.now().Add(l.ttl)})
+	if err != nil {
+		return nil, fmt.Errorf("lock: marshal lease: %w", err)
+	}
+	return body, nil
+}
+
 // put writes the lease record. When conditional is true it uses If-None-Match:*
 // (atomic create-if-absent); otherwise it overwrites unconditionally.
 func (l *S3Lock) put(ctx context.Context, conditional bool) error {
-	body, _ := json.Marshal(leaseRecord{Holder: l.holder, ExpiresAt: l.now().Add(l.ttl)})
+	body, err := l.leaseBody()
+	if err != nil {
+		return err
+	}
 	in := &s3.PutObjectInput{
 		Bucket: aws.String(l.bucket),
 		Key:    aws.String(l.key),
@@ -123,28 +142,50 @@ func (l *S3Lock) put(ctx context.Context, conditional bool) error {
 	if conditional {
 		in.IfNoneMatch = aws.String("*")
 	}
-	_, err := l.api.PutObject(ctx, in)
+	_, err = l.api.PutObject(ctx, in)
 	return err
 }
 
-func (l *S3Lock) readLease(ctx context.Context) (leaseRecord, error) {
+// putIfMatch overwrites the lock object only if its current ETag matches etag,
+// giving an atomic stale-lease takeover.
+func (l *S3Lock) putIfMatch(ctx context.Context, etag string) error {
+	body, err := l.leaseBody()
+	if err != nil {
+		return err
+	}
+	_, err = l.api.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:  aws.String(l.bucket),
+		Key:     aws.String(l.key),
+		Body:    bytes.NewReader(body),
+		IfMatch: aws.String(etag),
+	})
+	return err
+}
+
+// readLease reads and parses the current lock object, returning its lease
+// record and the object's ETag (used to bind a conditional takeover).
+func (l *S3Lock) readLease(ctx context.Context) (leaseRecord, string, error) {
 	out, err := l.api.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(l.bucket),
 		Key:    aws.String(l.key),
 	})
 	if err != nil {
-		return leaseRecord{}, err
+		return leaseRecord{}, "", err
 	}
 	defer func() { _ = out.Body.Close() }()
 	data, err := io.ReadAll(out.Body)
 	if err != nil {
-		return leaseRecord{}, err
+		return leaseRecord{}, "", err
 	}
 	var rec leaseRecord
 	if err := json.Unmarshal(data, &rec); err != nil {
-		return leaseRecord{}, err
+		return leaseRecord{}, "", err
 	}
-	return rec, nil
+	etag := ""
+	if out.ETag != nil {
+		etag = *out.ETag
+	}
+	return rec, etag, nil
 }
 
 // isLockContended reports whether a PutObject error is S3's response to a failed

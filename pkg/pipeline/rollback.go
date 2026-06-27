@@ -70,7 +70,7 @@ func (p *Pipeline) rollback(ctx context.Context, backend driver.TargetBackend, t
 			errs = append(errs, fmt.Sprintf("restore %s: %v", name, err))
 			continue
 		}
-		p.audit(audit.Record{Operation: audit.OpWrite, Driver: string(backend.Driver()), Target: targetName, Secret: name, Success: true, Actor: "rollback"})
+		p.audit(ctx, audit.Record{Operation: audit.OpWrite, Driver: string(backend.Driver()), Target: targetName, Secret: name, Success: true, Actor: "rollback"})
 	}
 
 	// Delete secrets that were created during the failed sync (present now but
@@ -87,7 +87,7 @@ func (p *Pipeline) rollback(ctx context.Context, backend driver.TargetBackend, t
 				errs = append(errs, fmt.Sprintf("delete created %s: %v", name, err))
 				continue
 			}
-			p.audit(audit.Record{Operation: audit.OpDelete, Driver: string(backend.Driver()), Target: targetName, Secret: name, Success: true, Actor: "rollback"})
+			p.audit(ctx, audit.Record{Operation: audit.OpDelete, Driver: string(backend.Driver()), Target: targetName, Secret: name, Success: true, Actor: "rollback"})
 		}
 	}
 

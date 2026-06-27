@@ -126,9 +126,19 @@ func (c *Client) Close() error { return nil }
 // hash of the *original* path is appended. Distinct paths therefore never
 // collide onto the same Secret, eliminating silent cross-path overwrite.
 func secretName(path string) string {
-	sanitized := strings.ToLower(path)
-	sanitized = strings.NewReplacer("/", "-", "_", "-", ".", "-", " ", "-").Replace(sanitized)
-	sanitized = strings.Trim(sanitized, "-")
+	// DNS-1123 names allow only lowercase alphanumerics and hyphens. Map every
+	// other rune (including unicode and unlisted punctuation) to a hyphen via a
+	// strict whitelist rather than a fixed separator list.
+	lowered := strings.ToLower(path)
+	mapped := strings.Map(func(r rune) rune {
+		switch {
+		case r >= 'a' && r <= 'z', r >= '0' && r <= '9', r == '-':
+			return r
+		default:
+			return '-'
+		}
+	}, lowered)
+	sanitized := strings.Trim(mapped, "-")
 
 	sum := sha256.Sum256([]byte(path))
 	suffix := "-" + hex.EncodeToString(sum[:])[:10]

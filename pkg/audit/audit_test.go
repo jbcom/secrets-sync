@@ -19,7 +19,7 @@ type memSink struct {
 	failOn  int // fail Write when len(entries)==failOn (-1 = never)
 }
 
-func (m *memSink) Write(e Entry) error {
+func (m *memSink) Write(_ context.Context, e Entry) error {
 	if m.failOn >= 0 && len(m.entries) == m.failOn {
 		return fmt.Errorf("injected failure")
 	}
@@ -32,7 +32,7 @@ func TestChainIntegrity(t *testing.T) {
 	sink := &memSink{failOn: -1}
 	l := NewLogger(sink)
 	for i := 0; i < 5; i++ {
-		if err := l.Log(Record{Operation: OpWrite, Driver: "aws", Secret: fmt.Sprintf("s%d", i), Success: true}); err != nil {
+		if err := l.Log(context.Background(), Record{Operation: OpWrite, Driver: "aws", Secret: fmt.Sprintf("s%d", i), Success: true}); err != nil {
 			t.Fatalf("log %d: %v", i, err)
 		}
 	}
@@ -54,7 +54,7 @@ func TestTamperDetection(t *testing.T) {
 	sink := &memSink{failOn: -1}
 	l := NewLogger(sink)
 	for i := 0; i < 3; i++ {
-		_ = l.Log(Record{Operation: OpRead, Driver: "vault", Secret: fmt.Sprintf("s%d", i), Success: true})
+		_ = l.Log(context.Background(), Record{Operation: OpRead, Driver: "vault", Secret: fmt.Sprintf("s%d", i), Success: true})
 	}
 
 	// Tamper with a middle entry's content without recomputing the chain.
@@ -74,16 +74,16 @@ func TestTamperDetection(t *testing.T) {
 func TestWriteFailureRollsBackSequence(t *testing.T) {
 	sink := &memSink{failOn: 1} // fail the 2nd write
 	l := NewLogger(sink)
-	if err := l.Log(Record{Operation: OpWrite, Secret: "a", Success: true}); err != nil {
+	if err := l.Log(context.Background(), Record{Operation: OpWrite, Secret: "a", Success: true}); err != nil {
 		t.Fatalf("first log: %v", err)
 	}
-	if err := l.Log(Record{Operation: OpWrite, Secret: "b", Success: true}); err == nil {
+	if err := l.Log(context.Background(), Record{Operation: OpWrite, Secret: "b", Success: true}); err == nil {
 		t.Fatal("expected second log to fail")
 	}
 	// After the failure, the next successful log must continue the chain from
 	// the last good entry with sequence 2 (not 3).
 	sink.failOn = -1
-	if err := l.Log(Record{Operation: OpWrite, Secret: "c", Success: true}); err != nil {
+	if err := l.Log(context.Background(), Record{Operation: OpWrite, Secret: "c", Success: true}); err != nil {
 		t.Fatalf("third log: %v", err)
 	}
 	if idx, err := Verify(sink.entries); idx != -1 || err != nil {
@@ -102,7 +102,7 @@ func TestFileSinkRoundTrip(t *testing.T) {
 	}
 	l := NewLogger(sink)
 	for i := 0; i < 3; i++ {
-		_ = l.Log(Record{Operation: OpDelete, Driver: "gcp", Secret: fmt.Sprintf("s%d", i), Success: true})
+		_ = l.Log(context.Background(), Record{Operation: OpDelete, Driver: "gcp", Secret: fmt.Sprintf("s%d", i), Success: true})
 	}
 	if err := l.Close(); err != nil {
 		t.Fatalf("close: %v", err)
@@ -136,7 +136,7 @@ func TestS3SinkKeysAreOrdered(t *testing.T) {
 	fake := &fakeS3{}
 	l := NewLogger(NewS3Sink(fake, "bucket", "audit"))
 	for i := 0; i < 3; i++ {
-		_ = l.Log(Record{Operation: OpWrite, Secret: fmt.Sprintf("s%d", i), Success: true})
+		_ = l.Log(context.Background(), Record{Operation: OpWrite, Secret: fmt.Sprintf("s%d", i), Success: true})
 	}
 	if len(fake.keys) != 3 {
 		t.Fatalf("expected 3 puts, got %d", len(fake.keys))
@@ -159,7 +159,7 @@ func TestCloudWatchSink(t *testing.T) {
 	sink := NewCloudWatchSink(fake, "grp", "stream")
 	sink.nowMillis = func() int64 { return 1000 }
 	l := NewLogger(sink)
-	_ = l.Log(Record{Operation: OpRead, Secret: "x", Success: true})
+	_ = l.Log(context.Background(), Record{Operation: OpRead, Secret: "x", Success: true})
 	if fake.count != 1 {
 		t.Fatalf("expected 1 put log event, got %d", fake.count)
 	}
@@ -168,7 +168,7 @@ func TestCloudWatchSink(t *testing.T) {
 func TestMultiSink(t *testing.T) {
 	a, b := &memSink{failOn: -1}, &memSink{failOn: -1}
 	l := NewLogger(NewMultiSink(a, b))
-	_ = l.Log(Record{Operation: OpWrite, Secret: "x", Success: true})
+	_ = l.Log(context.Background(), Record{Operation: OpWrite, Secret: "x", Success: true})
 	if len(a.entries) != 1 || len(b.entries) != 1 {
 		t.Fatalf("both sinks should receive the entry: a=%d b=%d", len(a.entries), len(b.entries))
 	}

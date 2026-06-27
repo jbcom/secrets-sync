@@ -46,11 +46,11 @@ func (p *Pipeline) buildAuditor(ctx context.Context, cfg AuditConfig) (*audit.Lo
 // audit logs an audit record if an auditor is configured. Failures to write an
 // audit entry are logged but never block the sync (the operation already
 // happened); audit-sink reliability is an operational concern.
-func (p *Pipeline) audit(r audit.Record) {
+func (p *Pipeline) audit(ctx context.Context, r audit.Record) {
 	if p.auditor == nil {
 		return
 	}
-	if err := p.auditor.Log(r); err != nil {
+	if err := p.auditor.Log(ctx, r); err != nil {
 		log.WithError(err).Warn("Failed to write audit entry")
 	}
 }

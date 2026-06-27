@@ -176,7 +176,8 @@ func secretID(path string) string {
 			out = append(out, '-')
 		}
 	}
-	sanitized := strings.Trim(string(out), "-")
+	// GCP secret IDs must not start or end with a hyphen or underscore.
+	sanitized := strings.Trim(string(out), "-_")
 
 	sum := sha256.Sum256([]byte(path))
 	suffix := "-" + hex.EncodeToString(sum[:])[:10]

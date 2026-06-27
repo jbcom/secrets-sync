@@ -185,12 +185,10 @@ func (vc *VaultClient) NewClient(ctx context.Context) (*api.Client, error) {
 }
 
 func (vc *VaultClient) ensureAPIClient() (*api.Client, error) {
-	// Fast path: already constructed.
-	if vc.Client != nil {
-		return vc.Client, nil
-	}
-	// Slow path: guard construction so concurrent callers (e.g. parallel source
-	// reads sharing one client) don't both build and clobber vc.Client.
+	// Always acquire the lock: the construction below writes vc.Client, so an
+	// unsynchronized fast-path read would race with concurrent callers (e.g.
+	// parallel source reads sharing one client). The lock is uncontended after
+	// the first construction, so the cost is negligible.
 	vc.clientMu.Lock()
 	defer vc.clientMu.Unlock()
 	if vc.Client != nil {

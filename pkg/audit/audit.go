@@ -4,6 +4,7 @@
 package audit
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -41,9 +42,10 @@ type Entry struct {
 
 // Sink persists audit entries. Implementations write to a file, S3, CloudWatch,
 // etc. Write must be safe for the single-goroutine calls the Logger makes under
-// its lock.
+// its lock. The context allows network-backed sinks to honor cancellation and
+// deadlines.
 type Sink interface {
-	Write(e Entry) error
+	Write(ctx context.Context, e Entry) error
 	Close() error
 }
 
@@ -105,7 +107,7 @@ func computeHash(e Entry) string {
 }
 
 // Log appends a record to the chain and persists it.
-func (l *Logger) Log(r Record) error {
+func (l *Logger) Log(ctx context.Context, r Record) error {
 	if l == nil || l.sink == nil {
 		return nil
 	}
@@ -127,7 +129,7 @@ func (l *Logger) Log(r Record) error {
 		PrevHash:  l.lastHash,
 	}
 	e.Hash = computeHash(e)
-	if err := l.sink.Write(e); err != nil {
+	if err := l.sink.Write(ctx, e); err != nil {
 		// Roll back sequence/hash so a failed write doesn't break the chain.
 		l.seq--
 		return fmt.Errorf("audit: write entry: %w", err)
