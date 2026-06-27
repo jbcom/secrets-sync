@@ -1,9 +1,11 @@
 # SecretSync
 
-SecretSync is a Go CLI and GitHub Action for synchronizing secrets through a
-two-phase merge and sync pipeline. Python-native vendor secret sync now lives
-in `vendor-fabric`, where it can use the Extended Data stack and vendor
-connectors directly.
+SecretSync is a Go CLI, GitHub Action, GHCR distroless image, Helm chart,
+Kubernetes `CredentialSynchronization` controller, AWS Lambda entrypoint, and
+gopy binding for synchronizing secrets through a two-phase merge and sync
+pipeline. Python applications should normally use the
+`vendor_fabric.secrets_sync` facade, which wraps this repository's
+`secrets_sync` binding with vendor and Extended Data coordination.
 
 ```{toctree}
 :caption: Guides
@@ -23,6 +25,7 @@ ACTION_QUICK_REFERENCE
 OBSERVABILITY
 ERROR_CONTEXT
 OWNERSHIP
+api/index
 SECURITY
 PRIVACY
 SUPPORT

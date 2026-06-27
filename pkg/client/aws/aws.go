@@ -11,6 +11,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	awscredentials "github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/aws/aws-sdk-go-v2/service/secretsmanager/types"
@@ -49,6 +50,14 @@ type AwsClient struct {
 	// - Failed write/delete operations do NOT clear the cache to avoid hiding errors
 	CacheTTL time.Duration `yaml:"cacheTTL,omitempty" json:"cacheTTL,omitempty"`
 
+	// Runtime credentials are supplied by embedding callers and are never
+	// serialized. They let upstream packages own authentication and hand the
+	// resulting session material to secrets-sync for execution.
+	RuntimeAccessKeyID     string `yaml:"-" json:"-"`
+	RuntimeSecretAccessKey string `yaml:"-" json:"-"`
+	RuntimeSessionToken    string `yaml:"-" json:"-"`
+	Endpoint               string `yaml:"-" json:"-"`
+
 	client *secretsmanager.Client `yaml:"-" json:"-"`
 
 	accountSecretArns map[string]string `yaml:"-" json:"-"`
@@ -74,6 +83,10 @@ func (in *AwsClient) DeepCopyInto(out *AwsClient) {
 	out.NoEmptySecrets = in.NoEmptySecrets
 	out.SkipUnchanged = in.SkipUnchanged
 	out.CacheTTL = in.CacheTTL
+	out.RuntimeAccessKeyID = in.RuntimeAccessKeyID
+	out.RuntimeSecretAccessKey = in.RuntimeSecretAccessKey
+	out.RuntimeSessionToken = in.RuntimeSessionToken
+	out.Endpoint = in.Endpoint
 	out.client = in.client
 	out.cacheExpiry = in.cacheExpiry
 
@@ -147,6 +160,10 @@ func NewClient(cfg *AwsClient) (*AwsClient, error) {
 		l.Debugf("error: %v", err)
 		return nil, err
 	}
+	vc.RuntimeAccessKeyID = cfg.RuntimeAccessKeyID
+	vc.RuntimeSecretAccessKey = cfg.RuntimeSecretAccessKey
+	vc.RuntimeSessionToken = cfg.RuntimeSessionToken
+	vc.Endpoint = cfg.Endpoint
 	if vc.Region == "" {
 		vc.Region = "us-east-1"
 	}
@@ -186,7 +203,7 @@ func (g *AwsClient) ensureBreaker() {
 }
 
 func (c *AwsClient) CreateClient(ctx context.Context) error {
-	return c.CreateClientWithEndpoint(ctx, "")
+	return c.CreateClientWithEndpoint(ctx, c.Endpoint)
 }
 
 // CreateClientWithEndpoint creates a client with an optional custom endpoint (for LocalStack)
@@ -202,7 +219,23 @@ func (c *AwsClient) CreateClientWithEndpoint(ctx context.Context, endpoint strin
 		Timeout: 30 * time.Second,
 	}
 
-	awscfg, err := config.LoadDefaultConfig(ctx, config.WithHTTPClient(httpClient))
+	loadOptions := []func(*config.LoadOptions) error{
+		config.WithHTTPClient(httpClient),
+	}
+	if c.Region != "" {
+		loadOptions = append(loadOptions, config.WithRegion(c.Region))
+	}
+	if c.RuntimeAccessKeyID != "" && c.RuntimeSecretAccessKey != "" {
+		loadOptions = append(loadOptions, config.WithCredentialsProvider(
+			awscredentials.NewStaticCredentialsProvider(
+				c.RuntimeAccessKeyID,
+				c.RuntimeSecretAccessKey,
+				c.RuntimeSessionToken,
+			),
+		))
+	}
+
+	awscfg, err := config.LoadDefaultConfig(ctx, loadOptions...)
 	if err != nil {
 		l.Debugf("error: %v", err)
 		return err

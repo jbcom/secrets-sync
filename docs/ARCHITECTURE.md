@@ -1,9 +1,9 @@
 # Architecture
 
-SecretSync is a pipeline runner. The supported runtime is the `secrets-sync` CLI
-executing a configured merge, sync, or full pipeline operation. Kubernetes and
-GitHub Actions deployments wrap that same CLI contract instead of introducing a
-separate controller API.
+SecretSync is a compiled Go pipeline runtime. The universal cross-language
+surface is the `secrets-sync` CLI with structured JSON output. GitHub Actions,
+the GHCR image, Helm CronJob runner, Kubernetes controller, Lambda entrypoint,
+and Python gopy binding all consume the same Go pipeline packages.
 
 See [Architecture Audit](./ARCHITECTURE_AUDIT.md) for the current
 implementation-status checklist and release-contract notes.
@@ -40,10 +40,18 @@ sync-only operation, or the full merge-plus-sync pipeline.
 - **Observability package**: `pkg/observability` exposes metrics for pipeline
   runs that opt into the metrics endpoint.
 - **GitHub Action**: `action.yml` packages the CLI contract for CI/CD workflows.
+- **GHCR image**: `Dockerfile` publishes a distroless image with the CLI and
+  Kubernetes controller binaries as `ghcr.io/jbcom/secrets-sync`.
 - **Helm chart**: the chart renders a Kubernetes `CronJob` plus ConfigMap or
-  existing config mount for scheduled pipeline execution.
-- **Python integration**: `vendor_fabric.secrets_sync` owns the Python-native
-  implementation in `jbcom/vendor-fabric`.
+  existing config mount for scheduled pipeline execution, and can optionally
+  install the controller.
+- **Kubernetes CRD and controller**: `deploy/crds` defines the
+  `CredentialSynchronization` object schema and `cmd/secrets-sync-controller`
+  reconciles those resources into managed CronJobs.
+- **Lambda entrypoint**: `cmd/secrets-sync-lambda` runs the pipeline from
+  inline, S3-hosted, or packaged config and returns structured JSON.
+- **Python binding**: `python/secrets_sync` owns the gopy binding source for
+  the Go runtime and publishes as `secrets-sync-python-binding`.
 
 ## Deployment Models
 
@@ -64,9 +72,10 @@ and reports outputs suitable for CI workflows.
 
 ### Kubernetes Scheduled Execution
 
-For Kubernetes, run SecretSync as a `CronJob`. Mount the pipeline configuration
-from a ConfigMap or Secret and provide cloud credentials through the cluster
-identity model.
+For Kubernetes, run SecretSync as a direct `CronJob` or install the
+`CredentialSynchronization` controller. Both paths mount the pipeline
+configuration from a ConfigMap or Secret and provide cloud credentials through
+the cluster identity model.
 
 ```text
 kind: CronJob
@@ -75,16 +84,19 @@ kind: CronJob
       -> Vault / AWS Secrets Manager / S3 / AWS discovery APIs
 ```
 
-The Helm chart is intentionally a runner chart. It should not grow a custom
-resource, reconciler, or sidecar service unless those components are owned as a
-new public runtime contract.
+The Helm chart supports both a direct runner CronJob and the
+`secrets-sync-controller` Deployment. The controller watches
+`CredentialSynchronization` resources and reconciles them into managed CronJobs
+that execute the same `secrets-sync pipeline` command.
 
 ## Integration Boundaries
 
-SecretSync owns the Go CLI, pipeline packages, release artifact, Docker action,
-and Helm runner chart. Python applications should use
-`vendor_fabric.secrets_sync`, which composes the same pipeline concepts with
-Extended Data primitives and vendor connectors directly.
+SecretSync owns the Go CLI, pipeline packages, release artifacts, GHCR image,
+Docker action, Helm runner chart, Kubernetes controller, CRD schema, Lambda entrypoint, and
+`secrets_sync` gopy binding. Python applications should use
+`vendor_fabric.secrets_sync`, which wraps that binding with Extended Data
+primitives, vendor connectors, optional `ProviderSession` handoff, and
+redaction.
 
 The stable cross-language contract is:
 

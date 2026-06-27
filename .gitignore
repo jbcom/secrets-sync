@@ -4,13 +4,10 @@ coverage.out
 .DS_Store
 .coverage
 .tox/
+.tools/
 .ruff_cache/
 __pycache__/
 docs/_build/
 docs/apidocs/
 dist/
-packages/secrets-sync-bridge/dist/
-packages/secrets-sync-bridge/.ruff_cache/
-packages/secrets-sync-bridge/tests/__pycache__/
-packages/secrets-sync-bridge/src/secrets_sync/__pycache__/
-python/secrets_sync_native/
+python/build/

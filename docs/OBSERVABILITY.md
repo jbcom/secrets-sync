@@ -44,7 +44,7 @@ spec:
     spec:
       containers:
       - name: secrets-sync
-        image: jbcom/secrets-sync:v1
+        image: ghcr.io/jbcom/secrets-sync:v1
         args:
           - pipeline
           - --config

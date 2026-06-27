@@ -21,6 +21,37 @@ func TestDockerfileDoesNotShipVSSAlias(t *testing.T) {
 	}
 }
 
+func TestDockerfileUsesDistrolessAndShipsController(t *testing.T) {
+	content, err := os.ReadFile("Dockerfile")
+	if err != nil {
+		t.Fatalf("read Dockerfile: %v", err)
+	}
+
+	text := string(content)
+	for _, required := range []string{
+		"FROM golang:",
+		"FROM gcr.io/distroless/static-debian13:nonroot AS runtime",
+		"-o /out/secrets-sync ./cmd/secrets-sync",
+		"-o /out/secrets-sync-controller ./cmd/secrets-sync-controller",
+		"COPY --from=builder /out/secrets-sync /usr/local/bin/secrets-sync",
+		"COPY --from=builder /out/secrets-sync-controller /usr/local/bin/secrets-sync-controller",
+	} {
+		if !strings.Contains(text, required) {
+			t.Fatalf("Dockerfile missing %q", required)
+		}
+	}
+	for _, forbidden := range []string{
+		"FROM busybox:",
+		"FROM alpine:",
+		"apt-get",
+		" apk ",
+	} {
+		if strings.Contains(text, forbidden) {
+			t.Fatalf("Dockerfile runtime should remain distroless, found %q", forbidden)
+		}
+	}
+}
+
 func TestOrganizationsTestingDocsDoNotAdvertiseVSSAlias(t *testing.T) {
 	path := "docs/testing/organizations-discovery-integration-tests.md"
 	content, err := os.ReadFile(path)

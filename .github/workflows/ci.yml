@@ -10,7 +10,57 @@ permissions: {}
 
 jobs:
   go:
-    name: Go
+    name: Go ${{ matrix.go-version }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: ["1.25.11", "1.26.4"]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - run: sudo apt-get update && sudo apt-get install -y just
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: ${{ matrix.go-version }}
+          cache-dependency-path: go.sum
+      - if: matrix.go-version == '1.26.4'
+        run: just vuln
+      - run: GO_TOOLCHAIN=go${{ matrix.go-version }} just test-go
+      - run: GO_TOOLCHAIN=go${{ matrix.go-version }} just build-all
+
+  python-binding:
+    name: Python binding ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - run: sudo apt-get update && sudo apt-get install -y just
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: "1.26.4"
+          cache-dependency-path: go.sum
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
+        with:
+          version: "0.11.19"
+          enable-cache: true
+      - run: just python-build ${{ matrix.python-version }}
+
+  container:
+    name: Container image
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -18,13 +68,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
-      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
-        with:
-          go-version-file: go.mod
-          cache-dependency-path: go.sum
-      - run: go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
-      - run: go test ./...
-      - run: go build -o bin/secrets-sync ./cmd/secrets-sync
+      - run: docker build --build-arg VERSION=ci -t ghcr.io/jbcom/secrets-sync:ci .
 
   quality:
     name: Quality, docs, and build
@@ -35,12 +79,17 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           persist-credentials: false
+      - run: sudo apt-get update && sudo apt-get install -y just
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
+      - uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+        with:
+          go-version: "1.26.4"
+          cache-dependency-path: go.sum
       - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
         with:
           version: "0.11.19"
           enable-cache: true
       - run: uv tool install tox --with tox-uv
-      - run: tox -e lint,docs
+      - run: just quality

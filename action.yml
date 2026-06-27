@@ -80,11 +80,11 @@ runs:
   using: "docker"
   # Prefer a digest-pinned image once the release workflow can refresh the
   # action reference automatically:
-  # 1. docker pull jbcom/secrets-sync:v1
-  # 2. docker inspect --format='{{index .RepoDigests 0}}' jbcom/secrets-sync:v1
-  # 3. image: "docker://jbcom/secrets-sync:v1@sha256:<digest>"
+  # 1. docker pull ghcr.io/jbcom/secrets-sync:v1
+  # 2. docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/jbcom/secrets-sync:v1
+  # 3. image: "docker://ghcr.io/jbcom/secrets-sync:v1@sha256:<digest>"
   # Until then, keep the release-please-managed tag reference below.
-  image: "docker://jbcom/secrets-sync:v1" # x-release-please-version
+  image: "docker://ghcr.io/jbcom/secrets-sync:v1" # x-release-please-version
   args:
     - "pipeline"
     - "--config"

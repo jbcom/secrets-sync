@@ -43,12 +43,12 @@ Multiple installation options:
 go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 
 # Docker
-docker pull jbcom/secrets-sync:v1
+docker pull ghcr.io/jbcom/secrets-sync:v1
 
 # Build from source
 git clone https://github.com/jbcom/secrets-sync.git
 cd secrets-sync
-make build
+just build
 ```
 
 ### What permissions does SecretSync need?
@@ -474,7 +474,7 @@ See the [development guide](https://github.com/jbcom/secrets-sync/blob/main/CONT
 go test ./...
 
 # Integration tests (requires Docker)
-make test-integration-docker
+just test-integration-docker
 
 # With coverage
 go test -cover ./...

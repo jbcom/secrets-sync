@@ -63,8 +63,9 @@ type Pipeline struct {
 	initialized bool
 	mu          sync.Mutex
 
-	awsCtx  *AWSExecutionContext
-	s3Store *S3MergeStore
+	awsCtx      *AWSExecutionContext
+	s3Store     *S3MergeStore
+	runtimeAuth *RuntimeAuth
 
 	results   []Result
 	resultsMu sync.Mutex
@@ -139,14 +140,25 @@ func New(cfg *Config) (*Pipeline, error) {
 
 // NewWithContext creates a new Pipeline with AWS execution context
 func NewWithContext(ctx context.Context, cfg *Config) (*Pipeline, error) {
+	return NewWithContextAndRuntimeAuth(ctx, cfg, nil)
+}
+
+// NewWithContextAndRuntimeAuth creates a new Pipeline with explicit runtime
+// authentication material supplied by an embedding caller.
+func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *RuntimeAuth) (*Pipeline, error) {
+	if auth != nil {
+		auth.applyToConfig(cfg)
+	}
+
 	p, err := New(cfg)
 	if err != nil {
 		return nil, err
 	}
+	p.runtimeAuth = auth.copy()
 
 	// Initialize AWS execution context if configured
 	if cfg.AWS.ExecutionContext.Type != "" {
-		awsCtx, err := NewAWSExecutionContext(ctx, &cfg.AWS)
+		awsCtx, err := NewAWSExecutionContextWithRuntimeAuth(ctx, &cfg.AWS, p.runtimeAWSAuth())
 		if err != nil {
 			log.WithError(err).Warn("Failed to initialize AWS execution context")
 		} else {
@@ -156,7 +168,7 @@ func NewWithContext(ctx context.Context, cfg *Config) (*Pipeline, error) {
 
 	// Initialize S3 merge store if configured
 	if cfg.MergeStore.S3 != nil {
-		s3Store, err := NewS3MergeStore(ctx, cfg.MergeStore.S3, cfg.AWS.Region)
+		s3Store, err := NewS3MergeStoreWithRuntimeAuth(ctx, cfg.MergeStore.S3, cfg.AWS.Region, p.runtimeAWSAuth())
 		if err != nil {
 			log.WithError(err).Warn("Failed to initialize S3 merge store")
 		} else {
@@ -195,12 +207,7 @@ func (p *Pipeline) Run(ctx context.Context, opts Options) ([]Result, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	l := log.WithFields(log.Fields{
-		"action":     "Pipeline.Run",
-		"operation":  opts.Operation,
-		"dryRun":     opts.DryRun,
-		"request_id": reqCtx.RequestID,
-	})
+	l := log.WithField("action", "Pipeline.Run")
 
 	p.resultsMu.Lock()
 	p.results = nil
@@ -211,7 +218,7 @@ func (p *Pipeline) Run(ctx context.Context, opts Options) ([]Result, error) {
 	}
 
 	targets := p.resolveTargets(opts.Targets)
-	l.WithField("targets", targets).Info("Starting pipeline execution")
+	l.WithField("target_count", len(targets)).Info("Starting pipeline execution")
 
 	if opts.Parallelism <= 0 {
 		opts.Parallelism = p.config.Pipeline.Merge.Parallel
@@ -238,12 +245,10 @@ func (p *Pipeline) Run(ctx context.Context, opts Options) ([]Result, error) {
 
 	if err != nil {
 		l.WithError(err).WithFields(log.Fields{
-			"request_id":  reqCtx.RequestID,
 			"duration_ms": reqctx.GetElapsedTime(ctx).Milliseconds(),
 		}).Error("Pipeline execution failed")
 	} else {
 		l.WithFields(log.Fields{
-			"request_id":  reqCtx.RequestID,
 			"duration_ms": reqctx.GetElapsedTime(ctx).Milliseconds(),
 		}).Info("Pipeline execution completed successfully")
 	}

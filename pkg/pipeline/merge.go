@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jbcom/secrets-sync/pkg/client/vault"
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	"github.com/jbcom/secrets-sync/pkg/utils"
 	log "github.com/sirupsen/logrus"
@@ -74,10 +73,7 @@ func (p *Pipeline) mergeTarget(ctx context.Context, targetName string, dryRun bo
 	}).Info("Starting merge")
 
 	// Initialize Vault client for reading sources
-	sourceClient := &vault.VaultClient{
-		Address:   p.config.Vault.Address,
-		Namespace: p.config.Vault.Namespace,
-	}
+	sourceClient := p.vaultClient("")
 	if err := sourceClient.Init(ctx); err != nil {
 		return Result{
 			Target:   targetName,
@@ -226,10 +222,7 @@ func (p *Pipeline) writeMergedBundleToVault(ctx context.Context, bundlePath stri
 		"bundlePath": bundlePath,
 	})
 
-	mergeClient := &vault.VaultClient{
-		Address:   p.config.Vault.Address,
-		Namespace: p.config.Vault.Namespace,
-	}
+	mergeClient := p.vaultClient("")
 	if err := mergeClient.Init(ctx); err != nil {
 		return fmt.Errorf("failed to init merge vault client: %w", err)
 	}

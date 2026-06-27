@@ -171,7 +171,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Current Maintainer
 - **Organization**: jbcom
-- **Repository**: [secrets-sync/secrets-sync](https://github.com/secrets-sync/secrets-sync)
+- **Repository**: [jbcom/secrets-sync](https://github.com/jbcom/secrets-sync)
 
 ### Original Source
 - **Author**: Robert Lestak

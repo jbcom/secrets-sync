@@ -27,6 +27,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	awscredentials "github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/organizations"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
@@ -89,12 +90,35 @@ func redactARN(arn string) string {
 
 // NewAWSExecutionContext creates and initializes an AWS execution context
 func NewAWSExecutionContext(ctx context.Context, cfg *AWSConfig) (*AWSExecutionContext, error) {
+	return NewAWSExecutionContextWithRuntimeAuth(ctx, cfg, nil)
+}
+
+// NewAWSExecutionContextWithRuntimeAuth creates and initializes an AWS
+// execution context using caller-supplied session material when provided.
+func NewAWSExecutionContextWithRuntimeAuth(ctx context.Context, cfg *AWSConfig, auth *AWSRuntimeAuth) (*AWSExecutionContext, error) {
 	l := log.WithFields(log.Fields{
 		"action": "NewAWSExecutionContext",
 	})
 
 	// Load base AWS config from environment (supports OIDC, instance profile, etc.)
-	awsCfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(cfg.Region))
+	region := cfg.Region
+	if auth != nil && auth.Region != "" {
+		region = auth.Region
+	}
+	loadOptions := []func(*config.LoadOptions) error{
+		config.WithRegion(region),
+	}
+	if auth.HasStaticCredentials() {
+		loadOptions = append(loadOptions, config.WithCredentialsProvider(
+			awscredentials.NewStaticCredentialsProvider(
+				auth.AccessKeyID,
+				auth.SecretAccessKey,
+				auth.SessionToken,
+			),
+		))
+	}
+
+	awsCfg, err := config.LoadDefaultConfig(ctx, loadOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load AWS config: %w", err)
 	}

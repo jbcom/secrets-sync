@@ -2,7 +2,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
-  repository: docker.io/jbcom/secrets-sync
+  repository: ghcr.io/jbcom/secrets-sync
   pullPolicy: IfNotPresent
   tag: ""
 
@@ -55,6 +55,30 @@ metrics:
   enabled: false
   addr: "0.0.0.0"
   port: 9090
+
+controller:
+  enabled: false
+  resync: 1m
+  watchNamespace: ""
+  image:
+    repository: ""
+    pullPolicy: ""
+    tag: ""
+  rbac:
+    create: true
+  serviceAccount:
+    create: true
+    annotations: {}
+    name: ""
+  podAnnotations: {}
+  podLabels: {}
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
 
 pipeline:
   enabled: false

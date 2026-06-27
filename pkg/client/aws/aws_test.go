@@ -2,6 +2,7 @@ package aws
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
@@ -140,6 +141,24 @@ func TestAwsClient_Meta(t *testing.T) {
 	assert.NotNil(t, meta)
 	assert.Equal(t, "test-client", meta["name"])
 	assert.Equal(t, "us-west-2", meta["region"])
+}
+
+func TestAwsClient_RuntimeCredentialsNotSerialized(t *testing.T) {
+	client := &AwsClient{
+		Name:                   "test",
+		Region:                 "us-east-1",
+		RuntimeAccessKeyID:     "AKIAEXAMPLE",
+		RuntimeSecretAccessKey: "secret",
+		RuntimeSessionToken:    "session",
+		Endpoint:               "http://localhost:4566",
+	}
+
+	encoded, err := json.Marshal(client)
+	require.NoError(t, err)
+	assert.NotContains(t, string(encoded), "AKIAEXAMPLE")
+	assert.NotContains(t, string(encoded), "secret")
+	assert.NotContains(t, string(encoded), "session")
+	assert.NotContains(t, string(encoded), "localhost")
 }
 
 func TestAwsClient_DeepCopy(t *testing.T) {

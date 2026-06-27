@@ -39,17 +39,20 @@ Be respectful, inclusive, and professional. We're all here to learn and improve 
 
 3. **Set up development environment**
    ```bash
+   # Install Just if needed
+   brew install just
+
    # Install dependencies
-   go mod download
-   
+   just deps
+
    # Verify build
-   go build ./...
-   
+   just build-all
+
    # Run tests
-   go test ./...
-   
-   # Run linter
-   golangci-lint run
+   just test-go
+
+   # Run docs/lint checks
+   just quality
    ```
 
 #### Making Changes
@@ -87,22 +90,31 @@ Be respectful, inclusive, and professional. We're all here to learn and improve 
 
 ```bash
 # Run all tests
-go test ./...
+just test-go
 
 # Run specific package tests
-go test ./pkg/pipeline
+just test-go ./pkg/pipeline
 
 # Run with coverage
-go test -cover ./...
+just test-unit
 
 # Run with race detection
-go test -race ./...
+just test-unit
 
-# Lint code
-golangci-lint run
+# Run docs/lint checks
+just quality
+
+# Build all release binaries
+just build-all
+
+# Verify gopy Python bindings
+just python-matrix
+
+# Verify the lower supported Go line
+GO_TOOLCHAIN=go1.25.11 just test-go
 
 # Build
-go build ./...
+just build
 ```
 
 #### Submitting Changes

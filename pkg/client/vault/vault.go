@@ -47,6 +47,10 @@ type VaultClient struct {
 
 	Role string `yaml:"role,omitempty" json:"role,omitempty"`
 
+	// Token is runtime authentication material supplied by embedding callers.
+	// It is intentionally excluded from serialization.
+	Token string `yaml:"-" json:"-"`
+
 	// Configurable traversal limits (0 = use defaults)
 	MaxTraversalDepth        int `yaml:"maxTraversalDepth,omitempty" json:"maxTraversalDepth,omitempty"`
 	MaxSecretsPerMount       int `yaml:"maxSecretsPerMount,omitempty" json:"maxSecretsPerMount,omitempty"`
@@ -73,6 +77,7 @@ func (in *VaultClient) DeepCopyInto(out *VaultClient) {
 	out.TTL = in.TTL
 	out.Merge = in.Merge
 	out.Role = in.Role
+	out.Token = in.Token
 	out.MaxTraversalDepth = in.MaxTraversalDepth
 	out.MaxSecretsPerMount = in.MaxSecretsPerMount
 	out.QueueCompactionThreshold = in.QueueCompactionThreshold
@@ -119,6 +124,7 @@ func NewClient(cfg *VaultClient) (*VaultClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	vc.Token = cfg.Token
 
 	// Initialize circuit breaker for Vault API calls
 	breakerName := fmt.Sprintf("vault-%s", vc.Address)
@@ -159,6 +165,20 @@ func (vc *VaultClient) GetPath() string {
 // NewClients creates and returns a new vault client with a valid token or error
 func (vc *VaultClient) NewClient(ctx context.Context) (*api.Client, error) {
 	log.Tracef("vault.NewClient")
+	if _, err := vc.ensureAPIClient(); err != nil {
+		return vc.Client, err
+	}
+	terr := vc.NewToken(ctx)
+	if terr != nil {
+		return vc.Client, terr
+	}
+	return vc.Client, nil
+}
+
+func (vc *VaultClient) ensureAPIClient() (*api.Client, error) {
+	if vc.Client != nil {
+		return vc.Client, nil
+	}
 	config := &api.Config{
 		Address: vc.Address,
 		Timeout: 30 * time.Second, // Prevent hung connections
@@ -171,10 +191,6 @@ func (vc *VaultClient) NewClient(ctx context.Context) (*api.Client, error) {
 	if vc.Namespace != "" {
 		vc.Client.SetNamespace(vc.Namespace)
 	}
-	terr := vc.NewToken(ctx)
-	if terr != nil {
-		return vc.Client, terr
-	}
 	vc.Client.AddHeader("x-vault-sync", "true")
 	return vc.Client, err
 }
@@ -182,18 +198,15 @@ func (vc *VaultClient) NewClient(ctx context.Context) (*api.Client, error) {
 // Login creates a vault token with the k8s auth provider
 func (vc *VaultClient) Login(ctx context.Context) error {
 	l := log.WithFields(log.Fields{
-		"address":   vc.Address,
-		"role":      vc.Role,
-		"path":      vc.Path,
-		"method":    vc.AuthMethod,
-		"namespace": vc.Namespace,
+		"has_address":   vc.Address != "",
+		"has_role":      vc.Role != "",
+		"has_path":      vc.Path != "",
+		"has_method":    vc.AuthMethod != "",
+		"has_namespace": vc.Namespace != "",
 	})
 	l.Trace("vault.Login")
-	if vc.Client == nil {
-		_, err := vc.NewClient(ctx)
-		if err != nil {
-			return err
-		}
+	if _, err := vc.ensureAPIClient(); err != nil {
+		return err
 	}
 	var kubeTokenExists bool
 	ktp := "/var/run/secrets/kubernetes.io/serviceaccount/token"
@@ -229,7 +242,11 @@ func (vc *VaultClient) Login(ctx context.Context) error {
 		}
 		vc.Client.SetToken(secret.Auth.ClientToken)
 	} else {
-		vc.Client.SetToken(os.Getenv("VAULT_TOKEN"))
+		if vc.Token != "" {
+			vc.Client.SetToken(vc.Token)
+		} else {
+			vc.Client.SetToken(os.Getenv("VAULT_TOKEN"))
+		}
 	}
 	return nil
 }
@@ -246,21 +263,24 @@ func (vc *VaultClient) Init(ctx context.Context) error {
 
 func (vc *VaultClient) NewToken(ctx context.Context) error {
 	l := log.WithFields(log.Fields{
-		"address": vc.Address,
-		"role":    vc.Role,
-		"path":    vc.Path,
-		"method":  vc.AuthMethod,
+		"has_address": vc.Address != "",
+		"has_role":    vc.Role != "",
+		"has_path":    vc.Path != "",
+		"has_method":  vc.AuthMethod != "",
 	})
 	l.Trace("vault.NewToken calling Login")
+	if _, err := vc.ensureAPIClient(); err != nil {
+		return err
+	}
+	if vc.Token != "" {
+		l.Trace("using runtime Vault token")
+		vc.Client.SetToken(vc.Token)
+		return nil
+	}
 	if os.Getenv("VAULT_TOKEN") != "" {
 		l.Trace("using VAULT_TOKEN")
-		if vc.Client == nil {
-			_, err := vc.NewClient(ctx)
-			if err != nil {
-				return err
-			}
-		}
 		vc.Client.SetToken(os.Getenv("VAULT_TOKEN"))
+		return nil
 	}
 	if err := vc.Login(ctx); err != nil {
 		return err
@@ -628,10 +648,10 @@ func (vc *VaultClient) listSecretsRecursive(ctx context.Context, basePath string
 	}()
 
 	l := log.WithFields(log.Fields{
-		"address": vc.Address,
-		"role":    vc.Role,
-		"path":    basePath,
-		"method":  vc.AuthMethod,
+		"has_address": vc.Address != "",
+		"has_role":    vc.Role != "",
+		"path_depth":  len(strings.Split(basePath, "/")),
+		"has_method":  vc.AuthMethod != "",
 	})
 	l.Debug("Starting recursive secret listing with BFS traversal")
 

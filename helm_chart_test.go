@@ -38,10 +38,13 @@ func TestHelmChartUsesSecretSyncAPI(t *testing.T) {
 
 func TestHelmChartUsesPipelineRunner(t *testing.T) {
 	files := map[string]string{
-		"chart":     readTestFile(t, "deploy/charts/secrets-sync/Chart.yaml"),
-		"values":    readTestFile(t, "deploy/charts/secrets-sync/values.yaml"),
-		"configmap": readTestFile(t, "deploy/charts/secrets-sync/templates/configmap.yaml"),
-		"cronjob":   readTestFile(t, "deploy/charts/secrets-sync/templates/cronjob.yaml"),
+		"chart":                  readTestFile(t, "deploy/charts/secrets-sync/Chart.yaml"),
+		"values":                 readTestFile(t, "deploy/charts/secrets-sync/values.yaml"),
+		"configmap":              readTestFile(t, "deploy/charts/secrets-sync/templates/configmap.yaml"),
+		"cronjob":                readTestFile(t, "deploy/charts/secrets-sync/templates/cronjob.yaml"),
+		"controller-deployment":  readTestFile(t, "deploy/charts/secrets-sync/templates/controller-deployment.yaml"),
+		"controller-rbac":        readTestFile(t, "deploy/charts/secrets-sync/templates/controller-rbac.yaml"),
+		"controller-serviceacct": readTestFile(t, "deploy/charts/secrets-sync/templates/controller-serviceaccount.yaml"),
 	}
 
 	for _, forbidden := range []string{
@@ -67,6 +70,8 @@ func TestHelmChartUsesPipelineRunner(t *testing.T) {
 			"schedule: \"\"",
 			"config: {}",
 			"continueOnError: true",
+			"controller:",
+			"resync: 1m",
 		},
 		"configmap": {
 			".Values.pipeline.config",
@@ -79,6 +84,22 @@ func TestHelmChartUsesPipelineRunner(t *testing.T) {
 			"/config/config.yaml",
 			"--dry-run={{ .Values.pipeline.dryRun }}",
 			"--continue-on-error={{ .Values.pipeline.continueOnError }}",
+		},
+		"controller-deployment": {
+			"kind: Deployment",
+			"secrets-sync-controller",
+			"--resync={{ .Values.controller.resync }}",
+			".Values.controller.watchNamespace",
+		},
+		"controller-rbac": {
+			"kind: ClusterRole",
+			"credentialsynchronizations",
+			"credentialsynchronizations/status",
+			"cronjobs",
+		},
+		"controller-serviceacct": {
+			"kind: ServiceAccount",
+			"app.kubernetes.io/component: controller",
 		},
 	}
 

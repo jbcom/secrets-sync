@@ -4,27 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
-	"github.com/jbcom/secrets-sync/pkg/client/aws"
-	"github.com/jbcom/secrets-sync/pkg/client/vault"
 	log "github.com/sirupsen/logrus"
 )
 
 // fetchVaultSecrets fetches all secrets from a Vault path
 func (p *Pipeline) fetchVaultSecrets(ctx context.Context, path string) (map[string]interface{}, error) {
 	l := log.WithFields(log.Fields{
-		"action": "fetchVaultSecrets",
-		"path":   path,
+		"action":     "fetchVaultSecrets",
+		"path_depth": len(strings.Split(path, "/")),
 	})
 
-	vaultClient := &vault.VaultClient{
-		Address:                  p.config.Vault.Address,
-		Namespace:                p.config.Vault.Namespace,
-		Path:                     path,
-		MaxTraversalDepth:        p.config.Vault.MaxTraversalDepth,
-		MaxSecretsPerMount:       p.config.Vault.MaxSecretsPerMount,
-		QueueCompactionThreshold: p.config.Vault.QueueCompactionThreshold,
-	}
+	vaultClient := p.vaultClient(path)
 
 	if err := vaultClient.Init(ctx); err != nil {
 		l.WithError(err).Debug("Failed to initialize Vault client")
@@ -61,16 +53,12 @@ func (p *Pipeline) fetchVaultSecrets(ctx context.Context, path string) (map[stri
 // fetchAWSSecrets fetches all secrets from AWS Secrets Manager
 func (p *Pipeline) fetchAWSSecrets(ctx context.Context, roleARN, region string) (map[string]interface{}, error) {
 	l := log.WithFields(log.Fields{
-		"action":  "fetchAWSSecrets",
-		"roleARN": roleARN,
-		"region":  region,
+		"action":       "fetchAWSSecrets",
+		"has_role_arn": roleARN != "",
+		"has_region":   region != "",
 	})
 
-	awsClient := &aws.AwsClient{
-		RoleArn: roleARN,
-		Region:  region,
-		Name:    "fetch-current-state",
-	}
+	awsClient := p.awsClient(roleARN, region, "fetch-current-state")
 
 	if err := awsClient.Init(ctx); err != nil {
 		l.WithError(err).Debug("Failed to initialize AWS client")

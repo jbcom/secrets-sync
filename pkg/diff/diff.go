@@ -28,7 +28,7 @@ type SecretChange struct {
 	ChangeType ChangeType `json:"change_type"`
 	Target     string     `json:"target,omitempty"`
 
-	// Version tracking (v1.2.0 - Requirement 24)
+	// Version tracking
 	CurrentVersion int `json:"current_version,omitempty"`
 	DesiredVersion int `json:"desired_version,omitempty"`
 
@@ -45,7 +45,7 @@ type SecretChange struct {
 	CurrentHash string `json:"current_hash,omitempty"`
 	DesiredHash string `json:"desired_hash,omitempty"`
 
-	// Enhanced diff output (v1.2.0 - Requirement 25)
+	// Enhanced diff output
 	CurrentValues map[string]interface{} `json:"current_values,omitempty"` // For side-by-side comparison
 	DesiredValues map[string]interface{} `json:"desired_values,omitempty"` // For side-by-side comparison
 	ShowValues    bool                   `json:"show_values,omitempty"`    // Whether to show actual values
@@ -270,7 +270,7 @@ const (
 	OutputFormatJSON       OutputFormat = "json"
 	OutputFormatGitHub     OutputFormat = "github"     // GitHub Actions annotations
 	OutputFormatCompact    OutputFormat = "compact"    // One-line summary
-	OutputFormatSideBySide OutputFormat = "sidebyside" // Side-by-side comparison (v1.2.0 - Requirement 25)
+	OutputFormatSideBySide OutputFormat = "sidebyside" // Side-by-side comparison
 )
 
 // FormatDiff formats the pipeline diff according to the specified format
@@ -278,7 +278,7 @@ func FormatDiff(diff *PipelineDiff, format OutputFormat) string {
 	return FormatDiffWithOptions(diff, format, false)
 }
 
-// FormatDiffWithOptions formats the pipeline diff with additional options (v1.2.0 - Requirement 25)
+// FormatDiffWithOptions formats the pipeline diff with additional options
 func FormatDiffWithOptions(diff *PipelineDiff, format OutputFormat, showValues bool) string {
 	switch format {
 	case OutputFormatJSON:
@@ -464,7 +464,7 @@ func NewDiffResult(diff *PipelineDiff) *DiffResult {
 	return result
 }
 
-// Enhanced diff formatting functions (v1.2.0 - Requirement 25)
+// Enhanced diff formatting functions
 
 // formatSideBySide formats the diff in side-by-side comparison format
 func formatSideBySide(diff *PipelineDiff, showValues bool) string {
@@ -726,7 +726,7 @@ func truncateString(s string, maxLen int) string {
 	return s[:maxLen-3] + "..."
 }
 
-// DiffSecretsWithValues compares secrets and includes values for side-by-side comparison (v1.2.0 - Requirement 25)
+// DiffSecretsWithValues compares secrets and includes values for side-by-side comparison
 func DiffSecretsWithValues(current, desired map[string]interface{}, currentVersions, desiredVersions map[string]int, showValues bool) []SecretChange {
 	changes := DiffSecretsWithVersions(current, desired, currentVersions, desiredVersions)
 

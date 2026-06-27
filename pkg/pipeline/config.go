@@ -5,6 +5,7 @@ package pipeline
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -30,7 +31,11 @@ import (
 //  2. Resolve sources/targets via fuzzy matching against AWS Organizations
 //  3. Configure merge store automatically
 func LoadConfig(path string) (*Config, error) {
-	data, err := os.ReadFile(path)
+	configPath, err := resolveReadableConfigPath(path)
+	if err != nil {
+		return nil, err
+	}
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
@@ -48,7 +53,7 @@ func LoadConfig(path string) (*Config, error) {
 
 	// Also load via Viper for explicit env var overrides
 	v := viper.New()
-	v.SetConfigFile(path)
+	v.SetConfigFile(configPath)
 	v.SetEnvPrefix("SECRETS_SYNC")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
@@ -67,9 +72,28 @@ func LoadConfig(path string) (*Config, error) {
 	return &cfg, nil
 }
 
+func cleanConfigPath(path string) (string, error) {
+	if strings.ContainsRune(path, '\x00') {
+		return "", fmt.Errorf("config path contains NUL byte")
+	}
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return "", fmt.Errorf("config path is required")
+	}
+	cleaned := filepath.Clean(path)
+	if cleaned == "." {
+		return "", fmt.Errorf("config path is required")
+	}
+	return cleaned, nil
+}
+
 // LoadConfigWithoutAutoDetect loads config without auto-detection (for testing)
 func LoadConfigWithoutAutoDetect(path string) (*Config, error) {
-	data, err := os.ReadFile(path)
+	configPath, err := resolveReadableConfigPath(path)
+	if err != nil {
+		return nil, err
+	}
+	data, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
@@ -83,6 +107,20 @@ func LoadConfigWithoutAutoDetect(path string) (*Config, error) {
 	cfg.expandEnvVars()
 
 	return &cfg, nil
+}
+
+func resolveReadableConfigPath(path string) (string, error) {
+	configPath, err := cleanConfigPath(path)
+	if err != nil {
+		return "", err
+	}
+
+	v := viper.New()
+	v.SetConfigFile(configPath)
+	if err := v.ReadInConfig(); err != nil {
+		return "", fmt.Errorf("failed to read config file: %w", err)
+	}
+	return v.ConfigFileUsed(), nil
 }
 
 // applyDefaults sets default values for unset fields

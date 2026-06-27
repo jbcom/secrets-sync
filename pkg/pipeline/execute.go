@@ -11,6 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const maxPipelineParallelism = 256
+
 // runMerge executes only the merge phase
 func (p *Pipeline) runMerge(ctx context.Context, targets []string, opts Options) ([]Result, error) {
 	startTime := time.Now()
@@ -174,13 +176,34 @@ func (p *Pipeline) executeSyncPhase(ctx context.Context, targets []string, opts 
 
 // executeParallel runs a function for each target with limited concurrency
 func (p *Pipeline) executeParallel(ctx context.Context, targets []string, maxParallel int, fn func(string) Result) []Result {
+	if len(targets) == 0 {
+		return []Result{}
+	}
 	if maxParallel <= 0 {
 		maxParallel = 1
 	}
+	if maxParallel > len(targets) {
+		maxParallel = len(targets)
+	}
+	if maxParallel > maxPipelineParallelism {
+		maxParallel = maxPipelineParallelism
+	}
 
 	results := make([]Result, len(targets))
-	sem := make(chan struct{}, maxParallel)
+	jobs := make(chan int)
 	var wg sync.WaitGroup
+
+	for worker := 0; worker < maxParallel; worker++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			observability.PipelineParallelWorkers.WithLabelValues("execute").Inc()
+			defer observability.PipelineParallelWorkers.WithLabelValues("execute").Dec()
+			for idx := range jobs {
+				results[idx] = fn(targets[idx])
+			}
+		}()
+	}
 
 	for i, target := range targets {
 		select {
@@ -190,22 +213,10 @@ func (p *Pipeline) executeParallel(ctx context.Context, targets []string, maxPar
 				Success: false,
 				Error:   ctx.Err(),
 			}
-			continue
-		case sem <- struct{}{}:
+		case jobs <- i:
 		}
-
-		wg.Add(1)
-		observability.PipelineParallelWorkers.WithLabelValues("execute").Inc()
-
-		go func(idx int, t string) {
-			defer wg.Done()
-			defer func() {
-				<-sem
-				observability.PipelineParallelWorkers.WithLabelValues("execute").Dec()
-			}()
-			results[idx] = fn(t)
-		}(i, target)
 	}
+	close(jobs)
 
 	wg.Wait()
 	return results

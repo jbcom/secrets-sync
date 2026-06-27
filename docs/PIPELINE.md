@@ -377,7 +377,7 @@ jobs:
 ```yaml
 secrets-sync:
   stage: deploy
-  image: golang:1.26
+  image: golang:1.26.4
   before_script:
     - go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
   script:
@@ -509,6 +509,7 @@ accounts:
 
 Key differences from the Terraform-based approach:
 - No Terraform state required
-- No Lambda functions needed
+- Lambda is optional; the same Go runtime can run as a local/CI binary,
+  container, scheduled Kubernetes job, or Lambda function
 - Vault merge store eliminates intermediate S3 storage (or use S3 merge store if preferred)
 - Single binary, runs anywhere

@@ -2,10 +2,13 @@
 
 This roadmap outlines the planned development direction for SecretSync. It's a living document that evolves based on community feedback and changing requirements.
 
-## Current Status: v2.x
+## Current Status: Pre-Launch Stabilization
 
-✅ **Production Ready** - The current 2.x line is the supported release line for
-the independent SecretSync repository.
+The independent SecretSync repository is in pre-launch stabilization. The launch
+surface includes the Go CLI, structured JSON output, GitHub Action, GHCR
+distroless image, Helm CronJob runner, Kubernetes
+`CredentialSynchronization` controller, AWS Lambda entrypoint, and
+`secrets_sync` gopy binding published as `secrets-sync-python-binding`.
 
 ## Upcoming Releases
 
@@ -77,9 +80,9 @@ the independent SecretSync repository.
 
 #### 🔧 Kubernetes Runtime
 - **GitOps Examples**: ArgoCD/Flux examples for scheduled pipeline runners
-- **Helm Chart Improvements**: Advanced deployment options
+- **Helm Chart Improvements**: Advanced deployment options for direct CronJob
+  and controller installs
 - **Multi-Cluster Patterns**: Run scoped pipeline jobs per cluster or account boundary
-- **Native API Research**: Evaluate a future controller only if it can be owned end to end
 
 #### 🌐 API & Integrations
 - **REST API**: Full REST API for programmatic access
@@ -100,7 +103,8 @@ the independent SecretSync repository.
 #### 🏗️ Microservices Architecture
 - **Service Mesh Integration**: Istio/Linkerd integration
 - **Event-Driven Architecture**: Async processing with message queues
-- **Serverless Support**: AWS Lambda/Azure Functions deployment
+- **Additional Serverless Targets**: Azure Functions or other non-AWS
+  deployments beyond the current AWS Lambda runtime
 - **Edge Computing**: Edge deployment for global secret distribution
 
 #### 🤖 AI/ML Integration

@@ -11,11 +11,16 @@ GitHub releases during the normal release path.
 - The root package name is `secrets-sync`, so Go component release tags use the
   `secrets-sync-vX.Y.Z` shape.
 - `cd.yml` runs only after release-please reports a Go release.
-- GoReleaser builds binary archives and checksums. Container and Marketplace
-  publication are separate release surfaces.
-- The Docker action currently references `docker://jbcom/secrets-sync:v1` from
-  `action.yml`; digest pinning should be added only when release automation can
-  refresh that digest reliably.
+- GoReleaser builds CLI binary archives, Kubernetes controller archives, Lambda
+  archives, and checksums.
+- `cd.yml` publishes the GHCR image `ghcr.io/jbcom/secrets-sync` for direct
+  container use, Kubernetes controller/CronJob use, and for the Docker-based
+  GitHub Action. The image runtime is Google Distroless static.
+- `cd.yml` also builds and publishes the gopy binding distribution
+  `secrets-sync-python-binding` through PyPI trusted publishing.
+- The Docker action currently references `docker://ghcr.io/jbcom/secrets-sync:v1`
+  from `action.yml`; digest pinning should be added only when release automation
+  can refresh that digest reliably.
 
 ## Maintainer Preflight
 
@@ -23,12 +28,13 @@ Run these before merging a release PR or manually dispatching release workflow
 diagnostics:
 
 ```bash
-go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
-go test ./...
-go build -o bin/secrets-sync ./cmd/secrets-sync
-tox -e lint,docs
-goreleaser check
-docker build -t secrets-sync-test .
+just vuln
+just test-go
+just build-all
+just python-build
+just quality
+just goreleaser-check
+just docker-build secrets-sync-test
 ```
 
 If `goreleaser` is not installed locally, use the pinned workflow action as the
@@ -55,6 +61,9 @@ Current workflow action pins:
 | `actions/configure-pages` | `v6.0.0` | `45bfe0192ca1faeb007ade9deae92b16b8254a0d` |
 | `actions/upload-pages-artifact` | `v5.0.0` | `fc324d3547104276b827a68afc52ff2a11cc49c9` |
 | `actions/deploy-pages` | `v5.0.0` | `cd2ce8fcbc39b97be8ca5fce6e763baed58fa128` |
+| `actions/upload-artifact` | `v5.0.0` | `330a01c490aca151604b8cf639adc76d48f6c5d4` |
+| `actions/download-artifact` | `v6.0.0` | `018cc2cf5baa6db3ef3c5f8a56943fffe632ef53` |
+| `pypa/gh-action-pypi-publish` | `v1.13.0` | `106e0b0b7c337fa67ed433972f777c6357f78598` |
 
 ## Publishing Flow
 
@@ -65,8 +74,12 @@ Current workflow action pins:
 4. Merge the release PR.
 5. Confirm the release workflow created the expected `secrets-sync-vX.Y.Z`
    GitHub release.
-6. Confirm GoReleaser uploaded archives and `checksums.txt` for Go releases.
-7. Verify the action can be referenced with:
+6. Confirm GoReleaser uploaded CLI archives, controller archives, Lambda archives, and
+   `checksums.txt`.
+7. Confirm GHCR shows `ghcr.io/jbcom/secrets-sync` tags for the component
+   release tag, semver tag, major tag, and `latest`.
+8. Confirm PyPI shows `secrets-sync-python-binding` for the same release.
+9. Verify the action can be referenced with:
 
 ```yaml
 - uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
@@ -100,6 +113,10 @@ gh workflow run ci.yml --repo jbcom/secrets-sync
 Also verify:
 
 - Release assets are present for supported OS and architecture combinations.
+- Controller archives are present for supported OS and architecture
+  combinations and include `deploy/crds` plus `deploy/controller` manifests.
+- Lambda archives are present for Linux AMD64 and ARM64.
+- The GHCR image tag pulls successfully.
 - `checksums.txt` is attached.
 - Marketplace examples render correctly.
 - The latest documentation does not reference old monorepo package tags using

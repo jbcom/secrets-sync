@@ -2,7 +2,7 @@
 # Usage:
 #   docker-compose -f docker-compose.test.yml up --abort-on-container-exit
 #   OR
-#   make test-integration-docker
+#   just test-integration-docker
 
 services:
   # LocalStack for AWS Secrets Manager emulation

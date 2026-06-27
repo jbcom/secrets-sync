@@ -20,15 +20,20 @@ environments, AWS Organizations discovery, and CI/CD validation workflows.
 ## Supported Runtime Surface
 
 - GitHub Action using `action.yml`.
-- Docker image `jbcom/secrets-sync:v1`.
+- Docker image `ghcr.io/jbcom/secrets-sync:v1`.
 - Go CLI `secrets-sync`.
+- Kubernetes CronJob or `CredentialSynchronization` controller using the same
+  GHCR image.
+- AWS Lambda archive for scheduled or event-driven pipeline runs.
+- Python binding distribution `secrets-sync-python-binding` for direct gopy
+  integration.
 - Vault KV2 sources.
 - AWS Secrets Manager targets.
 - Vault or S3 merge stores.
 - GitHub-native output for PR validation and CI logs.
 
-Avoid advertising stores or deployment modes that are not implemented in the
-current standalone repository.
+Keep Marketplace examples limited to this shipped runtime surface and the
+currently supported store matrix.
 
 ## Release Tags
 
