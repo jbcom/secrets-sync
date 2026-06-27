@@ -178,6 +178,20 @@ pipeline:
 
 Rollback writes are themselves audited (actor `rollback`).
 
+## Multi-instance coordination
+
+For multi-replica controller deployments, two primitives prevent duplicate work:
+
+- **Leader election** via an S3 lock using conditional writes
+  (`If-None-Match: *`), so exactly one replica runs at a time. The lock is
+  released automatically when the elected replica finishes or its context is
+  cancelled.
+- **Work partitioning** via stable hashing, so N replicas each process a
+  disjoint slice of targets without a coordinator.
+
+These live in `pkg/lock` and are used by the controller's runtime; no extra
+configuration is required for single-replica deployments.
+
 ## Sync policies (policy as code)
 
 Gate which sources may sync to which targets with declarative allow/deny rules.

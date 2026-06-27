@@ -72,7 +72,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 ### M4 v2.7.0 — Advanced Workflows
 - [x] M4.1 Conditional sync: env/tag/time-window gating; per-target skip rules (skipped = successful no-op).
 - [x] M4.2 Per-target scheduling in the controller: cron-like per target (spec.schedule); staggered windows (spec.staggerMinutes, deterministic per-name minute offset); tz-aware evaluation (spec.timezone → CronJob.TimeZone).
-- [ ] M4.3 Multi-instance coordination: leader election for multi-replica controller; distributed locking via S3 conditional writes; work partitioning.
+- [x] M4.3 Multi-instance coordination: leader election (RunAsLeader) for multi-replica controller; distributed locking via S3 conditional writes (If-None-Match:*); stable-hash work partitioning.
 
 ### M5 v3.0+ — Future Considerations
 - [ ] M5.1 Regional merge stores with cross-region replication (edge distribution).
