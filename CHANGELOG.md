@@ -7,6 +7,14 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.1](https://github.com/jbcom/secrets-sync/compare/v2.3.0...v2.3.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* make release asset reruns idempotent ([da9a506](https://github.com/jbcom/secrets-sync/commit/da9a50694c14768c36b64c1c1e3775e04f77d513))
+* repair Python binding release publish ([d512ce5](https://github.com/jbcom/secrets-sync/commit/d512ce54d1c601c6c25ac4376d9c93874623c07f))
+
 ## [2.3.0](https://github.com/jbcom/secrets-sync/compare/v2.2.0...v2.3.0) (2026-06-27)
 
 
