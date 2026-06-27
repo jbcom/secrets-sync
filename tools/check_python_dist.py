@@ -10,7 +10,7 @@ import zipfile
 from pathlib import Path
 
 
-def _wheel_metadata(path: Path) -> tuple[str, str]:
+def _wheel_metadata(path: Path) -> tuple[str, str, list[str]]:
     with zipfile.ZipFile(path) as wheel:
         metadata_paths = [
             name for name in wheel.namelist() if name.endswith(".dist-info/METADATA")
@@ -19,6 +19,16 @@ def _wheel_metadata(path: Path) -> tuple[str, str]:
             message = (
                 f"{path} should contain exactly one METADATA file, "
                 f"found {len(metadata_paths)}"
+            )
+            raise ValueError(message)
+
+        wheel_paths = [
+            name for name in wheel.namelist() if name.endswith(".dist-info/WHEEL")
+        ]
+        if len(wheel_paths) != 1:
+            message = (
+                f"{path} should contain exactly one WHEEL file, "
+                f"found {len(wheel_paths)}"
             )
             raise ValueError(message)
 
@@ -32,7 +42,23 @@ def _wheel_metadata(path: Path) -> tuple[str, str]:
         if not version:
             message = f"{path} does not declare a distribution Version"
             raise ValueError(message)
-        return name, version
+
+        wheel_text = wheel.read(wheel_paths[0]).decode("utf-8")
+        wheel_metadata = email.parser.Parser().parsestr(wheel_text)
+        tags = wheel_metadata.get_all("Tag") or []
+        if not tags:
+            message = f"{path} does not declare any wheel tags"
+            raise ValueError(message)
+        return name, version, tags
+
+
+def _unsupported_tags(tags: list[str]) -> list[str]:
+    unsupported: list[str] = []
+    for tag in tags:
+        platform = tag.rsplit("-", 1)[-1]
+        if any(part.startswith("linux_") for part in platform.split(".")):
+            unsupported.append(tag)
+    return unsupported
 
 
 def main() -> int:
@@ -50,7 +76,7 @@ def main() -> int:
     failures: list[str] = []
     for wheel in wheels:
         try:
-            actual_name, actual_version = _wheel_metadata(wheel)
+            actual_name, actual_version, tags = _wheel_metadata(wheel)
         except ValueError as exc:
             failures.append(f"{wheel.name}: failed to parse metadata: {exc}")
             continue
@@ -63,6 +89,12 @@ def main() -> int:
             failures.append(
                 f"{wheel.name}: expected Version {args.version!r}, "
                 f"got {actual_version!r}"
+            )
+        unsupported = _unsupported_tags(tags)
+        if unsupported:
+            failures.append(
+                f"{wheel.name}: unsupported Linux wheel tag(s) "
+                f"{', '.join(unsupported)}; run auditwheel repair before publishing"
             )
 
     if failures:

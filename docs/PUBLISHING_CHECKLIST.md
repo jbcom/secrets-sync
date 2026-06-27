@@ -15,8 +15,10 @@ GitHub releases during the normal release path.
 - `cd.yml` publishes the GHCR image `ghcr.io/jbcom/secrets-sync` for direct
   container use, Kubernetes controller/CronJob use, and for the Docker-based
   GitHub Action. The image runtime is Google Distroless static.
-- `cd.yml` also builds and publishes the gopy binding distribution
-  `secrets-sync-python-binding` through PyPI trusted publishing.
+- `cd.yml` also builds, repairs, and publishes the gopy binding distribution
+  `secrets-sync-python-binding` through PyPI trusted publishing. Linux wheels
+  must be repaired to manylinux tags before upload; raw `linux_*` platform tags
+  are a release blocker.
 - The Docker action currently references `docker://ghcr.io/jbcom/secrets-sync:v1`
   from `action.yml`; digest pinning should be added only when release automation
   can refresh that digest reliably.
@@ -75,7 +77,8 @@ Current workflow action pins:
    `checksums.txt`.
 7. Confirm GHCR shows `ghcr.io/jbcom/secrets-sync` tags for the component
    release tag, semver tag, major tag, and `latest`.
-8. Confirm PyPI shows `secrets-sync-python-binding` for the same release.
+8. Confirm PyPI shows `secrets-sync-python-binding` for the same release and
+   the uploaded Linux files use manylinux tags, not raw `linux_*` tags.
 9. Verify the action can be referenced with:
 
 ```yaml

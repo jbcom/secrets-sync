@@ -12,6 +12,24 @@ PYTHON_DIST = "secrets-sync-python-binding"
 VERSION = "2.3.0"
 
 
+def write_minimal_wheel(
+    path: Path,
+    *,
+    name: str = PYTHON_DIST,
+    version: str = VERSION,
+    tag: str = "py3-none-any",
+) -> None:
+    with zipfile.ZipFile(path, "w") as archive:
+        archive.writestr(
+            f"{name}-{version}.dist-info/METADATA",
+            f"Name: {name}\nVersion: {version}\n",
+        )
+        archive.writestr(
+            f"{name}-{version}.dist-info/WHEEL",
+            f"Wheel-Version: 1.0\nGenerator: test\nRoot-Is-Purelib: false\nTag: {tag}\n",
+        )
+
+
 def run_tool(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, *args],
@@ -79,11 +97,7 @@ def test_check_python_dist_requires_expected_name_and_version(tmp_path: Path) ->
     dist_dir = tmp_path / "dist"
     dist_dir.mkdir()
     wheel = dist_dir / f"{PYTHON_DIST}-{VERSION}-py3-none-any.whl"
-    with zipfile.ZipFile(wheel, "w") as archive:
-        archive.writestr(
-            f"{PYTHON_DIST}-{VERSION}.dist-info/METADATA",
-            f"Name: {PYTHON_DIST}\nVersion: {VERSION}\n",
-        )
+    write_minimal_wheel(wheel)
 
     result = run_tool(
         "tools/check_python_dist.py",
@@ -119,6 +133,79 @@ def test_check_python_dist_requires_expected_name_and_version(tmp_path: Path) ->
     )
     assert result.returncode == 1
     assert "expected Version '9.9.9'" in result.stderr
+
+
+def test_check_python_dist_rejects_unrepaired_linux_wheel_tags(
+    tmp_path: Path,
+) -> None:
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    wheel = dist_dir / f"{PYTHON_DIST}-{VERSION}-cp312-cp312-linux_x86_64.whl"
+    write_minimal_wheel(wheel, tag="cp312-cp312-linux_x86_64")
+
+    result = run_tool(
+        "tools/check_python_dist.py",
+        "--dist-dir",
+        str(dist_dir),
+        "--name",
+        PYTHON_DIST,
+        "--version",
+        VERSION,
+    )
+
+    assert result.returncode == 1
+    assert "unsupported Linux wheel tag(s) cp312-cp312-linux_x86_64" in result.stderr
+    assert "auditwheel repair" in result.stderr
+
+
+def test_check_python_dist_rejects_mixed_linux_platform_alternatives(
+    tmp_path: Path,
+) -> None:
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    wheel_multi = dist_dir / (
+        f"{PYTHON_DIST}-{VERSION}-cp312-cp312-manylinux_2_34_x86_64.linux_x86_64.whl"
+    )
+    write_minimal_wheel(
+        wheel_multi, tag="cp312-cp312-manylinux_2_34_x86_64.linux_x86_64"
+    )
+
+    result = run_tool(
+        "tools/check_python_dist.py",
+        "--dist-dir",
+        str(dist_dir),
+        "--name",
+        PYTHON_DIST,
+        "--version",
+        VERSION,
+    )
+
+    assert result.returncode == 1
+    assert (
+        "unsupported Linux wheel tag(s) cp312-cp312-manylinux_2_34_x86_64.linux_x86_64"
+    ) in result.stderr
+    assert "auditwheel repair" in result.stderr
+
+
+def test_check_python_dist_accepts_repaired_manylinux_wheel_tags(
+    tmp_path: Path,
+) -> None:
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    wheel = dist_dir / f"{PYTHON_DIST}-{VERSION}-cp312-cp312-manylinux_2_34_x86_64.whl"
+    write_minimal_wheel(wheel, tag="cp312-cp312-manylinux_2_34_x86_64")
+
+    result = run_tool(
+        "tools/check_python_dist.py",
+        "--dist-dir",
+        str(dist_dir),
+        "--name",
+        PYTHON_DIST,
+        "--version",
+        VERSION,
+    )
+
+    assert result.returncode == 0, result.stderr
 
 
 def test_check_python_dist_reports_malformed_wheel_without_traceback(
