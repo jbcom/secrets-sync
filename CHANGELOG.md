@@ -7,6 +7,19 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0](https://github.com/jbcom/secrets-sync/compare/v2.1.1...v2.2.0) (2026-06-27)
+
+
+### Features
+
+* retire Python bridge from secrets-sync ([19730c8](https://github.com/jbcom/secrets-sync/commit/19730c8b5e25da0ec32a7a3c09ee2b470ad61a0b))
+
+
+### Bug Fixes
+
+* explicitly use plain semver release tags ([41a3547](https://github.com/jbcom/secrets-sync/commit/41a3547aa243984acb882287d35c7b4af3b34bee))
+* use semver tags for goreleaser ([5498981](https://github.com/jbcom/secrets-sync/commit/54989816d10139c6c4b8994efef63ea533f71337))
+
 ## [2.1.1](https://github.com/jbcom/secrets-sync/compare/secrets-sync-v2.1.0...secrets-sync-v2.1.1) (2026-06-27)
 
 
