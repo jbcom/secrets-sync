@@ -36,7 +36,7 @@ const (
     Version       = "v1alpha1"
     Kind          = "CredentialSynchronization"
     Resource      = "credentialsynchronizations"
-    DefaultImage  = "ghcr.io/jbcom/secrets-sync:v2.2.0"
+    DefaultImage  = "ghcr.io/jbcom/secrets-sync:v2.3.1"
     DefaultConfig = "config.yaml"
 )
 ```

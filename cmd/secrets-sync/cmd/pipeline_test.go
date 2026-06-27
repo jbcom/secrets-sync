@@ -305,3 +305,16 @@ func TestWriteGitHubDiffOutputsNoopsWithoutOutputFile(t *testing.T) {
 		t.Fatalf("writeGitHubDiffOutputs() with nil diff failed: %v", err)
 	}
 }
+
+func TestPipelineCommandRegistersShowValuesFlag(t *testing.T) {
+	flag := pipelineCmd.Flags().Lookup("show-values")
+	if flag == nil {
+		t.Fatal("pipeline command should register --show-values flag")
+	}
+	if flag.DefValue != "false" {
+		t.Fatalf("show-values default = %q, want \"false\"", flag.DefValue)
+	}
+	if !strings.Contains(flag.Usage, "values") {
+		t.Fatalf("show-values usage should mention values: %q", flag.Usage)
+	}
+}

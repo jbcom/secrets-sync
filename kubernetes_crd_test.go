@@ -20,7 +20,7 @@ func TestKubernetesCRDDefinesSecretsSyncAPIContract(t *testing.T) {
 		"kind: CredentialSynchronization",
 		"name: v1alpha1",
 		"configRef:",
-		"ghcr.io/jbcom/secrets-sync:v2.2.0",
+		"ghcr.io/jbcom/secrets-sync:v2.3.1",
 		"status: {}",
 	}
 	for _, needle := range required {
@@ -40,7 +40,7 @@ func TestKubernetesCRDExampleUsesCurrentImageAndKind(t *testing.T) {
 	for _, needle := range []string{
 		"apiVersion: secrets-sync.jbcom.dev/v1alpha1",
 		"kind: CredentialSynchronization",
-		"image: ghcr.io/jbcom/secrets-sync:v2.2.0",
+		"image: ghcr.io/jbcom/secrets-sync:v2.3.1",
 		"configRef:",
 	} {
 		if !strings.Contains(text, needle) {
@@ -73,7 +73,7 @@ func TestKubernetesControllerManifestsWireCredentialSynchronization(t *testing.T
 		},
 		"deployment": {
 			"kind: Deployment",
-			"image: ghcr.io/jbcom/secrets-sync:v2.2.0",
+			"image: ghcr.io/jbcom/secrets-sync:v2.3.1",
 			"secrets-sync-controller",
 			"--resync=1m",
 		},

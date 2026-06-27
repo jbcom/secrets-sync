@@ -29,6 +29,7 @@ var (
 	exitCodeMode    bool
 	continueOnError bool
 	parallelism     int
+	showValues      bool
 )
 
 var (
@@ -100,6 +101,7 @@ func init() {
 	pipelineCmd.Flags().StringVarP(&outputFormat, "output", "o", "human", "output format: human, json, github, compact, side-by-side")
 	pipelineCmd.Flags().BoolVar(&computeDiff, "diff", false, "compute and show diff even when not in dry-run mode")
 	pipelineCmd.Flags().BoolVar(&exitCodeMode, "exit-code", false, "use exit codes: 0=no changes, 1=changes, 2=errors (useful for CI/CD)")
+	pipelineCmd.Flags().BoolVar(&showValues, "show-values", false, "show actual secret values in diff output (masked by default)")
 }
 
 func runPipeline(cmd *cobra.Command, args []string) error {
@@ -183,7 +185,7 @@ func runPipeline(cmd *cobra.Command, args []string) error {
 	pipelineDiff := p.Diff()
 	diffOutput := ""
 	if pipelineDiff != nil {
-		diffOutput = p.FormatDiff(format)
+		diffOutput = diff.FormatDiffWithOptions(pipelineDiff, format, showValues)
 	}
 	if format == diff.OutputFormatGitHub {
 		if outputErr := writeGitHubDiffOutputs(os.Getenv("GITHUB_OUTPUT"), pipelineDiff); outputErr != nil {

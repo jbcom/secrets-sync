@@ -27,7 +27,8 @@ SecretSync runs entirely within your GitHub Actions workflow environment:
 1. **Execution**: Runs in a Docker container within GitHub's infrastructure
 2. **Configuration**: Reads configuration from your repository files
 3. **Authentication**: Uses credentials you provide via GitHub Secrets or OIDC
-4. **Operations**: Connects directly to your Vault, AWS, GCP, or other services
+4. **Operations**: Connects directly to your Vault, AWS, or other services
+   you have configured
 5. **Logging**: All logs remain within GitHub Actions log system
 
 ### Data Flow
@@ -45,7 +46,8 @@ SecretSync runs entirely within your GitHub Actions workflow environment:
 │         │                                                    │
 │         ├──────────────────────► Your AWS Accounts          │
 │         │                                                    │
-│         └──────────────────────► Your GCP Projects          │
+│         └──────────────────────► Your Other Configured      │
+│                                   Services                  │
 │                                                              │
 │  No data leaves your controlled infrastructure              │
 └─────────────────────────────────────────────────────────────┘
@@ -57,8 +59,11 @@ SecretSync connects to services **you configure**, which may include:
 
 - **HashiCorp Vault**: Your own Vault instance
 - **AWS Services**: Your AWS accounts (Secrets Manager, S3, Organizations, etc.)
-- **GCP Services**: Your GCP projects (Secret Manager)
 - **Other Secret Stores**: Any services you configure in your config file
+
+> **Planned**: Azure Key Vault and Google Cloud Secret Manager support are on
+> the [roadmap](ROADMAP.md) for a future release. When those land, this section
+> will list them.
 
 Each of these services has its own privacy policy and data handling practices. SecretSync acts as a client to these services on your behalf.
 
