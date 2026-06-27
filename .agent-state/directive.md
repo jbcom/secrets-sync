@@ -55,7 +55,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 - [x] M1.2 Generic HTTP store (pkg/client/httpstore): source+target via webhook; auth bearer/mTLS/custom headers; circuit-breaker + retry integration. Driver `http`.
 - [x] M1.3 Azure Key Vault backend (pkg/client/azure): read/write source+target; Azure AD auth (service principal, managed identity, workload identity federation); cross-tenant via RBAC. Driver `azure`.
 - [x] M1.4 GCP Secret Manager backend (pkg/client/gcp): read/write source+target; service account + workload identity auth; project isolation. Driver `gcp`.
-- [ ] M1.5 Wire all four into config structs, fetch/sync, USAGE.md driver docs, examples/, and docs guards. CRD + Helm chart support new target drivers.
+- [x] M1.5 Wire all four into config structs, fetch/sync, USAGE.md driver docs, examples/, and docs guards. CRD + Helm chart support new target drivers (CRD already x-kubernetes-preserve-unknown-fields:true on targets).
 
 ### M2 v2.5.0 — Observability & Tracing
 - [ ] M2.1 OpenTelemetry tracing: spans across fetch/merge/sync + per-backend API calls; attributes target/source/operation/phase; OTLP/Jaeger/Zipkin exporters; configurable sampling. Config block `observability.tracing`.

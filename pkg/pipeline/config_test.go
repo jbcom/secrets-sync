@@ -177,6 +177,28 @@ func TestConfigValidate(t *testing.T) {
 			errMsg:  "invalid account_id format",
 		},
 		{
+			name: "valid non-default backend driver",
+			config: Config{
+				Targets: map[string]Target{
+					"AzureVault": {
+						Imports: []string{"shared"},
+						Backend: &TargetBackendConfig{Driver: "azure", Options: map[string]any{"vault_url": "https://v.vault.azure.net/"}},
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "unsupported backend driver rejected",
+			config: Config{
+				Targets: map[string]Target{
+					"Bad": {Imports: []string{"shared"}, Backend: &TargetBackendConfig{Driver: "nonsense"}},
+				},
+			},
+			wantErr: true,
+			errMsg:  "unsupported backend driver",
+		},
+		{
 			name: "valid S3 merge store",
 			config: Config{
 				MergeStore: MergeStoreConfig{S3: &MergeStoreS3{Bucket: "my-bucket", Prefix: "secrets/"}},

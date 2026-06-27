@@ -1,8 +1,10 @@
 # Usage
 
 SecretSync is a pipeline runner. It reads configured sources, merges secret
-material into a merge store, and syncs the resulting bundles into AWS Secrets
-Manager targets.
+material into a merge store, and syncs the resulting bundles into one or more
+target backends. AWS Secrets Manager is the default target; Azure Key Vault,
+GCP Secret Manager, Kubernetes Secrets, a generic HTTP/webhook store, and Vault
+are also supported.
 
 ## Configuration
 
@@ -79,9 +81,59 @@ pipeline:
 ```
 
 `sources` define where secrets are read from. `merge_store` defines the
-intermediate bundle store. `targets` define AWS accounts and the source or
+intermediate bundle store. `targets` define sync destinations and the source or
 target imports that feed them. A target imports another target by listing that
 target name in `imports`.
+
+## Target backends
+
+A target syncs to AWS Secrets Manager by default. To sync to a different store,
+add a `backend:` block selecting the driver. The legacy AWS fields
+(`account_id`, `role_arn`, `region`) apply only to the default AWS backend.
+
+| Driver | Store | Required config |
+|--------|-------|-----------------|
+| `aws` (default) | AWS Secrets Manager | `account_id` / cross-account `role_arn` |
+| `azure` | Azure Key Vault | `options.vault_url` |
+| `gcp` | GCP Secret Manager | `path` (project ID) |
+| `kubernetes` | Kubernetes Secrets | `path` (namespace); `options.secret_type` |
+| `http` | Generic HTTP/webhook store | `options.base_url`; auth via `bearer_token` / headers / mTLS |
+| `vault` | HashiCorp Vault KV2 | `path` (mount) |
+
+```yaml
+targets:
+  azure-vault:
+    imports:
+      - shared
+    backend:
+      driver: azure
+      options:
+        vault_url: https://my-keyvault.vault.azure.net/
+  gcp-project:
+    imports:
+      - shared
+    backend:
+      driver: gcp
+      path: my-gcp-project
+  k8s-namespace:
+    imports:
+      - shared
+    backend:
+      driver: kubernetes
+      path: team-platform
+      options:
+        secret_type: Opaque
+```
+
+Authentication is environment-native per provider: AWS uses the standard
+credential chain plus cross-account role assumption; Azure uses
+DefaultAzureCredential (service principal, managed identity, workload identity
+federation); GCP uses Application Default Credentials; Kubernetes uses
+in-cluster config, `KUBECONFIG`, or `~/.kube/config`; the HTTP store uses a
+bearer token, custom headers, or mTLS client certificates.
+
+A full multi-provider example lives at
+[`examples/multi-provider-targets.yaml`](../examples/multi-provider-targets.yaml).
 
 ## Validate
 

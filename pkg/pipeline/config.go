@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jbcom/secrets-sync/pkg/driver"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -194,6 +195,12 @@ func (c *Config) Validate() error {
 	for name, target := range c.Targets {
 		if target.AccountID != "" && !isValidAWSAccountID(target.AccountID) {
 			return fmt.Errorf("target %q: invalid account_id format %q (must be 12 digits)", name, target.AccountID)
+		}
+		// Validate an explicit backend selector names a supported driver.
+		if target.Backend != nil && target.Backend.Driver != "" {
+			if !driver.DriverIsSupported(driver.DriverName(target.Backend.Driver)) {
+				return fmt.Errorf("target %q: unsupported backend driver %q", name, target.Backend.Driver)
+			}
 		}
 		// Note: imports are NOT validated here - they can be resolved dynamically
 		// via fuzzy matching against AWS Organizations or Vault mounts
