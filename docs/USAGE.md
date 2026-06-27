@@ -195,6 +195,27 @@ merge_store:
 By default replication is best-effort (primary success is sufficient); set
 `require_all_replicas` for strict multi-region durability.
 
+## Serverless entrypoints
+
+The pipeline ships two serverless adapters over a shared core (`pkg/serverless`):
+
+- **AWS Lambda** (`secrets-sync-lambda`): packaged as a `provided.al2`/custom
+  runtime; invoked with a JSON event.
+- **Azure Functions** (`secrets-sync-azurefunc`): an Azure Functions custom
+  handler (HTTP), invoked with the same request shape under the function's
+  trigger binding.
+
+Both accept inline YAML, a file path, an S3 object, or `SECRETS_SYNC_CONFIG`,
+plus runtime auth in the request session — so the same configuration drives any
+runtime.
+
+## Caching
+
+Expensive, re-derivable results (discovery output, list calls) can be cached via
+`pkg/cache`. An in-memory TTL cache ships by default; the `Cache` interface lets
+horizontally-scaled deployments plug in a shared backend (Redis, Memcached)
+without touching call sites, which use the cache-aside `GetOrCompute` helper.
+
 ## Multi-instance coordination
 
 For multi-replica controller deployments, two primitives prevent duplicate work:

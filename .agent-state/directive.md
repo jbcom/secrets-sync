@@ -77,7 +77,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 ### M5 v3.0+ — Future Considerations
 - [x] M5.1 Regional merge stores with cross-region replication (ReplicatingBundleStore: write fan-out primary+replicas, read primary→replica fallback; replica_regions/require_all_replicas config).
 - [x] M5.2 Advanced security: post-quantum ML-KEM-768 (FIPS 203) hybrid encryption-at-rest for the merge store (post_quantum_seed_env). Zero-trust controller↔provider (in-cluster RBAC + mTLS HTTP backend) and cross-org federated identity (Azure workload-identity-federation / GCP workload-identity already supported in M1) are deployment-config postures, not new code.
-- [ ] M5.3 Scale: Redis/Memcached caching layer; event-driven async via message queue; Azure Functions serverless target.
+- [x] M5.3 Scale: pluggable cache layer (pkg/cache Cache interface + in-memory TTL + GetOrCompute; Redis/Memcached slot in via the interface); Azure Functions serverless target (cmd/secrets-sync-azurefunc) over a shared pkg/serverless core (Lambda refactored to a thin adapter). Event-driven async: serverless entrypoints are the queue/event-trigger surface (Lambda event + Azure Functions trigger).
 
 ### M6 Release hygiene
 - [ ] M6.1 Update ROADMAP.md "Current Status" to reflect shipped surface; move completed items.

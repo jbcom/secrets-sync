@@ -52,6 +52,19 @@ builds:
       - arm64
     ldflags:
       - -s -w
+  - id: secrets-sync-azurefunc
+    main: ./cmd/secrets-sync-azurefunc
+    binary: secrets-sync-azurefunc
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
 
 archives:
   - id: cli
