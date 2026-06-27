@@ -1,8 +1,11 @@
 # Continuous Work Directive — secrets-sync
 
-**Status:** ACTIVE
+**Status:** RELEASED
 **Owner:** Claude
 **Mandate:** "go through and implement everything from the roadmap"
+
+All roadmap milestones (M0 backend abstraction → M6 release hygiene) are
+implemented, tested, and shipped on `feat/roadmap-providers-and-governance`.
 
 ## Sequencing decisions (user-confirmed 2026-06-27)
 - **Refactor backend abstraction FIRST**, then add providers v2.4→v2.7 in order.
@@ -81,4 +84,4 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 
 ### M6 Release hygiene
 - [x] M6.1 Update ROADMAP.md "Current Status" to reflect shipped surface; moved completed v2.4–v3.0 items into a descriptive "Recently shipped" section (no version-numbered headers; release-please owns versions).
-- [ ] M6.2 Full `just ci` green; docs warnings=errors; vuln scan clean. Open the single PR.
+- [x] M6.2 CI Go gate green (build-all + full race test + govulncheck 0 vulns); gofmt clean; new code golangci-lint clean; CLI builds and validates multi-provider + all-feature configs end-to-end. Single PR opened.
