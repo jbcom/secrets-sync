@@ -7,6 +7,13 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0](https://github.com/jbcom/secrets-sync/compare/secrets-sync-v2.0.2...secrets-sync-v2.1.0) (2026-06-27)
+
+
+### Features
+
+* retire Python bridge from secrets-sync ([19730c8](https://github.com/jbcom/secrets-sync/commit/19730c8b5e25da0ec32a7a3c09ee2b470ad61a0b))
+
 ## [2.0.2](https://github.com/jbcom/secrets-sync/compare/secrets-sync-v2.0.1...secrets-sync-v2.0.2) (2026-04-16)
 
 
