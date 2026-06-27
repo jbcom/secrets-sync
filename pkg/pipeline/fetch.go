@@ -3,7 +3,6 @@ package pipeline
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/jbcom/secrets-sync/pkg/driver"
@@ -25,11 +24,22 @@ func (p *Pipeline) fetchSourceSecrets(ctx context.Context, src driver.SourceBack
 		return map[string]interface{}{}, nil
 	}
 
+	// A trailing-slash boundary is required so that a scope of "kv/app" does not
+	// match a sibling secret under "kv/application" (which would mangle the key).
+	var prefix string
+	if path != "" {
+		prefix = strings.TrimRight(path, "/") + "/"
+	}
+
 	secrets := make(map[string]interface{}, len(names))
 	for _, name := range names {
+		// Backends like Vault return fully-qualified names already carrying the
+		// scope prefix; flat backends like AWS return bare names. Read with the
+		// fully-qualified path, key by the scope-relative name.
 		secretPath := name
-		if path != "" && !strings.HasPrefix(name, path) {
-			secretPath = fmt.Sprintf("%s/%s", strings.TrimRight(path, "/"), name)
+		hasPrefix := prefix != "" && strings.HasPrefix(name, prefix)
+		if prefix != "" && !hasPrefix {
+			secretPath = prefix + name
 		}
 		raw, err := src.GetSecret(ctx, secretPath)
 		if err != nil {
@@ -42,8 +52,8 @@ func (p *Pipeline) fetchSourceSecrets(ctx context.Context, src driver.SourceBack
 			continue
 		}
 		key := name
-		if path != "" && strings.HasPrefix(name, path) {
-			key = strings.TrimPrefix(strings.TrimPrefix(name, path), "/")
+		if hasPrefix {
+			key = strings.TrimPrefix(name, prefix)
 		}
 		secrets[key] = data
 	}
