@@ -249,7 +249,7 @@ func TestConfigValidate(t *testing.T) {
 					"sandboxes": {
 						Discovery: DiscoveryConfig{
 							Organizations: &OrganizationsDiscovery{
-								OU:        "ou-xxxx-sandboxes",
+								OUs:       []string{"ou-xxxx-sandboxes"},
 								Recursive: true,
 							},
 						},

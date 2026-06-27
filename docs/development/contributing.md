@@ -15,6 +15,9 @@ go mod download
 ## Running Tests
 
 ```bash
+# Vulnerability scan
+go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
+
 # Unit tests
 go test ./...
 
@@ -37,14 +40,11 @@ gofmt ./...
 golangci-lint run
 ```
 
-## Building and Bindings
+## Building
 
 ```bash
 # Build the CLI
 make build
-
-# Generate Python bindings
-make python-bindings
 ```
 
 ## Pull Request Process

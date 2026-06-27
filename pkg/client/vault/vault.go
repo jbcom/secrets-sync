@@ -124,7 +124,13 @@ func NewClient(cfg *VaultClient) (*VaultClient, error) {
 	breakerName := fmt.Sprintf("vault-%s", vc.Address)
 	vc.breaker = circuitbreaker.New(circuitbreaker.DefaultConfig(breakerName))
 
-	l.Tracef("client=%+v", vc)
+	l.WithFields(log.Fields{
+		"address":    vc.Address,
+		"path":       vc.Path,
+		"authMethod": vc.AuthMethod,
+		"namespace":  vc.Namespace,
+		"merge":      vc.Merge,
+	}).Trace("client initialized")
 	l.Trace("end")
 	return vc, nil
 }
@@ -279,21 +285,14 @@ func (vc *VaultClient) GetKVSecretOnce(ctx context.Context, s string) (map[strin
 		observability.RecordDuration(observability.VaultAPICallDuration, startTime, "get_secret", status)
 	}()
 
-	l := log.WithFields(log.Fields{
-		"address": vc.Address,
-		"role":    vc.Role,
-		"path":    s,
-		"method":  vc.AuthMethod,
-	})
-	var secrets map[string]interface{}
 	if s == "" {
 		observability.RecordError(observability.VaultErrors, "get_secret", "invalid_path")
-		return secrets, errors.New("secret path required")
+		return nil, errors.New("secret path required")
 	}
 	ss := strings.Split(s, "/")
 	if len(ss) < 2 {
 		observability.RecordError(observability.VaultErrors, "get_secret", "invalid_path")
-		return secrets, errors.New("secret path must be in kv/path/to/secret format")
+		return nil, errors.New("secret path must be in kv/path/to/secret format")
 	}
 	ss = insertSliceString(ss, 1, "data")
 	//log.Debugf("headers_sent=%+v", vc.Client.Headers())
@@ -301,7 +300,7 @@ func (vc *VaultClient) GetKVSecretOnce(ctx context.Context, s string) (map[strin
 	s = strings.Join(ss, "/")
 	if c == nil {
 		observability.RecordError(observability.VaultErrors, "get_secret", "not_initialized")
-		return secrets, errors.New("vault client not initialized")
+		return nil, errors.New("vault client not initialized")
 	}
 
 	// Ensure circuit breaker is initialized
@@ -313,7 +312,7 @@ func (vc *VaultClient) GetKVSecretOnce(ctx context.Context, s string) (map[strin
 	})
 	if err != nil {
 		observability.RecordError(observability.VaultErrors, "get_secret", "api_error")
-		return secrets, circuitbreaker.WrapError(err, vc.breaker.Name(), vc.breaker.State())
+		return nil, circuitbreaker.WrapError(err, vc.breaker.Name(), vc.breaker.State())
 	}
 
 	secret := result
@@ -321,7 +320,6 @@ func (vc *VaultClient) GetKVSecretOnce(ctx context.Context, s string) (map[strin
 		observability.RecordError(observability.VaultErrors, "get_secret", "not_found")
 		return nil, errors.New("secret not found: " + s)
 	}
-	l.Tracef("secret=%+v", secret)
 	if secret.Data["data"] == nil {
 		observability.RecordError(observability.VaultErrors, "get_secret", "no_data")
 		return nil, errors.New("secret data not found: " + s)
@@ -386,7 +384,6 @@ func (vc *VaultClient) WriteSecret(ctx context.Context, meta metav1.ObjectMeta, 
 	if err != nil {
 		return nil, err
 	}
-	var secrets map[string]interface{}
 	if vc.Merge {
 		sec, getErr := vc.GetSecret(ctx, s)
 		if getErr != nil {
@@ -419,18 +416,17 @@ func (vc *VaultClient) WriteSecret(ctx context.Context, meta metav1.ObjectMeta, 
 	if terr != nil {
 		return nil, terr
 	}
-	secrets, err = vc.WriteSecretWithLatestCAS(ctx, s, data)
+	_, err = vc.WriteSecretWithLatestCAS(ctx, s, data)
 	if err != nil {
 		terr := vc.NewToken(ctx)
 		if terr != nil {
 			return nil, terr
 		}
-		secrets, err = vc.WriteSecretWithLatestCAS(ctx, s, data)
+		_, err = vc.WriteSecretWithLatestCAS(ctx, s, data)
 		if err != nil {
 			return nil, err
 		}
 	}
-	l.Tracef("secrets=%+v", secrets)
 	return nil, err
 }
 

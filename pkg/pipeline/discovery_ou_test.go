@@ -1,20 +1,21 @@
 package pipeline
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v3"
 )
 
 func TestOrganizationsDiscovery_MultipleOUsConfig(t *testing.T) {
-	t.Run("legacy single OU", func(t *testing.T) {
+	t.Run("single OU uses OUs list", func(t *testing.T) {
 		cfg := &OrganizationsDiscovery{
-			OU: "ou-prod-123",
+			OUs: []string{"ou-prod-123"},
 		}
 
-		// Test that the configuration is properly structured
-		assert.Equal(t, "ou-prod-123", cfg.OU)
-		assert.Empty(t, cfg.OUs)
+		assert.Equal(t, []string{"ou-prod-123"}, cfg.OUs)
 	})
 
 	t.Run("multiple OUs", func(t *testing.T) {
@@ -22,21 +23,18 @@ func TestOrganizationsDiscovery_MultipleOUsConfig(t *testing.T) {
 			OUs: []string{"ou-prod-123", "ou-staging-456", "ou-dev-789"},
 		}
 
-		assert.Empty(t, cfg.OU)
 		assert.Len(t, cfg.OUs, 3)
 		assert.Contains(t, cfg.OUs, "ou-prod-123")
 		assert.Contains(t, cfg.OUs, "ou-staging-456")
 		assert.Contains(t, cfg.OUs, "ou-dev-789")
 	})
 
-	t.Run("legacy OU + multiple OUs", func(t *testing.T) {
-		cfg := &OrganizationsDiscovery{
-			OU:  "ou-prod-123",
-			OUs: []string{"ou-staging-456", "ou-dev-789"},
-		}
+	t.Run("removed single OU yaml is rejected", func(t *testing.T) {
+		cfg := &OrganizationsDiscovery{}
 
-		assert.Equal(t, "ou-prod-123", cfg.OU)
-		assert.Len(t, cfg.OUs, 2)
+		err := yaml.Unmarshal([]byte("ou: ou-prod-123\n"), cfg)
+
+		assert.ErrorContains(t, err, "organizations.ou has been removed")
 	})
 
 	t.Run("OU caching enabled", func(t *testing.T) {
@@ -46,6 +44,24 @@ func TestOrganizationsDiscovery_MultipleOUsConfig(t *testing.T) {
 
 		assert.True(t, cfg.CacheOUStructure)
 	})
+}
+
+func TestRepositoryExamplesRejectRemovedOrganizationsOUShape(t *testing.T) {
+	paths := []string{
+		filepath.Join("..", "..", "examples", "pipeline-config.yaml"),
+		filepath.Join("..", "..", "tests", "integration", "fixtures", "pipeline-config.yaml"),
+	}
+
+	for _, path := range paths {
+		t.Run(path, func(t *testing.T) {
+			data, err := os.ReadFile(path)
+			assert.NoError(t, err)
+
+			var doc yaml.Node
+			assert.NoError(t, yaml.Unmarshal(data, &doc))
+			assert.False(t, hasRemovedOrganizationsOUShape(&doc), "%s uses removed organizations.ou", path)
+		})
+	}
 }
 
 func TestDiscoveryService_CacheInitialization(t *testing.T) {
@@ -71,4 +87,44 @@ func TestDiscoveryService_CacheInitialization(t *testing.T) {
 	assert.True(t, exists)
 	assert.Len(t, cached, 1)
 	assert.Equal(t, "111111111111", cached[0].ID)
+}
+
+func hasRemovedOrganizationsOUShape(node *yaml.Node) bool {
+	if node == nil {
+		return false
+	}
+
+	if node.Kind == yaml.MappingNode {
+		for i := 0; i < len(node.Content)-1; i += 2 {
+			key := node.Content[i]
+			value := node.Content[i+1]
+			if key.Value == "organizations" && mappingNodeHasKey(value, "ou") {
+				return true
+			}
+			if hasRemovedOrganizationsOUShape(value) {
+				return true
+			}
+		}
+		return false
+	}
+
+	for _, child := range node.Content {
+		if hasRemovedOrganizationsOUShape(child) {
+			return true
+		}
+	}
+	return false
+}
+
+func mappingNodeHasKey(node *yaml.Node, keyName string) bool {
+	if node == nil || node.Kind != yaml.MappingNode {
+		return false
+	}
+
+	for i := 0; i < len(node.Content)-1; i += 2 {
+		if node.Content[i].Value == keyName {
+			return true
+		}
+	}
+	return false
 }

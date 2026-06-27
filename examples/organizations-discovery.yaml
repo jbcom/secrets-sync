@@ -11,7 +11,8 @@ dynamic_targets:
   development_accounts:
     discovery:
       organizations:
-        ou: "ou-xxxx-development"
+        ous:
+          - "ou-xxxx-development"
     imports:
       - shared-dev-secrets
     exclude:
@@ -24,7 +25,8 @@ dynamic_targets:
   workload_accounts:
     discovery:
       organizations:
-        ou: "ou-xxxx-workloads"
+        ous:
+          - "ou-xxxx-workloads"
         recursive: true  # Includes all nested OUs
     imports:
       - platform-secrets
@@ -39,8 +41,10 @@ dynamic_targets:
     discovery:
       organizations:
         tags:
-          Environment: production
-          ManagedBy: platform-team
+          Environment:
+            - production
+          ManagedBy:
+            - platform-team
     imports:
       - prod-secrets
       - compliance-keys
@@ -54,10 +58,13 @@ dynamic_targets:
   production_web_apps:
     discovery:
       organizations:
-        ou: "ou-xxxx-production"
+        ous:
+          - "ou-xxxx-production"
         tags:
-          Workload: web-application
-          CostCenter: engineering
+          Workload:
+            - web-application
+          CostCenter:
+            - engineering
     imports:
       - web-app-secrets
       - ssl-certificates
@@ -69,11 +76,14 @@ dynamic_targets:
   sandbox_environments:
     discovery:
       organizations:
-        ou: "ou-xxxx-sandboxes"
+        ous:
+          - "ou-xxxx-sandboxes"
         recursive: true  # Search all child OUs too
         tags:
-          AutoCleanup: enabled
-          Owner: analytics-team
+          AutoCleanup:
+            - enabled
+          Owner:
+            - analytics-team
     imports:
       - sandbox-defaults
       - testing-credentials
@@ -87,7 +97,8 @@ dynamic_targets:
   custom_role_accounts:
     discovery:
       organizations:
-        ou: "ou-xxxx-special"
+        ous:
+          - "ou-xxxx-special"
     imports:
       - special-secrets
     # {{.AccountID}} will be replaced with each discovered account ID
@@ -108,8 +119,10 @@ dynamic_targets:
       # Second: also get accounts from Organizations by tags
       organizations:
         tags:
-          Platform: analytics
-          Environment: shared
+          Platform:
+            - analytics
+          Environment:
+            - shared
       # Third: also get accounts from an SSM parameter
       accounts_list:
         source: "ssm:/platform/analytics-accounts"
@@ -127,10 +140,12 @@ dynamic_targets:
   dev_envs:
     discovery:
       organizations:
-        ou: "ou-xxxx-dev"
+        ous:
+          - "ou-xxxx-dev"
         recursive: true
         tags:
-          AutoProvision: enabled
+          AutoProvision:
+            - enabled
     imports:
       - dev-shared-config
       - testing-data
@@ -140,9 +155,11 @@ dynamic_targets:
   staging_envs:
     discovery:
       organizations:
-        ou: "ou-xxxx-staging"
+        ous:
+          - "ou-xxxx-staging"
         tags:
-          Environment: staging
+          Environment:
+            - staging
     imports:
       - dev-shared-config  # Inherit from dev
       - staging-specific   # Add staging-specific secrets
@@ -152,10 +169,13 @@ dynamic_targets:
   prod_envs:
     discovery:
       organizations:
-        ou: "ou-xxxx-production"
+        ous:
+          - "ou-xxxx-production"
         tags:
-          Environment: production
-          Compliance: required
+          Environment:
+            - production
+          Compliance:
+            - required
     imports:
       - prod-secrets
       - pci-compliance-keys

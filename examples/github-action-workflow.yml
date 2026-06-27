@@ -3,8 +3,8 @@ name: Sync Secrets with SecretSync
 # This is a complete example workflow showing how to use SecretSync
 # as a GitHub Action for automated secrets synchronization.
 #
-# Pin to a package release tag for reproducible runs.
-# This example uses the latest current package tag.
+# Pin third-party actions to exact commits and pin SecretSync to a released
+# component tag for reproducible runs.
 
 on:
   # Scheduled sync every 6 hours
@@ -58,16 +58,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
       
       - name: Validate Configuration (Dry Run)
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: config.yaml
           dry-run: 'true'
@@ -87,7 +87,7 @@ jobs:
     
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
       - name: Determine Configuration
         id: config
@@ -99,7 +99,7 @@ jobs:
           fi
       
       - name: Configure AWS Credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
@@ -107,7 +107,7 @@ jobs:
           role-session-name: GitHubActions-SecretSync-${{ github.run_id }}
       
       - name: Run SecretSync
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: ${{ steps.config.outputs.config }}
           targets: ${{ github.event.inputs.targets || '' }}

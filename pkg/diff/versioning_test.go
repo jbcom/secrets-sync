@@ -153,8 +153,8 @@ func TestFormatDiffWithVersions(t *testing.T) {
 	assert.Contains(t, output, "(was v5)", "Should show version for removed secret")
 }
 
-// TestBackwardCompatibility tests that diff works without version information (v1.2.0 - Requirement 24)
-func TestBackwardCompatibility(t *testing.T) {
+// TestDiffWithoutVersionMetadata tests the current no-version diff path.
+func TestDiffWithoutVersionMetadata(t *testing.T) {
 	current := map[string]interface{}{
 		"app/api-key": map[string]interface{}{"key": "old-value"},
 	}
@@ -162,7 +162,7 @@ func TestBackwardCompatibility(t *testing.T) {
 		"app/api-key": map[string]interface{}{"key": "new-value"},
 	}
 
-	// Test without version information (backward compatibility)
+	// Test without version information.
 	changes := DiffSecrets(current, desired)
 	assert.Len(t, changes, 1)
 	assert.Equal(t, ChangeTypeModified, changes[0].ChangeType)

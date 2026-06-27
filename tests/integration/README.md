@@ -112,7 +112,7 @@ The GitHub Actions CI workflow uses the docker-compose stack for integration tes
    - Syncs to AWS Secrets Manager
    - Validates final output
 
-2. **fsc_compatibility_test.go** - FlipsideCrypto compatibility
+2. **fsc_pipeline_test.go** - FSC pipeline shape
    - Multi-tier target inheritance (Staging → Production → Demo)
    - AWS Organizations account discovery
    - Fuzzy account name matching

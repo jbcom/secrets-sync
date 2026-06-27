@@ -352,7 +352,7 @@ func (ec *AWSExecutionContext) AssumeRoleConfig(ctx context.Context, accountID s
 
 	// Create STS assume role provider
 	provider := stscreds.NewAssumeRoleProvider(ec.stsClient, roleARN, func(o *stscreds.AssumeRoleOptions) {
-		o.RoleSessionName = "secretsync"
+		o.RoleSessionName = "secrets-sync"
 	})
 
 	// Create new config with assumed role credentials

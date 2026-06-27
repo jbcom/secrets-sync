@@ -1,6 +1,12 @@
 // Package pipeline provides unified configuration and orchestration for secrets syncing pipelines.
 package pipeline
 
+import (
+	"fmt"
+
+	"gopkg.in/yaml.v3"
+)
+
 // Config represents the unified pipeline configuration
 type Config struct {
 	Log            LogConfig                `mapstructure:"log" yaml:"log"`
@@ -248,17 +254,34 @@ type IdentityCenterDiscovery struct {
 
 // OrganizationsDiscovery discovers accounts from AWS Organizations
 type OrganizationsDiscovery struct {
-	OU           string              `mapstructure:"ou" yaml:"ou"`
 	Tags         map[string][]string `mapstructure:"tags" yaml:"tags"`
 	Recursive    bool                `mapstructure:"recursive" yaml:"recursive"`
 	NameMatching *NameMatchingConfig `mapstructure:"name_matching" yaml:"name_matching"`
 
-	// Enhanced filtering (v1.2.0)
-	OUs              []string    `mapstructure:"ous" yaml:"ous"` // Multiple OUs support
+	OUs              []string    `mapstructure:"ous" yaml:"ous"`
 	TagFilters       []TagFilter `mapstructure:"tag_filters" yaml:"tag_filters"`
 	TagCombination   string      `mapstructure:"tag_combination" yaml:"tag_combination"`       // "AND" or "OR", default "AND"
 	ExcludeStatuses  []string    `mapstructure:"exclude_statuses" yaml:"exclude_statuses"`     // e.g., ["SUSPENDED", "CLOSED"]
 	CacheOUStructure bool        `mapstructure:"cache_ou_structure" yaml:"cache_ou_structure"` // Cache OU hierarchy
+}
+
+// UnmarshalYAML rejects removed single-OU configuration instead of silently ignoring it.
+func (o *OrganizationsDiscovery) UnmarshalYAML(value *yaml.Node) error {
+	if value.Kind == yaml.MappingNode {
+		for i := 0; i < len(value.Content)-1; i += 2 {
+			if value.Content[i].Value == "ou" {
+				return fmt.Errorf("organizations.ou has been removed; use organizations.ous with one or more OU IDs")
+			}
+		}
+	}
+
+	type organizationsDiscovery OrganizationsDiscovery
+	var decoded organizationsDiscovery
+	if err := value.Decode(&decoded); err != nil {
+		return err
+	}
+	*o = OrganizationsDiscovery(decoded)
+	return nil
 }
 
 // TagFilter represents a single tag filtering condition with wildcard support

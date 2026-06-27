@@ -387,14 +387,6 @@ func formatHuman(diff *PipelineDiff) string {
 func formatGitHub(diff *PipelineDiff) string {
 	var sb strings.Builder
 
-	// Summary as workflow output
-	sb.WriteString(fmt.Sprintf("::set-output name=changes::%d\n", diff.Summary.Added+diff.Summary.Removed+diff.Summary.Modified))
-	sb.WriteString(fmt.Sprintf("::set-output name=added::%d\n", diff.Summary.Added))
-	sb.WriteString(fmt.Sprintf("::set-output name=removed::%d\n", diff.Summary.Removed))
-	sb.WriteString(fmt.Sprintf("::set-output name=modified::%d\n", diff.Summary.Modified))
-	sb.WriteString(fmt.Sprintf("::set-output name=unchanged::%d\n", diff.Summary.Unchanged))
-	sb.WriteString(fmt.Sprintf("::set-output name=zero_sum::%t\n", diff.IsZeroSum()))
-
 	if diff.IsZeroSum() {
 		sb.WriteString("::notice::✅ Zero-sum: No changes detected\n")
 	} else {
@@ -409,17 +401,18 @@ func formatGitHub(diff *PipelineDiff) string {
 			continue
 		}
 
-		sb.WriteString(fmt.Sprintf("::group::Target: %s (%d changes)\n", td.Target,
+		sb.WriteString(fmt.Sprintf("::group::Target: %s (%d changes)\n", escapeGitHubCommandData(td.Target),
 			td.Summary.Added+td.Summary.Removed+td.Summary.Modified))
 
 		for _, c := range td.Changes {
+			safePath := escapeGitHubCommandData(c.Path)
 			switch c.ChangeType {
 			case ChangeTypeAdded:
-				sb.WriteString(fmt.Sprintf("::notice::+ %s (new secret)\n", c.Path))
+				sb.WriteString(fmt.Sprintf("::notice::+ %s (new secret)\n", safePath))
 			case ChangeTypeRemoved:
-				sb.WriteString(fmt.Sprintf("::warning::- %s (removed)\n", c.Path))
+				sb.WriteString(fmt.Sprintf("::warning::- %s (removed)\n", safePath))
 			case ChangeTypeModified:
-				sb.WriteString(fmt.Sprintf("::notice::~ %s (modified)\n", c.Path))
+				sb.WriteString(fmt.Sprintf("::notice::~ %s (modified)\n", safePath))
 			}
 		}
 
@@ -427,6 +420,15 @@ func formatGitHub(diff *PipelineDiff) string {
 	}
 
 	return sb.String()
+}
+
+func escapeGitHubCommandData(value string) string {
+	replacer := strings.NewReplacer(
+		"%", "%25",
+		"\r", "%0D",
+		"\n", "%0A",
+	)
+	return replacer.Replace(value)
 }
 
 func formatCompact(diff *PipelineDiff) string {

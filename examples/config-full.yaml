@@ -1,92 +1,103 @@
+# Full SecretSync pipeline configuration example.
+
 log:
-  level: "debug" # The log level for the application. Can be one of "debug", "info", "warn", "error", "fatal", or "panic".
-  format: "json" # The format of the log output. Can be one of "json" or "text"
-  events: true # Whether to log events.
+  level: info
+  format: json
 
-# Configuration for the event server.
-events:
-  # Whether the event server is enabled.
-  enabled: true
-  # The port the event server listens on.
-  port: 8080
-  # Security settings for the event server.
-  security:
-    # Whether security is enabled for the event server.
+vault:
+  address: https://vault.example.com/
+  namespace: platform/secrets
+  auth:
+    approle:
+      mount: approle
+      role_id: ${VAULT_ROLE_ID}
+      secret_id: ${VAULT_SECRET_ID}
+
+aws:
+  region: us-east-1
+  execution_context:
+    type: delegated_admin
+    account_id: "123456789012"
+    delegation:
+      services:
+        - organizations.amazonaws.com
+        - sso.amazonaws.com
+  control_tower:
     enabled: true
-    # The token used for authentication.
-    token: "your-token"
-    # TLS configuration for the event server.
-    tls: 
-      certFile: "/path/to/certfile"
-      keyFile: "/path/to/keyfile"
-  # Whether to deduplicate events.
-  dedupe: true
-
-# Configuration for the operator.
-operator:
-  # Whether the operator is enabled.
-  enabled: true
-  workerPoolSize: 10
-  # The number of subscriptions to use.
-  numSubscriptions: 10
-
-# Configuration for the stores.
-stores:
-  aws:
-    region: "us-west-2"
-
-  github:
-    installId: 12345
-    appId: 67890
-    privateKeyPath: "/path/to/private/key"
-
-# Configuration for the queue.
-queue:
-  # The type of queue to use.
-  type: "your-queue-type"
-  # Parameters for the queue.
-  params:
-    param1: "value1"
-    param2: "value2"
-
-# Configuration for the metrics server.
-metrics:
-  # The port the metrics server listens on.
-  port: 9090
-  # Security settings for the metrics server.
-  security:
-    # Whether security is enabled for the metrics server.
+    execution_role:
+      name: AWSControlTowerExecution
+  organizations:
+    auto_discover: true
+  identity_center:
     enabled: true
-    # The token used for authentication.
-    token: "your-token"
-    # TLS configuration for the metrics server.
-    tls: 
-      certFile: "/path/to/certfile"
-      keyFile: "/path/to/keyfile"
+    auto_discover: true
 
-notifications:
-  email:
-    enabled: true
-    host: "smtp.example.com"
-    port: 587
-    username: "your-email@example.com"
-    password: "your-email-password"
-    from: "your-email@example.com"
-    to: "recipient@example.com"
-    subject: "Notification Subject"
-    body: "This is the notification body."
-  slack:
-    enabled: true
-    url: "https://hooks.slack.example.com/services/xxx/xxx/xxx"
-    message: "This is the notification message."
-  webhook:
-    enabled: true
-    url: "https://example.com/webhook"
-    method: "POST"
-    headers:
-      Content-Type: "application/json"
-    body: |
-      {
-        "status": "{{ .Status }}",
-        "message": "{{ .Message }}"
-      }
+sources:
+  shared:
+    vault:
+      mount: shared
+      paths:
+        - app/*
+        - platform/*
+  analytics:
+    vault:
+      mount: analytics
+      paths:
+        - services/*
+  production-overrides:
+    vault:
+      mount: production
+
+merge_store:
+  s3:
+    bucket: secrets-sync-merge-store
+    prefix: merged/
+    kms_key_id: alias/secrets-sync-merge-store
+    versioning:
+      enabled: true
+      retain_versions: 20
+
+targets:
+  staging:
+    account_id: "111111111111"
+    region: us-east-1
+    secret_prefix: /staging/
+    imports:
+      - shared
+      - analytics
+  production:
+    account_id: "222222222222"
+    region: us-east-1
+    secret_prefix: /production/
+    imports:
+      - staging
+      - production-overrides
+
+dynamic_targets:
+  analytics_sandboxes:
+    discovery:
+      organizations:
+        ous:
+          - ou-xxxx-sandbox
+        recursive: true
+        tag_filters:
+          - key: Team
+            values:
+              - analytics
+            operator: equals
+        exclude_statuses:
+          - SUSPENDED
+    imports:
+      - shared
+      - analytics
+    secret_prefix: /sandbox/
+    region: us-east-1
+
+pipeline:
+  merge:
+    parallel: 4
+  sync:
+    parallel: 4
+    delete_orphans: false
+  dry_run: false
+  continue_on_error: true

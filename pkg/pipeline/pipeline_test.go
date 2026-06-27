@@ -90,6 +90,16 @@ func TestNew(t *testing.T) {
 	}
 }
 
+func TestDefaultOptions(t *testing.T) {
+	opts := DefaultOptions()
+
+	assert.Equal(t, OperationPipeline, opts.Operation)
+	assert.False(t, opts.DryRun)
+	assert.True(t, opts.ContinueOnError)
+	assert.Equal(t, 4, opts.Parallelism)
+	assert.False(t, opts.ComputeDiff)
+}
+
 func TestPipeline_Operations(t *testing.T) {
 	tests := []struct {
 		name      string

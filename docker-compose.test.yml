@@ -8,7 +8,7 @@ services:
   # LocalStack for AWS Secrets Manager emulation
   localstack:
     image: localstack/localstack:3.8.1
-    container_name: secretsync-localstack
+    container_name: secrets-sync-localstack
     ports:
       - "4566:4566"
     environment:
@@ -28,7 +28,7 @@ services:
   # HashiCorp Vault in dev mode
   vault:
     image: hashicorp/vault:1.17.6
-    container_name: secretsync-vault
+    container_name: secrets-sync-vault
     ports:
       - "8200:8200"
     environment:
@@ -49,7 +49,7 @@ services:
   # Vault seeder - initializes Vault with test data
   vault-seeder:
     image: hashicorp/vault:1.17.6
-    container_name: secretsync-vault-seeder
+    container_name: secrets-sync-vault-seeder
     depends_on:
       vault:
         condition: service_healthy
@@ -65,7 +65,7 @@ services:
   # AWS seeder - initializes LocalStack with test data
   aws-seeder:
     image: amazon/aws-cli:2.22.17
-    container_name: secretsync-aws-seeder
+    container_name: secrets-sync-aws-seeder
     depends_on:
       localstack:
         condition: service_healthy
@@ -84,7 +84,7 @@ services:
   # Test runner service - runs integration tests after seeding
   test-runner:
     image: golang:1.25-trixie
-    container_name: secretsync-test-runner
+    container_name: secrets-sync-test-runner
     working_dir: /app
     volumes:
       - .:/app

@@ -19,7 +19,7 @@ SecretSync is an enterprise-grade secret synchronization pipeline that automates
 
 ### Is SecretSync production-ready?
 
-Yes! SecretSync v1.2.0 is production-ready with:
+Yes. The current SecretSync 2.x line is production-ready with:
 - 150+ comprehensive tests
 - Full CI/CD pipeline with integration tests
 - Circuit breakers and error handling
@@ -40,10 +40,10 @@ Yes! SecretSync v1.2.0 is production-ready with:
 Multiple installation options:
 ```bash
 # Go install
-go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 
 # Docker
-docker pull jbcom/secretssync:v1
+docker pull jbcom/secrets-sync:v1
 
 # Build from source
 git clone https://github.com/jbcom/secrets-sync.git
@@ -54,7 +54,7 @@ make build
 ### What permissions does SecretSync need?
 
 **Vault Permissions:**
-```hcl
+```text
 # Read access to secret paths
 path "secret/data/*" {
   capabilities = ["read", "list"]
@@ -96,17 +96,30 @@ path "secret/metadata/*" {
 Inheritance allows targets to import configuration from other targets:
 
 ```yaml
+sources:
+  common-secrets:
+    vault:
+      mount: common
+  staging-overrides:
+    vault:
+      mount: staging
+  prod-overrides:
+    vault:
+      mount: production
+
 targets:
   base:
     imports: [common-secrets]
   
   staging:
-    inherits: base  # Gets everything from base
-    imports: [staging-overrides]  # Plus staging-specific secrets
+    imports:
+      - base
+      - staging-overrides
   
   production:
-    inherits: staging  # Gets base + staging
-    imports: [prod-overrides]  # Plus production-specific secrets
+    imports:
+      - staging
+      - prod-overrides
 ```
 
 ### Can I sync to multiple AWS accounts?
@@ -116,14 +129,16 @@ Yes! Use cross-account IAM roles:
 ```yaml
 targets:
   dev-account:
-    aws_secretsmanager:
-      role_arn: "arn:aws:iam::111111111111:role/SecretSyncRole"
-      region: "us-east-1"
+    account_id: "111111111111"
+    role_arn: "arn:aws:iam::111111111111:role/SecretSyncRole"
+    region: "us-east-1"
+    imports: [shared-secrets]
   
   prod-account:
-    aws_secretsmanager:
-      role_arn: "arn:aws:iam::222222222222:role/SecretSyncRole"
-      region: "us-east-1"
+    account_id: "222222222222"
+    role_arn: "arn:aws:iam::222222222222:role/SecretSyncRole"
+    region: "us-east-1"
+    imports: [shared-secrets]
 ```
 
 ### How do I handle different environments?
@@ -158,9 +173,9 @@ targets:
 
 ## Features
 
-### What's new in v1.2.0?
+### What's included in the current feature set?
 
-Major new features:
+Major features:
 - **Enhanced AWS Organizations Discovery** with tag filtering and wildcards
 - **AWS Identity Center Integration** for permission set discovery
 - **Secret Versioning System** with S3-based storage and rollback
@@ -172,15 +187,15 @@ SecretSync tracks every secret change with metadata:
 
 ```bash
 # View version history
-secretsync versions --secret-path "app/database/password"
+secrets-sync versions --secret-path "app/database/password"
 
 # Rollback to specific version
-secretsync sync --version 5 --target production
+secrets-sync sync --version 5 --target production
 
 # Configure retention
 versioning:
   enabled: true
-  s3_bucket: "my-secretsync-versions"
+  s3_bucket: "my-secrets-sync-versions"
   retention_days: 90
 ```
 
@@ -199,8 +214,9 @@ targets:
     imports: [base-secrets]
   
   production:
-    inherits: staging  # Reads from merge store
-    imports: [prod-overrides]
+    imports:
+      - staging
+      - prod-overrides
 ```
 
 ### How does AWS Organizations discovery work?
@@ -208,19 +224,23 @@ targets:
 Automatically discover and sync to accounts based on tags and OUs:
 
 ```yaml
-discovery:
-  aws_organizations:
-    enabled: true
-    tag_filters:
-      - key: "Environment"
-        values: ["production", "staging"]
-        operator: "equals"
-      - key: "Team"
-        values: ["platform*"]
-        operator: "contains"
-    organizational_units:
-      - "ou-production-12345"
-    tag_logic: "AND"
+dynamic_targets:
+  production_and_staging:
+    discovery:
+      organizations:
+        ous:
+          - ou-production-12345
+        recursive: true
+        tag_filters:
+          - key: Environment
+            values: ["production", "staging"]
+            operator: equals
+          - key: Team
+            values: ["platform*"]
+            operator: contains
+        tag_combination: AND
+    imports:
+      - shared-secrets
 ```
 
 ## Operations
@@ -231,7 +251,7 @@ Use the GitHub Action:
 
 ```yaml
 - name: Sync Secrets
-  uses: jbcom/secrets-sync@secretssync-v2.0.2
+  uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
     dry-run: 'false'
@@ -244,11 +264,11 @@ Or use exit codes for pipeline control:
 
 ```bash
 # Check for changes (exit code 1 if changes detected)
-secretsync pipeline --config config.yaml --dry-run --exit-code
+secrets-sync pipeline --config config.yaml --dry-run --exit-code
 
 # Apply changes only if needed
 if [ $? -eq 1 ]; then
-  secretsync pipeline --config config.yaml
+  secrets-sync pipeline --config config.yaml
 fi
 ```
 
@@ -257,14 +277,14 @@ fi
 Enable Prometheus metrics:
 
 ```bash
-secretsync pipeline --config config.yaml --metrics-port 9090
+secrets-sync pipeline --config config.yaml --metrics-port 9090
 ```
 
 Available metrics:
-- `secretsync_vault_api_call_duration_seconds`
-- `secretsync_aws_api_call_duration_seconds`
-- `secretsync_pipeline_execution_duration_seconds`
-- `secretsync_pipeline_errors_total`
+- `secrets_sync_vault_api_call_duration_seconds`
+- `secrets_sync_aws_api_call_duration_seconds`
+- `secrets_sync_pipeline_execution_duration_seconds`
+- `secrets_sync_pipeline_errors_total`
 
 ### What happens if SecretSync fails?
 
@@ -339,13 +359,15 @@ Common causes and solutions:
 3. **Region mismatch**:
    ```yaml
    # Ensure regions match
-   aws:
-     region: "us-east-1"
-   targets:
-     production:
-       aws_secretsmanager:
-         region: "us-east-1"  # Must match
-   ```
+  aws:
+    region: "us-east-1"
+  targets:
+    production:
+      account_id: "222222222222"
+      region: "us-east-1"
+      imports:
+        - shared-secrets
+  ```
 
 ### "Secret not found in Vault"
 
@@ -415,10 +437,10 @@ Secrets are masked by default in diff output:
 
 ```bash
 # Masked (default)
-secretsync pipeline --config config.yaml --dry-run
+secrets-sync pipeline --config config.yaml --dry-run
 
 # Show values (use with caution)
-secretsync pipeline --config config.yaml --dry-run --show-values
+secrets-sync pipeline --config config.yaml --dry-run --show-values
 ```
 
 ### How do I report security issues?
@@ -434,7 +456,7 @@ Use [GitHub Security Advisories](https://github.com/jbcom/secrets-sync/security/
 3. Make your changes with tests
 4. Submit a pull request
 
-See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](https://github.com/jbcom/secrets-sync/blob/main/CONTRIBUTING.md) for detailed guidelines.
 
 ### How do I add a new secret store?
 
@@ -443,7 +465,7 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for detailed guidelines.
 3. Write comprehensive tests
 4. Update documentation
 
-See the [development guide](../CONTRIBUTING.md#adding-a-new-secret-store) for details.
+See the [development guide](https://github.com/jbcom/secrets-sync/blob/main/CONTRIBUTING.md#adding-a-new-secret-store) for details.
 
 ### How do I run tests?
 
@@ -465,9 +487,9 @@ go test -race ./...
 
 ### Where can I get help?
 
-- **Documentation**: [docs/](https://github.com/jbcom/secrets-sync/docs)
+- **Documentation**: [docs/](https://github.com/jbcom/secrets-sync/tree/main/docs)
 - **GitHub Issues**: For bugs, questions, and feature requests
-- **Examples**: [examples/](https://github.com/jbcom/secrets-sync/examples)
+- **Examples**: [examples/](https://github.com/jbcom/secrets-sync/tree/main/examples)
 
 ### How do I request a feature?
 

@@ -110,6 +110,13 @@ func TestAwsClient_Validate(t *testing.T) {
 	}
 }
 
+func TestAwsClient_DoesNotLogRawClientStruct(t *testing.T) {
+	content, err := os.ReadFile("aws.go")
+	require.NoError(t, err)
+
+	assert.NotContains(t, string(content), `Debugf("client=%+v"`)
+}
+
 func TestAwsClient_Driver(t *testing.T) {
 	client := &AwsClient{}
 	assert.Equal(t, driver.DriverNameAws, client.Driver())

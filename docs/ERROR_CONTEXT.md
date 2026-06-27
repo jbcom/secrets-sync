@@ -93,12 +93,12 @@ time="2025-12-09T17:00:05Z" level=info msg="Starting merge phase" action=Pipelin
 time="2025-12-09T17:00:10Z" level=info msg="Pipeline execution completed successfully" request_id=e0958539-fae2-4567-9227-592a5b36983a duration_ms=10234
 ```
 
-## Backward Compatibility
+## Error Wrapping
 
-The enhanced error context is fully backward compatible:
-- Operations without request context still work (request_id will be empty)
-- Error messages maintain the same error wrapping chain
-- Existing error handling code continues to work unchanged
+The enhanced error context preserves the Go error wrapping chain:
+- Operations without request context still work with an empty request ID.
+- Error messages keep their wrapped causes available to `errors.Is` and `errors.As`.
+- Callers can opt into request-scoped diagnostics without changing the underlying error type.
 
 ## Benefits
 

@@ -135,14 +135,14 @@ func TestDiffSecrets_ComplexScenario(t *testing.T) {
 		"api-keys/stripe":   map[string]interface{}{"KEY": "sk_xxx"},
 		"api-keys/datadog":  map[string]interface{}{"API_KEY": "dd_xxx"},
 		"database/postgres": map[string]interface{}{"HOST": "old.db.com", "PASSWORD": "old"},
-		"legacy/config":     map[string]interface{}{"OLD": "value"},
+		"retired/config":    map[string]interface{}{"OLD": "value"},
 	}
 	desired := map[string]interface{}{
 		"api-keys/stripe":   map[string]interface{}{"KEY": "sk_xxx"},                         // unchanged
 		"api-keys/datadog":  map[string]interface{}{"API_KEY": "dd_yyy"},                     // modified
 		"database/postgres": map[string]interface{}{"HOST": "new.db.com", "PASSWORD": "new"}, // modified
 		"api-keys/newrelic": map[string]interface{}{"KEY": "nr_xxx"},                         // added
-		// legacy/config removed
+		// retired/config removed
 	}
 
 	changes := DiffSecrets(current, desired)
@@ -254,14 +254,43 @@ func TestFormatDiff_GitHub(t *testing.T) {
 
 	output := FormatDiff(diff, OutputFormatGitHub)
 
-	if !strings.Contains(output, "::set-output name=changes::3") {
-		t.Error("expected changes output")
-	}
-	if !strings.Contains(output, "::set-output name=zero_sum::false") {
-		t.Error("expected zero_sum output")
+	if strings.Contains(output, "::set-output") {
+		t.Error("GitHub format should not use deprecated set-output commands")
 	}
 	if !strings.Contains(output, "::warning::") {
 		t.Error("expected warning annotation")
+	}
+}
+
+func TestFormatDiff_GitHubEscapesCommandData(t *testing.T) {
+	diff := &PipelineDiff{
+		Targets: []TargetDiff{
+			{
+				Target: "prod%\n::warning::injected",
+				Changes: []SecretChange{
+					{
+						Path:       "app/secret%\r\n::error::leak",
+						ChangeType: ChangeTypeModified,
+					},
+				},
+				Summary: ChangeSummary{Modified: 1, Total: 1},
+			},
+		},
+		Summary: ChangeSummary{Modified: 1, Total: 1},
+	}
+
+	output := FormatDiff(diff, OutputFormatGitHub)
+
+	if strings.Contains(output, "prod%\n") || strings.Contains(output, "app/secret%\r\n") {
+		t.Fatalf("GitHub command data was not escaped:\n%s", output)
+	}
+	if strings.Contains(output, "\n::warning::injected") || strings.Contains(output, "\n::error::leak") {
+		t.Fatalf("GitHub command data allowed injected workflow command:\n%s", output)
+	}
+	for _, expected := range []string{"prod%25%0A::warning::injected", "app/secret%25%0D%0A::error::leak"} {
+		if !strings.Contains(output, expected) {
+			t.Fatalf("GitHub output missing escaped value %q:\n%s", expected, output)
+		}
 	}
 }
 
@@ -272,8 +301,8 @@ func TestFormatDiff_GitHubZeroSum(t *testing.T) {
 
 	output := FormatDiff(diff, OutputFormatGitHub)
 
-	if !strings.Contains(output, "::set-output name=zero_sum::true") {
-		t.Error("expected zero_sum=true output")
+	if strings.Contains(output, "::set-output") {
+		t.Error("GitHub format should not use deprecated set-output commands")
 	}
 	if !strings.Contains(output, "::notice::") {
 		t.Error("expected notice annotation for zero-sum")

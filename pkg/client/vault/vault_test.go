@@ -3,6 +3,7 @@ package vault
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 
@@ -116,6 +117,21 @@ func TestVaultClient_Validate(t *testing.T) {
 func TestVaultClient_Driver(t *testing.T) {
 	client := &VaultClient{}
 	assert.Equal(t, driver.DriverNameVault, client.Driver())
+}
+
+func TestVaultClient_DoesNotLogRawSecretPayloads(t *testing.T) {
+	content, err := os.ReadFile("vault.go")
+	require.NoError(t, err)
+
+	source := string(content)
+	forbidden := []string{
+		`Tracef("secret=%+v"`,
+		`Tracef("secrets=%+v"`,
+		`Tracef("client=%+v"`,
+	}
+	for _, pattern := range forbidden {
+		assert.NotContains(t, source, pattern)
+	}
 }
 
 func TestVaultClient_GetPath(t *testing.T) {

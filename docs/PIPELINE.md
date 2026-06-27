@@ -62,22 +62,22 @@ targets:
 
 ```bash
 # Full pipeline (merge + sync)
-secretsync pipeline --config config.yaml
+secrets-sync pipeline --config config.yaml
 
 # Dry run
-secretsync pipeline --config config.yaml --dry-run
+secrets-sync pipeline --config config.yaml --dry-run
 
 # Specific targets
-secretsync pipeline --config config.yaml --targets Serverless_Stg
+secrets-sync pipeline --config config.yaml --targets Serverless_Stg
 
 # Merge only (no AWS sync)
-secretsync pipeline --config config.yaml --merge-only
+secrets-sync pipeline --config config.yaml --merge-only
 
 # Validate configuration
-secretsync validate --config config.yaml
+secrets-sync validate --config config.yaml
 
 # Show dependency graph
-secretsync graph --config config.yaml
+secrets-sync graph --config config.yaml
 ```
 
 ## AWS Execution Context
@@ -269,7 +269,8 @@ dynamic_targets:
   dev_accounts:
     discovery:
       organizations:
-        ou: "ou-xxxx-development"
+        ous:
+          - "ou-xxxx-development"
         recursive: true  # Include accounts in child OUs
     imports:
       - dev-secrets
@@ -352,15 +353,15 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
       
       - name: Run Pipeline
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
+        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
         with:
           config: config.yaml
           targets: ${{ inputs.targets || '' }}
@@ -376,11 +377,11 @@ jobs:
 ```yaml
 secrets-sync:
   stage: deploy
-  image: golang:1.25
+  image: golang:1.26
   before_script:
-    - go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+    - go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
   script:
-    - /go/bin/secretsync pipeline --config config.yaml
+    - /go/bin/secrets-sync pipeline --config config.yaml
   only:
     - schedules
     - web
@@ -391,28 +392,28 @@ secrets-sync:
 ### Validate Configuration
 
 ```bash
-secretsync validate --config config.yaml
-secretsync validate --config config.yaml --check-aws
+secrets-sync validate --config config.yaml
+secrets-sync validate --config config.yaml --check-aws
 ```
 
 ### View Dependency Graph
 
 ```bash
-secretsync graph --config config.yaml
-secretsync graph --config config.yaml --format dot | dot -Tpng -o graph.png
+secrets-sync graph --config config.yaml
+secrets-sync graph --config config.yaml --format dot | dot -Tpng -o graph.png
 ```
 
 ### Check AWS Context
 
 ```bash
-secretsync context
-secretsync context --config config.yaml
+secrets-sync context
+secrets-sync context --config config.yaml
 ```
 
 ### Debug Logging
 
 ```bash
-secretsync pipeline --config config.yaml --log-level debug --log-format json
+secrets-sync pipeline --config config.yaml --log-level debug --log-format json
 ```
 
 ### Common Issues
@@ -440,18 +441,18 @@ secretsync pipeline --config config.yaml --log-level debug --log-format json
 
 ## Migration from terraform-aws-secretsmanager
 
-If you're migrating from the Terraform-based pipeline, use the `secretsync migrate` command:
+If you're migrating from the Terraform-based pipeline, use the `secrets-sync migrate` command:
 
 ```bash
 # Migrate from terraform-aws-secretsmanager format
-secretsync migrate --from terraform-secretsmanager \
+secrets-sync migrate --from terraform-secretsmanager \
             --targets config/targets.yaml \
             --secrets config/secrets.yaml \
             --accounts config/accounts.yaml \
             --output pipeline-config.yaml
 
 # Optional: specify Vault address and merge mount
-secretsync migrate --from terraform-secretsmanager \
+secrets-sync migrate --from terraform-secretsmanager \
             --targets config/targets.yaml \
             --secrets config/secrets.yaml \
             --accounts config/accounts.yaml \
@@ -503,8 +504,8 @@ accounts:
 
 1. Review the generated config file
 2. Add Vault authentication (token, AppRole, etc.)
-3. Validate: `secretsync validate --config pipeline-config.yaml`
-4. Dry run: `secretsync pipeline --config pipeline-config.yaml --dry-run`
+3. Validate: `secrets-sync validate --config pipeline-config.yaml`
+4. Dry run: `secrets-sync pipeline --config pipeline-config.yaml --dry-run`
 
 Key differences from the Terraform-based approach:
 - No Terraform state required

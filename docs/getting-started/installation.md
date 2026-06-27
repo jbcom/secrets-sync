@@ -2,23 +2,23 @@
 
 ## Requirements
 
-- Go 1.25+
+- Go 1.26.4+
 - Docker (optional, for containerized runs or the GitHub Action image)
 
 ## Install the CLI
 
 ```bash
-# Install the latest CLI from the monorepo module path
-go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+# Install the latest CLI from the standalone module path
+go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 ```
 
 ## Run with Docker
 
 ```bash
-docker pull jbcom/secretssync:v1
+docker pull jbcom/secrets-sync:v1
 
 # Example alias for local CLI-style usage
-alias secretsync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secretssync:v1'
+alias secrets-sync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secrets-sync:v1'
 ```
 
 ## Build from Source
@@ -28,16 +28,17 @@ git clone https://github.com/jbcom/secrets-sync.git
 cd secrets-sync
 make build
 
-# The compiled binary is written to ./bin/secretsync
-./bin/secretsync version
+# The compiled binary is written to ./bin/secrets-sync
+./bin/secrets-sync version
 ```
 
 ## GitHub Action
 
-Use the packaged action from the monorepo subdirectory and pin to a package tag:
+Use the packaged action from this standalone repository and pin to a release
+tag. Replace `X.Y.Z` with a published release version:
 
 ```yaml
-- uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
 ```

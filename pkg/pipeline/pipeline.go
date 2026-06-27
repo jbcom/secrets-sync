@@ -89,7 +89,7 @@ func DefaultOptions() Options {
 	return Options{
 		Operation:       OperationPipeline,
 		DryRun:          false,
-		ContinueOnError: false,
+		ContinueOnError: true,
 		Parallelism:     4,
 		ComputeDiff:     false,
 	}

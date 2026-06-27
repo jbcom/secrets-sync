@@ -1,316 +1,122 @@
-# Publishing SecretSync to GitHub Marketplace - Checklist
+# Publishing Checklist
 
-This is a step-by-step checklist for publishing SecretSync to the GitHub Marketplace.
+SecretSync releases are automated from `main` with release-please and
+GoReleaser. Do not hand-edit versions, changelog entries, release tags, or
+GitHub releases during the normal release path.
 
-## Pre-Publishing Checklist
+## Release Model
 
-### ✅ Repository Requirements
+- `release.yml` owns release-please version detection, changelog updates,
+  release PRs, and Git tags.
+- The root package name is `secrets-sync`, so Go component release tags use the
+  `secrets-sync-vX.Y.Z` shape.
+- `cd.yml` runs only after release-please reports a Go release.
+- GoReleaser builds binary archives and checksums. Container and Marketplace
+  publication are separate release surfaces.
+- The Docker action currently references `docker://jbcom/secrets-sync:v1` from
+  `action.yml`; digest pinning should be added only when release automation can
+  refresh that digest reliably.
 
-- [x] Repository is public
-- [x] `action.yml` exists in repository root
-- [x] Action has valid metadata (name, description, author)
-- [x] Branding is configured (icon: lock, color: blue)
-- [x] Dockerfile builds successfully
-- [x] README has usage examples
-- [x] LICENSE file exists (MIT)
+## Maintainer Preflight
 
-### ✅ Action Configuration
-
-- [x] All inputs documented with descriptions
-- [x] Default values specified for optional inputs
-- [x] Docker image reference is correct (`image: 'Dockerfile'`)
-- [x] Entrypoint script is executable
-- [x] Environment variables properly mapped
-
-### ✅ Documentation
-
-- [x] README.md is comprehensive
-- [x] Usage examples provided
-- [x] Input parameters documented
-- [x] Example workflows included
-- [x] Security best practices documented
-- [x] Troubleshooting section exists
-
-### ✅ Legal and Compliance
-
-- [x] MIT License in place
-- [x] Privacy policy created (docs/PRIVACY.md)
-- [x] Support documentation created (docs/SUPPORT.md)
-- [x] Security policy exists (docs/SECURITY.md)
-- [x] Contributing guidelines created (CONTRIBUTING.md)
-
-### ✅ Quality Assurance
-
-- [x] Action inputs validated
-- [x] Entrypoint script syntax validated
-- [x] Example configurations provided
-- [x] Error handling implemented
-- [x] Logging configured
-- [x] No hardcoded secrets
-
-## Publishing Steps
-
-### Step 1: Final Testing
-
-Before publishing, test the action:
+Run these before merging a release PR or manually dispatching release workflow
+diagnostics:
 
 ```bash
-# 1. Validate entrypoint script
-sh -n entrypoint.sh
-
-# 2. Test Docker build (if environment allows)
-docker build -t secretsync-test .
-
-# 3. Create a test workflow in .github/workflows/test-action.yml
-# Example test workflow:
+go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
+go test ./...
+go build -o bin/secrets-sync ./cmd/secrets-sync
+tox -e lint,docs
+goreleaser check
+docker build -t secrets-sync-test .
 ```
+
+If `goreleaser` is not installed locally, use the pinned workflow action as the
+source of truth and verify the GitHub check output.
+
+## Workflow Hygiene
+
+- Keep `.github/workflows/*.yml` actions pinned to exact commit SHAs.
+- Update the adjacent version comments when refreshing an action SHA.
+- Use `gh` to verify latest stable action releases before changing pins.
+- Do not grant broad workflow permissions; keep top-level `permissions: {}` and
+  add job-scoped permissions only where needed.
+
+Current workflow action pins:
+
+| Action | Stable version | Commit SHA |
+| --- | --- | --- |
+| `actions/checkout` | `v7.0.0` | `9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0` |
+| `actions/setup-go` | `v6.5.0` | `924ae3a1cded613372ab5595356fb5720e22ba16` |
+| `actions/setup-python` | `v6.3.0` | `ece7cb06caefa5fff74198d8649806c4678c61a1` |
+| `astral-sh/setup-uv` | `v8.2.0` | `fac544c07dec837d0ccb6301d7b5580bf5edae39` |
+| `googleapis/release-please-action` | `v5.0.0` | `45996ed1f6d02564a971a2fa1b5860e934307cf7` |
+| `goreleaser/goreleaser-action` | `v7.2.2` | `5daf1e915a5f0af01ddbcd89a43b8061ff4f1a89` |
+| `actions/configure-pages` | `v6.0.0` | `45bfe0192ca1faeb007ade9deae92b16b8254a0d` |
+| `actions/upload-pages-artifact` | `v5.0.0` | `fc324d3547104276b827a68afc52ff2a11cc49c9` |
+| `actions/deploy-pages` | `v5.0.0` | `cd2ce8fcbc39b97be8ca5fce6e763baed58fa128` |
+
+## Publishing Flow
+
+1. Land normal feature, fix, docs, and maintenance commits using Conventional
+   Commit prefixes.
+2. Let the release workflow open or update the release-please PR.
+3. Review the release PR for correct changelog and manifest updates.
+4. Merge the release PR.
+5. Confirm the release workflow created the expected `secrets-sync-vX.Y.Z`
+   GitHub release.
+6. Confirm GoReleaser uploaded archives and `checksums.txt` for Go releases.
+7. Verify the action can be referenced with:
 
 ```yaml
-name: Test Action
-on: [push]
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
-          aws-region: us-east-1
-      
-      - name: Test Action
-        uses: ./
-        with:
-          config: examples/action-test-config.yaml
-          dry-run: 'true'
-        env:
-          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
-```
-
-### Step 2: Create Version Tag
-
-```bash
-# 1. Ensure all changes are committed
-git status
-
-# 2. Create annotated tag for first release
-git tag -a v1.0.0 -m "Release v1.0.0 - Initial GitHub Marketplace release"
-
-# 3. Push tag to GitHub
-git push origin v1.0.0
-
-# 4. Create major version tag (for users)
-git tag -fa v1 -m "Release v1 - Initial release"
-git push origin v1 --force
-```
-
-### Step 3: Create GitHub Release
-
-1. Go to: https://github.com/jbcom/secrets-sync/releases
-2. Click "Draft a new release"
-3. Select tag: `v1.0.0`
-4. Release title: `v1.0.0 - GitHub Marketplace Release`
-5. Release description:
-
-```markdown
-## 🚀 Initial GitHub Marketplace Release
-
-SecretSync is now available as a GitHub Action! This release provides a Docker-based action for universal secrets synchronization across multiple cloud providers.
-
-### ✨ Features
-
-- 🔄 Two-phase pipeline architecture (merge → sync)
-- 🎯 Support for 8+ secret stores (Vault, AWS, GCP, GitHub, Doppler, K8s, S3)
-- 🌐 Multi-cloud and multi-account secret management
-- 📊 GitHub-native diff annotations in PRs
-- 🔒 OIDC authentication for AWS (no long-lived credentials)
-- 🚀 Dynamic target discovery via AWS Organizations/Identity Center
-- ⚡ Zero-configuration Docker action
-- 🔐 Complete privacy - no data collection
-
-### 📖 Quick Start
-
-```yaml
-- name: Sync Secrets
-  uses: jbcom/secrets-sync@secretssync-v2.0.2
+- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
   with:
     config: config.yaml
-  env:
-    VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
-    VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
 ```
 
-### 📚 Documentation
+## Marketplace Publication
 
-- [GitHub Actions Guide](./GITHUB_ACTIONS.md)
-- [Quick Reference](./ACTION_QUICK_REFERENCE.md)
-- [Example Workflows](../examples/github-action-workflow.yml)
-- [Privacy Policy](./PRIVACY.md)
-- [Support](./SUPPORT.md)
+GitHub Marketplace publication is completed from a GitHub release in the UI.
+Use the release that release-please created. Do not create a parallel manual
+release just to publish the Marketplace listing.
 
-### 🔒 Security
+Checklist:
 
-SecretSync collects zero data and runs entirely within your GitHub Actions environment. See [Privacy Policy](./PRIVACY.md) for details.
+- Repository is public.
+- `action.yml` exists at repository root.
+- `action.yml` metadata, inputs, branding, and Docker image reference are valid.
+- `README.md`, `docs/GITHUB_ACTIONS.md`, and
+  `docs/ACTION_QUICK_REFERENCE.md` show the component tag shape.
+- Security, privacy, support, contributing, and license documents are present.
+- A real release exists for the tag being published.
 
-### 🤝 Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](../CONTRIBUTING.md) for guidelines.
-
-### 📄 License
-
-MIT License - See [LICENSE](../LICENSE)
-```
-
-6. Check "✓ Publish this Action to the GitHub Marketplace"
-7. Select primary category: **Deployment**
-8. Optionally add secondary categories:
-   - Continuous Integration
-   - Security
-9. Click "Publish release"
-
-### Step 4: Verify Marketplace Listing
-
-1. Visit: https://github.com/marketplace/actions/secretsync
-2. Verify all information displays correctly:
-   - Name, description, and icon
-   - Input parameters
-   - Usage examples
-   - Documentation links
-   - Author information
-
-3. Check that:
-   - README renders properly
-   - Examples are clear
-   - Links work
-   - Badges display
-
-### Step 5: Post-Publication Tasks
-
-1. **Update README with Marketplace badge**
-   ```markdown
-   [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-SecretSync-blue.svg?colorA=24292e&colorB=0366d6&style=flat&longCache=true&logo=github)](https://github.com/marketplace/actions/secretsync)
-   ```
-
-2. **Announce release**
-   - Open a tracking issue for launch feedback
-   - Tweet/share on social media
-   - Update any external documentation
-
-3. **Monitor feedback**
-   - Watch for issues
-   - Respond to questions
-   - Track usage metrics (if available)
-
-4. **Set up monitoring**
-   - Confirm issue templates and labels are ready
-   - Set up issue templates
-   - Configure automated responses
-
-## Post-Publication Maintenance
-
-### Regular Updates
-
-- [ ] Monitor security vulnerabilities
-- [ ] Update dependencies regularly
-- [ ] Respond to issues and PRs
-- [ ] Release bug fixes promptly
-- [ ] Add new features based on feedback
-
-### Version Management
-
-When releasing new versions:
+## Post-Release Verification
 
 ```bash
-# 1. Update CHANGELOG.md
-# 2. Create new version tag
-git tag -a v1.1.0 -m "Release v1.1.0 - Add feature X"
-git push origin v1.1.0
-
-# 3. Update major version tag
-git tag -fa v1 -m "Update v1 to v1.1.0"
-git push origin v1 --force
-
-# 4. Create GitHub release with changelog
+gh release view secrets-sync-vX.Y.Z --repo jbcom/secrets-sync
+gh workflow run ci.yml --repo jbcom/secrets-sync
 ```
 
-### Marketplace Updates
+Also verify:
 
-To update marketplace listing:
+- Release assets are present for supported OS and architecture combinations.
+- `checksums.txt` is attached.
+- Marketplace examples render correctly.
+- The latest documentation does not reference old monorepo package tags using
+  the `secrets-sync-v...` shape.
 
-1. Update README or action.yml as needed
-2. Create new release with updated information
-3. Marketplace will automatically reflect changes
+## Manual Repairs
 
-## Troubleshooting
+Manual tags are a repair path, not the release process. If a release workflow
+fails after release-please creates a tag:
 
-### Common Issues
+1. Keep the failed tag intact while diagnosing unless the release is proven
+   unrecoverable.
+2. Prefer rerunning the failed workflow job.
+3. If a bad GitHub release was published, delete only the bad release artifacts
+   needed for repair.
+4. Document the repair in the PR or release notes.
 
-**Issue**: Action doesn't appear in Marketplace after publishing
-- **Solution**: Check that "Publish to Marketplace" was checked during release
-
-**Issue**: Docker build fails for users
-- **Solution**: Test multi-platform builds, ensure dependencies are available
-
-**Issue**: Inputs not working as expected
-- **Solution**: Verify entrypoint.sh handles all inputs correctly
-
-**Issue**: Users report authentication errors
-- **Solution**: Check documentation is clear, add troubleshooting guide
-
-## Support Channels
-
-After publishing, provide support through:
-
-1. **GitHub Issues**: Bug reports and feature requests
-2. **GitHub Issues**: Questions and community support
-3. **Email**: Security issues (private reporting)
-4. **Documentation**: Keep docs updated with common questions
-
-## Metrics to Track
-
-Monitor these metrics post-publication:
-
-- Daily/monthly active users
-- Total installations
-- Issue resolution time
-- PR merge rate
-- Community engagement
-- User feedback/ratings
-
-## Continuous Improvement
-
-Based on feedback:
-
-- [ ] Add requested features
-- [ ] Improve documentation
-- [ ] Fix reported bugs
-- [ ] Optimize performance
-- [ ] Enhance security
-
-## Checklist Summary
-
-✅ All pre-publication requirements met
-✅ Action tested and working
-✅ Documentation complete
-✅ Legal requirements satisfied
-✅ Version tags created
-✅ GitHub release created
-✅ Marketplace listing verified
-✅ Post-publication tasks completed
-
-## Next Steps
-
-1. Create version tag: `git tag -a v1.0.0 -m "Initial release"`
-2. Push tag: `git push origin v1.0.0`
-3. Create GitHub release with Marketplace checkbox
-4. Verify listing appears correctly
-5. Monitor for feedback and issues
-
----
-
-**Ready to publish?** Follow the steps above to make SecretSync available on the GitHub Marketplace! 🚀
+Do not create moving major aliases such as `v1` unless the repository decides
+to maintain them deliberately; release-please will not update those aliases by
+default.

@@ -1,4 +1,4 @@
-// Package utils provides utility functions for secretsync.
+// Package utils provides utility functions for secrets-sync.
 package utils
 
 import (

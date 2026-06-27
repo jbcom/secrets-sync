@@ -5,7 +5,7 @@
 The secrets synchronization pipeline operates in two distinct phases:
 
 1. **MERGE Phase** (optional): Aggregate secrets from multiple sources into a unified pool
-2. **SYNC Phase**: Propagate secrets from source(s) to target(s)
+2. **SYNC Phase**: Propagate merged bundles into AWS Secrets Manager targets
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -25,7 +25,7 @@ The secrets synchronization pipeline operates in two distinct phases:
 │  │   └─────────┘  │     │  • Aggregation   │                           │    │
 │  │   ┌─────────┐  │     │  • Deduplication │                           │    │
 │  │   │ Source3 │──┘     │  • Inheritance   │                           │    │
-│  │   │ (HTTP)  │        │  • DeepMerge     │                           │    │
+│  │   │ (Vault) │        │  • DeepMerge     │                           │    │
 │  │   └─────────┘        └────────┬─────────┘                           │    │
 │  │                               │                                      │    │
 │  └───────────────────────────────┼──────────────────────────────────────┘    │
@@ -40,10 +40,10 @@ The secrets synchronization pipeline operates in two distinct phases:
 │  │   │   SOURCE         │────▶│  Target1 (AWS)  │                       │    │
 │  │   │   (Merge Store   │     └─────────────────┘                       │    │
 │  │   │    or Direct)    │     ┌─────────────────┐                       │    │
-│  │   │                  │────▶│  Target2 (Vault)│                       │    │
+│  │   │                  │────▶│ Target2 (AWS)   │                       │    │
 │  │   │                  │     └─────────────────┘                       │    │
 │  │   │                  │     ┌─────────────────┐                       │    │
-│  │   │                  │────▶│  Target3 (GCP)  │                       │    │
+│  │   │                  │────▶│ Target3 (AWS)   │                       │    │
 │  │   └──────────────────┘     └─────────────────┘                       │    │
 │  │                                                                       │    │
 │  └───────────────────────────────────────────────────────────────────────┘    │
@@ -84,23 +84,19 @@ For each target in topological order:
 
 ### SYNC Phase
 
-**Purpose**: Propagate secrets from source to target stores.
+**Purpose**: Propagate merged secrets into AWS Secrets Manager targets.
 
 **Source determination**:
 - If MERGE phase ran: Merge store becomes the source automatically
 - If SYNC-only: Explicitly configured source
 
 **Supported Store Combinations**:
-| Source | Target | Status |
-|--------|--------|--------|
-| Vault | AWS Secrets Manager | ✅ Supported |
-| Vault | Vault | ✅ Supported |
-| Vault | GCP Secret Manager | ✅ Supported |
-| Vault | GitHub Secrets | ✅ Supported |
-| Vault | Kubernetes Secrets | ✅ Supported |
-| AWS SM | AWS SM | ✅ Supported |
-| AWS SM | Vault | ✅ Supported |
-| S3 | AWS SM | ✅ Supported (via S3 merge store) |
+| Source or Merge Store | Target | Status |
+|-----------------------|--------|--------|
+| Vault KV2 | AWS Secrets Manager | ✅ Supported |
+| AWS Secrets Manager | AWS Secrets Manager | ✅ Supported |
+| Vault merge store | AWS Secrets Manager | ✅ Supported |
+| S3 merge store | AWS Secrets Manager | ✅ Supported |
 
 **Sync Process**:
 ```
@@ -146,7 +142,7 @@ targets:
 
 **Execution**:
 ```bash
-secretsync pipeline --config config.yaml
+secrets-sync pipeline --config config.yaml
 # Phase 1: MERGE - sources → merge store
 # Phase 2: SYNC  - merge store → targets
 ```
@@ -173,7 +169,7 @@ targets:
 
 **Execution**:
 ```bash
-secretsync pipeline --config config.yaml --sync-only
+secrets-sync pipeline --config config.yaml --sync-only
 # Only SYNC phase - source → targets directly
 ```
 
@@ -203,7 +199,7 @@ targets:
 
 **Execution**:
 ```bash
-secretsync pipeline --config config.yaml --merge-only
+secrets-sync pipeline --config config.yaml --merge-only
 # Only MERGE phase - sources → merge store
 # Sync can be triggered later or by another process
 ```
@@ -213,19 +209,32 @@ secretsync pipeline --config config.yaml --merge-only
 Both phases support diff computation:
 
 ```bash
-# Dry-run with diff output
-secretsync pipeline --config config.yaml --dry-run --output json
+# Dry-run with machine-readable result and nested diff output
+secrets-sync pipeline --config config.yaml --dry-run --output json
 
 # Output:
 {
-  "dry_run": true,
-  "summary": {
-    "added": 5,
-    "modified": 2,
-    "removed": 0,
-    "unchanged": 43
-  },
-  "targets": [...]
+  "success": true,
+  "target_count": 2,
+  "secrets_processed": 50,
+  "secrets_added": 5,
+  "secrets_modified": 2,
+  "secrets_removed": 0,
+  "secrets_unchanged": 43,
+  "duration_ms": 1284,
+  "results": [...],
+  "diff_output": "{...}",
+  "diff": {
+    "dry_run": true,
+    "summary": {
+      "added": 5,
+      "modified": 2,
+      "removed": 0,
+      "unchanged": 43,
+      "total": 50
+    },
+    "targets": [...]
+  }
 }
 ```
 
@@ -235,7 +244,7 @@ For migration validation, ensure the new pipeline produces identical results:
 
 ```bash
 # Should return exit code 0 (no changes)
-secretsync pipeline --config config.yaml --dry-run --exit-code
+secrets-sync pipeline --config config.yaml --dry-run --exit-code
 echo $?  # 0 = zero-sum, 1 = changes detected, 2 = errors
 ```
 
@@ -245,7 +254,7 @@ echo $?  # 0 = zero-sum, 1 = changes detected, 2 = errors
 # GitHub Actions example
 - name: Validate secrets pipeline
   run: |
-    secretsync pipeline --config config.yaml --dry-run --output github --exit-code
+    secrets-sync pipeline --config config.yaml --dry-run --output github --exit-code
   continue-on-error: true
   
 - name: Check for unexpected changes
@@ -263,12 +272,14 @@ targets:
     imports: [common-secrets]
   
   Staging:
-    inherits: Base
-    imports: [staging-secrets]
+    imports:
+      - Base
+      - staging-secrets
   
   Production:
-    inherits: Staging
-    imports: [production-secrets]
+    imports:
+      - Staging
+      - production-secrets
 ```
 
 **Processing Order**:
@@ -319,11 +330,11 @@ common-secrets + staging-secrets + production-secrets
 
 3. **Always use dry-run first**:
    ```bash
-   secretsync pipeline --config config.yaml --dry-run --output human
+   secrets-sync pipeline --config config.yaml --dry-run --output human
    ```
 
 4. **For migrations, validate zero-sum**:
    ```bash
-   secretsync pipeline --config old-config.yaml --dry-run --exit-code
+   secrets-sync pipeline --config old-config.yaml --dry-run --exit-code
    # Must return 0 before switching to new solution
    ```

@@ -18,18 +18,18 @@ Start SecretSync with metrics enabled:
 
 ```bash
 # Enable metrics on default port 9090
-secretsync pipeline --config config.yaml --metrics-port 9090
+secrets-sync pipeline --config config.yaml --metrics-port 9090
 
 # Custom address and port
-secretsync pipeline --config config.yaml --metrics-addr 0.0.0.0 --metrics-port 8080
+secrets-sync pipeline --config config.yaml --metrics-addr 0.0.0.0 --metrics-port 8080
 ```
 
 ### Environment Variables
 
 ```bash
-export SECRETSYNC_METRICS_PORT=9090
-export SECRETSYNC_METRICS_ADDR=0.0.0.0
-secretsync pipeline --config config.yaml
+export SECRETS_SYNC_METRICS_PORT=9090
+export SECRETS_SYNC_METRICS_ADDR=0.0.0.0
+secrets-sync pipeline --config config.yaml
 ```
 
 ### Kubernetes Deployment
@@ -38,13 +38,13 @@ secretsync pipeline --config config.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: secretsync
+  name: secrets-sync
 spec:
   template:
     spec:
       containers:
-      - name: secretsync
-        image: jbcom/secretssync:v1
+      - name: secrets-sync
+        image: jbcom/secrets-sync:v1
         args:
           - pipeline
           - --config
@@ -63,11 +63,38 @@ Once enabled, metrics are exposed at:
 - **Metrics**: `http://localhost:9090/metrics`
 - **Health check**: `http://localhost:9090/health`
 
+## Logging Safety
+
+Logs and metrics are designed for operational visibility without exposing the
+secret bytes being synchronized. SecretSync records request IDs, operation
+names, durations, counts, paths, targets, account identifiers, and provider
+error context. It must not log raw secret values, raw Vault secret payloads, raw
+AWS secret payloads, or raw client structures.
+
+Use JSON logs when shipping to a centralized platform:
+
+```bash
+secrets-sync pipeline --config config.yaml --log-format json --log-level info
+```
+
+Debug and trace logging can reveal more operational metadata and should be sent
+only to secured sinks with appropriate retention. If a provider returns
+credentials in an error string, treat that upstream behavior as a provider or
+configuration issue and rotate the exposed credential.
+
+Machine-readable `secrets-sync pipeline --output json` result envelopes redact
+common secret-bearing fragments from top-level and per-target error strings
+before serialization. Treat `error_message`, per-target `error`, and
+`diff_output` as operationally sensitive when forwarding them to logs,
+dashboards, CI comments, or chat systems.
+GitHub Actions annotation output escapes workflow-command data in target names
+and secret paths before writing groups, notices, or warnings.
+
 ## Available Metrics
 
 ### Vault Metrics
 
-#### `secretsync_vault_api_call_duration_seconds`
+#### `secrets_sync_vault_api_call_duration_seconds`
 **Type**: Histogram  
 **Labels**: `operation`, `status`  
 **Description**: Duration of Vault API calls in seconds
@@ -79,37 +106,37 @@ Once enabled, metrics are exposed at:
 **Status**: `success`, `error`
 
 **Example**:
-```prometheus
-secretsync_vault_api_call_duration_seconds_bucket{operation="list_secrets",status="success",le="0.1"} 42
-secretsync_vault_api_call_duration_seconds_sum{operation="list_secrets",status="success"} 2.5
-secretsync_vault_api_call_duration_seconds_count{operation="list_secrets",status="success"} 45
+```text
+secrets_sync_vault_api_call_duration_seconds_bucket{operation="list_secrets",status="success",le="0.1"} 42
+secrets_sync_vault_api_call_duration_seconds_sum{operation="list_secrets",status="success"} 2.5
+secrets_sync_vault_api_call_duration_seconds_count{operation="list_secrets",status="success"} 45
 ```
 
-#### `secretsync_vault_secrets_listed_total`
+#### `secrets_sync_vault_secrets_listed_total`
 **Type**: Counter  
 **Labels**: `path`  
 **Description**: Total number of secrets listed from Vault
 
 **Example**:
-```prometheus
-secretsync_vault_secrets_listed_total{path="kv/prod/app"} 150
+```text
+secrets_sync_vault_secrets_listed_total{path="kv/prod/app"} 150
 ```
 
-#### `secretsync_vault_traversal_depth`
+#### `secrets_sync_vault_traversal_depth`
 **Type**: Histogram  
 **Labels**: `path`  
 **Description**: Depth reached during BFS traversal
 
 Useful for detecting deep directory structures that may impact performance.
 
-#### `secretsync_vault_queue_size`
+#### `secrets_sync_vault_queue_size`
 **Type**: Gauge  
 **Labels**: `path`  
 **Description**: Current size of the BFS traversal queue
 
 Indicates how many paths are pending during recursive listing.
 
-#### `secretsync_vault_errors_total`
+#### `secrets_sync_vault_errors_total`
 **Type**: Counter  
 **Labels**: `operation`, `error_type`  
 **Description**: Total number of Vault errors
@@ -123,7 +150,7 @@ Indicates how many paths are pending during recursive listing.
 
 ### AWS Metrics
 
-#### `secretsync_aws_api_call_duration_seconds`
+#### `secrets_sync_aws_api_call_duration_seconds`
 **Type**: Histogram  
 **Labels**: `operation`, `region`, `status`  
 **Description**: Duration of AWS API calls in seconds
@@ -134,18 +161,18 @@ Indicates how many paths are pending during recursive listing.
 - `delete_secret`: Delete secret
 
 **Example**:
-```prometheus
-secretsync_aws_api_call_duration_seconds_bucket{operation="list_secrets",region="us-east-1",status="success",le="1"} 10
+```text
+secrets_sync_aws_api_call_duration_seconds_bucket{operation="list_secrets",region="us-east-1",status="success",le="1"} 10
 ```
 
-#### `secretsync_aws_pagination_pages`
+#### `secrets_sync_aws_pagination_pages`
 **Type**: Histogram  
 **Labels**: `operation`  
 **Description**: Number of pagination pages processed
 
 Tracks how many pages were required for list operations. High values may indicate performance opportunities.
 
-#### `secretsync_aws_cache_hits_total` / `secretsync_aws_cache_misses_total`
+#### `secrets_sync_aws_cache_hits_total` / `secrets_sync_aws_cache_misses_total`
 **Type**: Counter  
 **Labels**: `operation`  
 **Description**: Cache hit/miss counters for AWS operations
@@ -153,13 +180,13 @@ Tracks how many pages were required for list operations. High values may indicat
 Monitor cache effectiveness when `CacheTTL` is configured.
 
 **Example**:
-```prometheus
+```text
 # Cache hit rate calculation
-rate(secretsync_aws_cache_hits_total[5m]) / 
-  (rate(secretsync_aws_cache_hits_total[5m]) + rate(secretsync_aws_cache_misses_total[5m]))
+rate(secrets_sync_aws_cache_hits_total[5m]) /
+  (rate(secrets_sync_aws_cache_hits_total[5m]) + rate(secrets_sync_aws_cache_misses_total[5m]))
 ```
 
-#### `secretsync_aws_secrets_operations_total`
+#### `secrets_sync_aws_secrets_operations_total`
 **Type**: Counter  
 **Labels**: `operation`, `status`  
 **Description**: Total number of secrets operations
@@ -169,7 +196,7 @@ rate(secretsync_aws_cache_hits_total[5m]) /
 
 ### Pipeline Metrics
 
-#### `secretsync_pipeline_execution_duration_seconds`
+#### `secrets_sync_pipeline_execution_duration_seconds`
 **Type**: Histogram  
 **Labels**: `phase`, `operation`  
 **Description**: Duration of pipeline execution phases
@@ -178,44 +205,44 @@ rate(secretsync_aws_cache_hits_total[5m]) /
 **Operations**: `merge`, `sync`, `pipeline`
 
 **Example**:
-```prometheus
-secretsync_pipeline_execution_duration_seconds_sum{phase="merge",operation="pipeline"} 45.2
-secretsync_pipeline_execution_duration_seconds_count{phase="merge",operation="pipeline"} 1
+```text
+secrets_sync_pipeline_execution_duration_seconds_sum{phase="merge",operation="pipeline"} 45.2
+secrets_sync_pipeline_execution_duration_seconds_count{phase="merge",operation="pipeline"} 1
 ```
 
-#### `secretsync_pipeline_targets_processed_total`
+#### `secrets_sync_pipeline_targets_processed_total`
 **Type**: Counter  
 **Labels**: `phase`, `status`  
 **Description**: Total number of targets processed
 
 **Example**:
-```prometheus
-secretsync_pipeline_targets_processed_total{phase="merge",status="success"} 10
-secretsync_pipeline_targets_processed_total{phase="sync",status="error"} 2
+```text
+secrets_sync_pipeline_targets_processed_total{phase="merge",status="success"} 10
+secrets_sync_pipeline_targets_processed_total{phase="sync",status="error"} 2
 ```
 
-#### `secretsync_pipeline_parallel_workers`
+#### `secrets_sync_pipeline_parallel_workers`
 **Type**: Gauge  
 **Labels**: `phase`  
 **Description**: Number of active parallel workers
 
 Real-time view of parallelism during execution.
 
-#### `secretsync_pipeline_errors_total`
+#### `secrets_sync_pipeline_errors_total`
 **Type**: Counter  
 **Labels**: `phase`, `error_type`  
 **Description**: Total number of pipeline errors
 
 ### S3 Metrics
 
-#### `secretsync_s3_operation_duration_seconds`
+#### `secrets_sync_s3_operation_duration_seconds`
 **Type**: Histogram  
 **Labels**: `operation`, `status`  
 **Description**: Duration of S3 operations
 
 **Operations**: S3 read/write for merge store operations
 
-#### `secretsync_s3_object_size_bytes`
+#### `secrets_sync_s3_object_size_bytes`
 **Type**: Histogram  
 **Labels**: `operation`  
 **Description**: Size of S3 objects in bytes
@@ -228,12 +255,12 @@ Add SecretSync to your `prometheus.yml`:
 
 ```yaml
 scrape_configs:
-  - job_name: 'secretsync'
+  - job_name: 'secrets-sync'
     scrape_interval: 15s
     static_configs:
       - targets: ['localhost:9090']
         labels:
-          app: 'secretsync'
+          app: 'secrets-sync'
           env: 'production'
 ```
 
@@ -245,12 +272,12 @@ For Prometheus Operator:
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: secretsync
+  name: secrets-sync
   namespace: default
 spec:
   selector:
     matchLabels:
-      app: secretsync
+      app: secrets-sync
   endpoints:
   - port: metrics
     interval: 30s
@@ -261,53 +288,53 @@ spec:
 
 ### Performance Monitoring
 
-```prometheus
+```text
 # Average Vault list operation duration
-rate(secretsync_vault_api_call_duration_seconds_sum{operation="list_secrets"}[5m]) /
-  rate(secretsync_vault_api_call_duration_seconds_count{operation="list_secrets"}[5m])
+rate(secrets_sync_vault_api_call_duration_seconds_sum{operation="list_secrets"}[5m]) /
+  rate(secrets_sync_vault_api_call_duration_seconds_count{operation="list_secrets"}[5m])
 
 # AWS API call error rate
-rate(secretsync_aws_api_call_duration_seconds_count{status="error"}[5m])
+rate(secrets_sync_aws_api_call_duration_seconds_count{status="error"}[5m])
 
 # Pipeline execution time (full pipeline)
-secretsync_pipeline_execution_duration_seconds_sum{operation="pipeline"}
+secrets_sync_pipeline_execution_duration_seconds_sum{operation="pipeline"}
 
 # Current parallel workers
-secretsync_pipeline_parallel_workers
+secrets_sync_pipeline_parallel_workers
 ```
 
 ### Cache Performance
 
-```prometheus
+```text
 # AWS cache hit rate
-rate(secretsync_aws_cache_hits_total[5m]) /
-  (rate(secretsync_aws_cache_hits_total[5m]) + rate(secretsync_aws_cache_misses_total[5m]))
+rate(secrets_sync_aws_cache_hits_total[5m]) /
+  (rate(secrets_sync_aws_cache_hits_total[5m]) + rate(secrets_sync_aws_cache_misses_total[5m]))
 ```
 
 ### Error Monitoring
 
-```prometheus
+```text
 # Vault error rate
-rate(secretsync_vault_errors_total[5m])
+rate(secrets_sync_vault_errors_total[5m])
 
 # Pipeline target failures
-rate(secretsync_pipeline_targets_processed_total{status="error"}[5m])
+rate(secrets_sync_pipeline_targets_processed_total{status="error"}[5m])
 
 # Recent AWS write errors
-increase(secretsync_aws_secrets_operations_total{status="error"}[1h])
+increase(secrets_sync_aws_secrets_operations_total{status="error"}[1h])
 ```
 
 ### Capacity Planning
 
-```prometheus
+```text
 # Secrets per mount
-secretsync_vault_secrets_listed_total
+secrets_sync_vault_secrets_listed_total
 
 # Pagination overhead
-avg(secretsync_aws_pagination_pages)
+avg(secrets_sync_aws_pagination_pages)
 
 # BFS traversal depth
-histogram_quantile(0.95, rate(secretsync_vault_traversal_depth_bucket[5m]))
+histogram_quantile(0.95, rate(secrets_sync_vault_traversal_depth_bucket[5m]))
 ```
 
 ## Alerting Rules
@@ -316,10 +343,10 @@ Example Prometheus alerting rules:
 
 ```yaml
 groups:
-- name: secretsync
+- name: secrets-sync
   rules:
   - alert: SecretSyncHighErrorRate
-    expr: rate(secretsync_vault_errors_total[5m]) > 0.1
+    expr: rate(secrets_sync_vault_errors_total[5m]) > 0.1
     for: 5m
     labels:
       severity: warning
@@ -328,7 +355,7 @@ groups:
       description: "{{ $labels.operation }} error rate is {{ $value }}/sec"
 
   - alert: SecretSyncPipelineFailures
-    expr: increase(secretsync_pipeline_targets_processed_total{status="error"}[30m]) > 5
+    expr: increase(secrets_sync_pipeline_targets_processed_total{status="error"}[30m]) > 5
     labels:
       severity: critical
     annotations:
@@ -338,7 +365,7 @@ groups:
   - alert: SecretSyncSlowVaultOperations
     expr: |
       histogram_quantile(0.95,
-        rate(secretsync_vault_api_call_duration_seconds_bucket[5m])
+        rate(secrets_sync_vault_api_call_duration_seconds_bucket[5m])
       ) > 10
     for: 10m
     labels:
@@ -353,23 +380,23 @@ groups:
 ### Example Dashboard Panels
 
 **Pipeline Execution Time**:
-```prometheus
-secretsync_pipeline_execution_duration_seconds_sum{phase="merge"}
+```text
+secrets_sync_pipeline_execution_duration_seconds_sum{phase="merge"}
 ```
 
 **Secrets Throughput**:
-```prometheus
-rate(secretsync_vault_secrets_listed_total[5m])
+```text
+rate(secrets_sync_vault_secrets_listed_total[5m])
 ```
 
 **Active Workers**:
-```prometheus
-secretsync_pipeline_parallel_workers
+```text
+secrets_sync_pipeline_parallel_workers
 ```
 
 **Error Rate by Component**:
-```prometheus
-sum by (operation) (rate(secretsync_vault_errors_total[5m]))
+```text
+sum by (operation) (rate(secrets_sync_vault_errors_total[5m]))
 ```
 
 ## Best Practices

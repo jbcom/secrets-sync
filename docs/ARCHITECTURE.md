@@ -1,23 +1,101 @@
 # Architecture
 
-## High Level Architecture
+SecretSync is a pipeline runner. The supported runtime is the `secrets-sync` CLI
+executing a configured merge, sync, or full pipeline operation. Kubernetes and
+GitHub Actions deployments wrap that same CLI contract instead of introducing a
+separate controller API.
 
-![High Level Architecture](./architecture/HLA.drawio.png)
+See [Architecture Audit](./ARCHITECTURE_AUDIT.md) for the current
+implementation-status checklist and release-contract notes.
 
-Before we discuss how to technically deploy the solution, it is important to understand the high-level architecture of the service. The above reference architecture can be viewed as a "logical" architecture, as the service can be deployed in a variety of ways. Conceptually, the operator exposes a REST webhook endpoint at `/events` that listens for HashiCorp Vault audit log events. When an event is received, the operator will evaluate it against the configured `SecretSync` resources and sync the secret to the respective destination secret store(s).
+## Runtime Shape
 
-In the most basic deployment model, the operator can be deployed as a single process / docker container / pod. In this mode, the container both exposes the webhook server as well as performs the actual sync operation. This may not be ideal for a more security-conscious environment, as the exposed webhook service would need to be granted access to the backend secret stores and therefore could be a potential attack vector. For this reason, it is generally recommended to deploy the solution as a set of decoupled microservices, where the webhook service is deployed in a separate container / pod from the sync operator. This then allows you to enforce more strict network policies and security controls around the webhook service which then queues the work to be consumed by the operator service deeper in the network.
+```text
+pipeline.yaml
+    |
+    v
+secrets-sync pipeline --config pipeline.yaml
+    |
+    +--> merge phase: source secrets -> merge store
+    |
+    +--> sync phase: merged/source secrets -> target stores
+    |
+    +--> result envelope: success, counts, per-target results, optional diff
+```
+
+The pipeline reads one YAML configuration file, resolves source and target
+inheritance, optionally writes a merge store, then syncs destination stores. The
+same command can run a dry-run with diff output, a merge-only operation, a
+sync-only operation, or the full merge-plus-sync pipeline.
+
+## Core Components
+
+- **CLI entrypoint**: `cmd/secrets-sync` exposes `validate`, `pipeline`, and
+  graph-related commands for local, CI, and scheduled execution.
+- **Pipeline package**: `pkg/pipeline` owns config loading, validation,
+  inheritance resolution, discovery, merge, sync, diff integration, and result
+  envelopes.
+- **Diff package**: `pkg/diff` builds masked human, JSON, GitHub Actions,
+  compact, and side-by-side diff output.
+- **Observability package**: `pkg/observability` exposes metrics for pipeline
+  runs that opt into the metrics endpoint.
+- **GitHub Action**: `action.yml` packages the CLI contract for CI/CD workflows.
+- **Helm chart**: the chart renders a Kubernetes `CronJob` plus ConfigMap or
+  existing config mount for scheduled pipeline execution.
+- **Python integration**: `vendor_fabric.secrets_sync` owns the Python-native
+  implementation in `jbcom/vendor-fabric`.
 
 ## Deployment Models
 
-While this documentation generally focuses on Kubernetes-based deployments, do know that the service is not coupled to Kubernetes and therefore the same models discussed below can be followed to deploy the service in other environments, either as a set of docker containers, standalone processes, or a single binary.
+### Local Or CI Execution
 
-### Single Binary
+Run the CLI directly when an operator or engineer controls the execution
+environment:
 
-The simplest deployment model is to deploy the service as a single binary, as shown in the High Level Diagram above. This is the easiest way to get started with the service, but is not recommended for production deployments. In this model, the service will run as a single process that both listens for webhook events and performs the sync operation. The upside of this model is the ease of deployment, however the downside is that you must grant the exposed webhook service access to the backend secret stores, which may not be ideal from a security perspective.
+```bash
+secrets-sync validate --config pipeline.yaml
+secrets-sync pipeline --config pipeline.yaml --dry-run --diff --output json
+secrets-sync pipeline --config pipeline.yaml --output json
+```
 
-### Microservices
+GitHub Actions uses the same contract through the published action. The action
+does not own a separate API surface; it validates inputs, executes the pipeline,
+and reports outputs suitable for CI workflows.
 
-The recommended deployment model is to decouple the microservices and rely on a queue to provide inter-service communication. In this model, the webhook service is deployed as a separate process / container / pod from the sync operator. The webhook service listens for audit log events, filters out irrelevant events, and then queues the relevant events to be consumed by the sync operator. The sync operator then runs in a separate process / container / pod and consumes the queued events, syncing the secrets to the destination secret store(s). In this model, the webhook service only needs to be granted limited access to the queue, and the sync operator only needs to be granted access to the destination secret store(s). Besides the optional Kubernetes metrics endpoint, the sync operator does not expose any other services, and all communication is done through the queue.
+### Kubernetes Scheduled Execution
 
-![Microservices Deployment](./architecture/HLA-microservice.drawio.png)
+For Kubernetes, run SecretSync as a `CronJob`. Mount the pipeline configuration
+from a ConfigMap or Secret and provide cloud credentials through the cluster
+identity model.
+
+```text
+kind: CronJob
+  -> Pod
+    -> secrets-sync pipeline --config /config/config.yaml
+      -> Vault / AWS Secrets Manager / S3 / AWS discovery APIs
+```
+
+The Helm chart is intentionally a runner chart. It should not grow a custom
+resource, reconciler, or sidecar service unless those components are owned as a
+new public runtime contract.
+
+## Integration Boundaries
+
+SecretSync owns the Go CLI, pipeline packages, release artifact, Docker action,
+and Helm runner chart. Python applications should use
+`vendor_fabric.secrets_sync`, which composes the same pipeline concepts with
+Extended Data primitives and vendor connectors directly.
+
+The stable cross-language contract is:
+
+```bash
+secrets-sync pipeline --config pipeline.yaml --output json
+```
+
+The JSON result envelope contains pipeline success, target count, secret change
+counts, duration, per-target results, and optional diff output. SecretSync
+redacts common bearer tokens, password or token assignments, API key
+assignments, client secrets, and matching URL query parameters from top-level
+and per-target error strings before serializing this envelope. Consumers should
+still treat diff and error fields as operationally sensitive and apply their own
+policy before writing logs, CI comments, or chat responses.

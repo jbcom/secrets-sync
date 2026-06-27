@@ -8,12 +8,12 @@ We're here to help you get the most out of SecretSync! Here are the best ways to
 
 Start with our comprehensive documentation:
 
-- **[README](../README.md)**: Overview and quick start
+- **[README](https://github.com/jbcom/secrets-sync#readme)**: Overview and quick start
 - **[GitHub Actions Guide](./GITHUB_ACTIONS.md)**: Complete GitHub Actions usage
 - **[Pipeline Configuration](./PIPELINE.md)**: Configuration reference
 - **[Security Guide](./SECURITY.md)**: Security best practices
 - **[Two-Phase Architecture](./TWO_PHASE_ARCHITECTURE.md)**: Architecture details
-- **[Examples](../examples/)**: Working examples and templates
+- **[Examples](https://github.com/jbcom/secrets-sync/tree/main/examples)**: Working examples and templates
 
 ## 💬 Community Support
 
@@ -89,11 +89,11 @@ When reporting bugs, please include:
 1. **Version Information**
    ```bash
    # If using CLI
-   secretsync --version
+   secrets-sync --version
    
    # If using GitHub Action
    # Include the version/tag from your workflow
-   uses: jbcom/secrets-sync@secretssync-v2.0.2
+   uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
    ```
 
 2. **Configuration** (sanitized - remove secrets!)
@@ -167,7 +167,7 @@ Be respectful and inclusive. We're all here to learn and improve.
 
 ### Example Workflows
 
-See our [examples directory](../examples/) for:
+See our [examples directory](https://github.com/jbcom/secrets-sync/tree/main/examples) for:
 - Basic GitHub Actions workflow
 - Multi-environment setup
 - Dynamic discovery patterns
@@ -214,9 +214,9 @@ Join our growing community:
 
 ### How do I get started?
 
-1. Read the [README](../README.md)
+1. Read the [README](https://github.com/jbcom/secrets-sync#readme)
 2. Check the [GitHub Actions guide](./GITHUB_ACTIONS.md)
-3. Copy an [example workflow](../examples/github-action-workflow.yml)
+3. Copy an [example workflow](https://github.com/jbcom/secrets-sync/blob/main/examples/github-action-workflow.yml)
 4. Customize for your needs
 
 ### Is SecretSync free?
@@ -225,17 +225,16 @@ Yes! SecretSync is free and open source (MIT License).
 
 ### Can I use this in production?
 
-Yes! SecretSync is production-ready. Many organizations use it daily.
+SecretSync is intended for production use when Vault, AWS IAM, OIDC, and
+release pinning are configured for your environment. Run dry-run validation in
+CI before applying changes.
 
 ### How do I upgrade?
 
 For GitHub Actions:
 ```yaml
-# Pin to the current package release tag (recommended)
-uses: jbcom/secrets-sync@secretssync-v2.0.2
-
-# Pin to an exact package release tag (most stable)
-uses: jbcom/secrets-sync@secretssync-v2.0.2
+# Pin to an exact package release tag
+uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
 
 # Track the branch tip (not recommended for production)
 uses: jbcom/secrets-sync@main
@@ -244,7 +243,7 @@ uses: jbcom/secrets-sync@main
 For CLI:
 ```bash
 # Use go install
-go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 ```
 
 ### Where do I report a security issue?

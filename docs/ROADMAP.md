@@ -2,13 +2,14 @@
 
 This roadmap outlines the planned development direction for SecretSync. It's a living document that evolves based on community feedback and changing requirements.
 
-## Current Status: v1.2.0 (December 2025)
+## Current Status: v2.x
 
-✅ **Production Ready** - All core features implemented and battle-tested
+✅ **Production Ready** - The current 2.x line is the supported release line for
+the independent SecretSync repository.
 
 ## Upcoming Releases
 
-### v1.3.0 - Observability & Integrations (Q1 2026)
+### v2.1.0 - Observability & Integrations
 
 **Theme**: Enhanced monitoring and ecosystem integrations
 
@@ -36,7 +37,7 @@ This roadmap outlines the planned development direction for SecretSync. It's a l
 - **Configuration Templates**: Pre-built templates for common patterns
 - **IDE Extensions**: VS Code extension for configuration editing
 
-### v1.4.0 - Enterprise Features (Q2 2026)
+### v2.2.0 - Enterprise Features
 
 **Theme**: Advanced enterprise capabilities and governance
 
@@ -64,7 +65,7 @@ This roadmap outlines the planned development direction for SecretSync. It's a l
 - **Batch Operations**: Bulk secret operations for efficiency
 - **Rate Limiting**: Intelligent rate limiting and backoff
 
-### v1.5.0 - Ecosystem & Platform (Q3 2026)
+### v2.3.0 - Ecosystem & Platform
 
 **Theme**: Platform features and ecosystem growth
 
@@ -74,11 +75,11 @@ This roadmap outlines the planned development direction for SecretSync. It's a l
 - **Real-time Monitoring**: Live pipeline execution monitoring
 - **User Management**: Built-in user authentication and authorization
 
-#### 🔧 Operator Enhancements
-- **Kubernetes Operator v2**: Enhanced CRD-based management
-- **GitOps Integration**: ArgoCD/Flux integration for configuration management
+#### 🔧 Kubernetes Runtime
+- **GitOps Examples**: ArgoCD/Flux examples for scheduled pipeline runners
 - **Helm Chart Improvements**: Advanced deployment options
-- **Multi-Cluster Support**: Manage secrets across multiple clusters
+- **Multi-Cluster Patterns**: Run scoped pipeline jobs per cluster or account boundary
+- **Native API Research**: Evaluate a future controller only if it can be owned end to end
 
 #### 🌐 API & Integrations
 - **REST API**: Full REST API for programmatic access
@@ -92,7 +93,7 @@ This roadmap outlines the planned development direction for SecretSync. It's a l
 - **Shell Integration**: Bash/Zsh completion and integration
 - **Configuration Management**: CLI-based configuration management
 
-## Future Considerations (v2.0+)
+## Future Considerations (v3.0+)
 
 ### Major Architecture Evolution
 
@@ -129,7 +130,7 @@ Based on community feedback, we're prioritizing:
 - **GitHub Issues**: Share your use cases and requirements
 - **Feature Requests**: Create detailed feature requests with business justification
 - **User Surveys**: Participate in periodic user surveys
-- **Community Calls**: Join monthly community calls (coming in v1.3.0)
+- **Community Calls**: Join monthly community calls when scheduled
 
 ### 🤝 Contributions
 - **Code Contributions**: Implement features you need
@@ -157,19 +158,12 @@ Based on community feedback, we're prioritizing:
 - **Release Candidates**: 1 week before major releases
 - **Early Access**: Available for enterprise partners
 
-## Backwards Compatibility
+## Clean Break Policy
 
-### Compatibility Promise
-- **Configuration**: Backwards compatible within major versions
-- **API**: Semantic versioning with deprecation notices
-- **CLI**: Backwards compatible with deprecation warnings
-- **Migration Tools**: Automated migration for breaking changes
-
-### Deprecation Policy
-- **6 Month Notice**: Minimum 6 months notice for deprecations
-- **Migration Guides**: Detailed migration documentation
-- **Automated Tools**: CLI tools to assist with migrations
-- **Support**: Extended support for deprecated features
+- **Configuration**: Prefer one current shape over compatibility aliases.
+- **API**: Breaking changes are acceptable when they keep the implementation honest.
+- **CLI**: Removed flags and fields should fail loudly with clear replacement guidance.
+- **Migration Docs**: Document replacement configuration rather than carrying shims.
 
 ## Success Metrics
 

@@ -1,264 +1,170 @@
-# Getting Started with SecretSync
+# Getting Started With SecretSync
 
-This guide will walk you through setting up SecretSync from scratch to sync secrets from HashiCorp Vault to AWS Secrets Manager.
+This guide sets up a current SecretSync pipeline that reads secrets from Vault,
+merges them into a merge store, and syncs selected targets into AWS Secrets
+Manager.
 
 ## Prerequisites
 
-Before you begin, ensure you have:
+- HashiCorp Vault with a KV v2 secrets engine.
+- AWS credentials from an IAM role, workload identity, or access keys.
+- Permission to read the configured Vault mounts.
+- Permission to write the target AWS Secrets Manager secrets.
 
-- **HashiCorp Vault** with KV2 secrets engine enabled
-- **AWS Account** with Secrets Manager access
-- **Vault credentials** (AppRole recommended)
-- **AWS credentials** (IAM role or access keys)
+## Step 1: Install
 
-## Step 1: Installation
-
-Choose your preferred installation method:
-
-### Option A: Go Install
+Choose one runtime:
 
 ```bash
-go install github.com/jbcom/secrets-sync/cmd/secretsync@latest
+go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 ```
-
-### Option B: Docker
 
 ```bash
-# Pull image
-docker pull jbcom/secretssync:v1
-
-# Create alias for easier usage
-alias secretsync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secretssync:v1'
+docker pull jbcom/secrets-sync:v1
+alias secrets-sync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secrets-sync:v1'
 ```
-
-### Option C: Build from Source
 
 ```bash
 git clone https://github.com/jbcom/secrets-sync.git
 cd secrets-sync
 make build
-./bin/secretsync version
+./bin/secrets-sync version
 ```
 
-## Step 2: Basic Configuration
+## Step 2: Create A Pipeline Config
 
-Create a configuration file `config.yaml`:
+Create `config.yaml`:
 
 ```yaml
-# Basic SecretSync configuration
 vault:
-  address: "https://your-vault.example.com"
-  namespace: "admin"  # Optional: if using Vault namespaces
+  address: https://vault.example.com/
+  namespace: admin
   auth:
     approle:
-      role_id: "${VAULT_ROLE_ID}"
-      secret_id: "${VAULT_SECRET_ID}"
+      role_id: ${VAULT_ROLE_ID}
+      secret_id: ${VAULT_SECRET_ID}
 
 aws:
-  region: "us-east-1"
-  # Optional: role to assume for cross-account access
-  # role_arn: "arn:aws:iam::123456789012:role/SecretSyncRole"
+  region: us-east-1
+  execution_context:
+    type: delegated_admin
+    account_id: "123456789012"
+  control_tower:
+    enabled: true
+    execution_role:
+      name: AWSControlTowerExecution
 
-# Define where to read secrets from
 sources:
   app-secrets:
     vault:
-      path: "secret/data/myapp"  # KV2 path
+      mount: secret
+      paths:
+        - myapp
 
-# Define where to write secrets to
+merge_store:
+  vault:
+    mount: merged-secrets
+
 targets:
   production:
-    aws_secretsmanager:
-      region: "us-east-1"
-      # Optional: prefix for secret names
-      prefix: "myapp/"
+    account_id: "222222222222"
+    region: us-east-1
+    secret_prefix: myapp/
     imports:
       - app-secrets
+
+pipeline:
+  merge:
+    parallel: 4
+  sync:
+    parallel: 4
+    delete_orphans: false
+  continue_on_error: true
 ```
 
-## Step 3: Set Environment Variables
+Targets can import from sources or from other targets. Target-to-target imports
+are how you model inheritance:
+
+```yaml
+targets:
+  staging:
+    account_id: "111111111111"
+    imports:
+      - app-secrets
+
+  production:
+    account_id: "222222222222"
+    imports:
+      - staging
+```
+
+## Step 3: Configure Credentials
 
 ```bash
-# Vault credentials
 export VAULT_ROLE_ID="your-role-id"
 export VAULT_SECRET_ID="your-secret-id"
-
-# AWS credentials (if not using IAM roles)
-export AWS_ACCESS_KEY_ID="your-access-key"
-export AWS_SECRET_ACCESS_KEY="your-secret-key"
+export AWS_REGION="us-east-1"
 ```
 
-## Step 4: Validate Configuration
+Prefer AWS role assumption or workload identity for deployed runners. Use static
+AWS access keys only when your environment cannot provide an identity.
 
-Before running, validate your configuration:
+## Step 4: Validate And Inspect
 
 ```bash
-secretsync validate --config config.yaml
+secrets-sync validate --config config.yaml
+secrets-sync graph --config config.yaml
 ```
 
-This will check:
-- Configuration syntax
-- Vault connectivity
-- AWS permissions
-- Source/target accessibility
+Validation checks the config structure and dependency graph. Add `--check-aws`
+when you want validation to test AWS credentials and access.
 
 ## Step 5: Dry Run
 
-Perform a dry run to see what changes would be made:
+```bash
+secrets-sync pipeline --config config.yaml --dry-run --diff --output json --exit-code
+```
+
+Exit codes are stable for automation:
+
+- `0`: no changes
+- `1`: changes detected
+- `2`: errors
+
+## Step 6: Apply
+
+After reviewing the dry-run diff, run the apply path:
 
 ```bash
-secretsync pipeline --config config.yaml --dry-run
-```
-
-You should see output like:
-```
-Pipeline Diff Summary
-=====================
-  Added:     3 secrets
-  Modified:  0 secrets
-  Deleted:   0 secrets
-
-⚠️  CHANGES DETECTED
-
-Target: production
-  + myapp/database-password
-  + myapp/api-key
-  + myapp/jwt-secret
-```
-
-## Step 6: Execute Sync
-
-If the dry run looks correct, execute the actual sync:
-
-```bash
-secretsync pipeline --config config.yaml
-```
-
-## Step 7: Verify Results
-
-Check AWS Secrets Manager to confirm your secrets were created:
-
-```bash
-# Using AWS CLI
-aws secretsmanager list-secrets --query 'SecretList[?starts_with(Name, `myapp/`)]'
-
-# Or check in AWS Console
-# Navigate to AWS Secrets Manager in your region
-```
-
-## Next Steps
-
-### Enable Advanced Features
-
-#### 1. Add Observability (v1.1.0)
-
-```bash
-# Run with metrics endpoint
-secretsync pipeline --config config.yaml --metrics-port 9090
-
-# In another terminal, check metrics
-curl http://localhost:9090/metrics
-curl http://localhost:9090/health
-```
-
-#### 2. Enhanced Diff Output (v1.2.0)
-
-```bash
-# Side-by-side comparison
-secretsync pipeline --config config.yaml --dry-run --format side-by-side
-
-# JSON output for automation
-secretsync pipeline --config config.yaml --dry-run --format json
-```
-
-#### 3. Secret Versioning (v1.2.0)
-
-Add to your config:
-```yaml
-versioning:
-  enabled: true
-  s3_bucket: "my-secretsync-versions"
-  retention_days: 90
-```
-
-#### 4. AWS Organizations Discovery (v1.2.0)
-
-```yaml
-discovery:
-  aws_organizations:
-    enabled: true
-    tag_filters:
-      - key: "Environment"
-        values: ["production", "staging"]
-        operator: "equals"
-    cache_ttl: "1h"
-```
-
-### Set Up CI/CD
-
-#### GitHub Actions
-
-Create `.github/workflows/secretsync.yml`:
-
-```yaml
-name: Sync Secrets
-on:
-  schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours
-  workflow_dispatch:
-
-jobs:
-  sync:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
-          aws-region: us-east-1
-      
-      - name: Sync Secrets
-        uses: jbcom/secrets-sync@secretssync-v2.0.2
-        with:
-          config: config.yaml
-        env:
-          VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
-          VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
+secrets-sync pipeline --config config.yaml --diff --output json
 ```
 
 ## Common Patterns
 
-### Multi-Environment Setup
+### Multi-Environment Inheritance
 
 ```yaml
 sources:
   base-secrets:
     vault:
-      path: "secret/data/base"
-  
+      mount: secret
+      paths: [base]
   prod-secrets:
     vault:
-      path: "secret/data/production"
+      mount: secret
+      paths: [production]
 
 targets:
   staging:
-    aws_secretsmanager:
-      region: "us-east-1"
+    account_id: "111111111111"
     imports:
       - base-secrets
-  
+
   production:
-    aws_secretsmanager:
-      region: "us-east-1"
+    account_id: "222222222222"
     imports:
-      - base-secrets
-      - prod-secrets  # Production-specific overrides
+      - staging
+      - prod-secrets
 ```
 
 ### Cross-Account Sync
@@ -266,90 +172,115 @@ targets:
 ```yaml
 targets:
   dev-account:
-    aws_secretsmanager:
-      region: "us-east-1"
-      role_arn: "arn:aws:iam::111111111111:role/SecretSyncRole"
+    account_id: "111111111111"
+    region: us-east-1
+    role_arn: arn:aws:iam::111111111111:role/SecretSyncRole
     imports:
       - dev-secrets
-  
+
   prod-account:
-    aws_secretsmanager:
-      region: "us-east-1"
-      role_arn: "arn:aws:iam::222222222222:role/SecretSyncRole"
+    account_id: "222222222222"
+    region: us-east-1
+    role_arn: arn:aws:iam::222222222222:role/SecretSyncRole
     imports:
       - prod-secrets
 ```
 
-### Merge Store Pattern
+### S3 Merge Store With Versioning
 
 ```yaml
-# Use S3 as merge store for complex inheritance
 merge_store:
   s3:
-    bucket: "my-secretsync-merge-store"
-    prefix: "merged/"
-    region: "us-east-1"
+    bucket: my-secrets-sync-merge-store
+    prefix: merged/
+    kms_key_id: alias/secrets-sync
+    versioning:
+      enabled: true
+      retain_versions: 90
+```
 
-targets:
-  staging:
-    imports: [base-secrets]
-  
-  production:
-    inherits: staging  # Inherit from staging's merged output
-    imports: [prod-overrides]
+### Dynamic AWS Organizations Targets
+
+```yaml
+dynamic_targets:
+  production-accounts:
+    discovery:
+      organizations:
+        ous:
+          - ou-abcd-production
+        tag_filters:
+          - key: Environment
+            values: ["production"]
+            operator: equals
+        recursive: true
+    imports:
+      - app-secrets
+    region: us-east-1
+    secret_prefix: myapp/
+```
+
+Run with discovery enabled:
+
+```bash
+secrets-sync pipeline --config config.yaml --discover --dry-run --diff
+```
+
+## GitHub Actions
+
+```yaml
+name: Sync Secrets
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
+        with:
+          role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
+          aws-region: us-east-1
+      - uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+        with:
+          config: config.yaml
+          dry-run: "true"
+          compute-diff: "true"
+          output-format: json
+          exit-code: "true"
+        env:
+          VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
+          VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
 ```
 
 ## Troubleshooting
 
-### Common Issues
+### Vault authentication failed
 
-#### "Vault authentication failed"
-- Verify `VAULT_ROLE_ID` and `VAULT_SECRET_ID` are correct
-- Check Vault policies allow access to specified paths
-- Ensure Vault address is reachable
+- Verify `VAULT_ROLE_ID` and `VAULT_SECRET_ID`.
+- Confirm the AppRole can read the configured mounts and paths.
+- Confirm Vault address and namespace are reachable from the runner.
 
-#### "AWS access denied"
-- Verify AWS credentials are configured
-- Check IAM permissions for Secrets Manager
-- Ensure region is correct
+### AWS access denied
 
-#### "Secret not found"
-- Verify Vault path exists and is accessible
-- Check KV2 engine is enabled at the mount
-- Ensure path format is correct (`secret/data/path` for KV2)
+- Confirm the runner identity can assume the configured target role.
+- Check Secrets Manager create, update, list, and delete permissions.
+- Confirm the configured region and account IDs.
 
-### Debug Mode
+### No changes detected unexpectedly
 
-Enable debug logging for more details:
+- Run with `--output side-by-side` for a human diff.
+- Check target imports and source path spelling.
+- Run `secrets-sync graph --config config.yaml` to verify dependency order.
 
-```bash
-secretsync pipeline --config config.yaml --log-level debug
-```
+## Next Steps
 
-### Validate Permissions
-
-Test individual components:
-
-```bash
-# Test Vault connectivity
-vault auth -method=approle role_id=$VAULT_ROLE_ID secret_id=$VAULT_SECRET_ID
-vault kv list secret/
-
-# Test AWS connectivity
-aws secretsmanager list-secrets --region us-east-1
-```
-
-## Getting Help
-
-- **Documentation**: [Full docs](https://github.com/jbcom/secrets-sync/docs)
-- **Examples**: [Configuration examples](https://github.com/jbcom/secrets-sync/examples)
-- **Issues**: [GitHub Issues](https://github.com/jbcom/secrets-sync/issues)
-
-## What's Next?
-
-- Explore [advanced configuration options](./PIPELINE.md)
-- Set up [monitoring and observability](./OBSERVABILITY.md)
-- Learn about [deployment patterns](./DEPLOYMENT.md)
-- Integrate with [GitHub Actions](./GITHUB_ACTIONS.md)
-
-Welcome to SecretSync! 🚀
+- Read [PIPELINE.md](./PIPELINE.md) for the full configuration reference.
+- Read [DEPLOYMENT.md](./DEPLOYMENT.md) for production deployment patterns.
+- Read [OBSERVABILITY.md](./OBSERVABILITY.md) for metrics and logging.
+- Read [GITHUB_ACTIONS.md](./GITHUB_ACTIONS.md) for CI integration.
