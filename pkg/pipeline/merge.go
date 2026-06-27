@@ -3,8 +3,10 @@ package pipeline
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
+	"github.com/jbcom/secrets-sync/pkg/client/vault"
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	"github.com/jbcom/secrets-sync/pkg/observability"
 	"github.com/jbcom/secrets-sync/pkg/utils"
@@ -87,42 +89,16 @@ func (p *Pipeline) mergeTarget(ctx context.Context, targetName string, dryRun bo
 		}
 	}
 
-	// Merge all sources in sequence (later sources override earlier)
+	// Read every source concurrently (bounded by pipeline.merge.parallel), then
+	// merge the per-source results in priority order. Reading is the slow,
+	// I/O-bound step and parallelizes cleanly; the deep-merge must stay
+	// sequential because later sources override earlier ones.
+	sourceResults, failedSources := p.readSourcesConcurrently(ctx, sourceClient, sourcePaths)
+
 	mergedSecrets := make(map[string]interface{})
-	var failedSources []string
-
-	for i, sourcePath := range sourcePaths {
-		l.WithFields(log.Fields{
-			"source":   sourcePath,
-			"priority": i,
-		}).Debug("Processing source")
-
-		// List all secrets in this source
-		secrets, err := sourceClient.ListSecrets(ctx, sourcePath)
-		if err != nil {
-			l.WithError(err).WithField("source", sourcePath).Warn("Failed to list secrets from source")
-			failedSources = append(failedSources, sourcePath)
-			continue
-		}
-
-		// Read and merge each secret
-		for _, secretPath := range secrets {
-			secretData, err := sourceClient.GetKVSecretOnce(ctx, secretPath)
-			if err != nil {
-				l.WithError(err).WithField("secret", secretPath).Warn("Failed to read secret")
-				continue
-			}
-
-			// Relative path within this source
-			relPath := secretPath
-			if len(secretPath) > len(sourcePath) {
-				relPath = secretPath[len(sourcePath):]
-				if len(relPath) > 0 && relPath[0] == '/' {
-					relPath = relPath[1:]
-				}
-			}
-
-			// Deep merge into accumulated result (later sources win on conflict)
+	for _, sr := range sourceResults {
+		for _, relPath := range sr.order {
+			secretData := sr.secrets[relPath]
 			if existing, ok := mergedSecrets[relPath]; ok {
 				if existingMap, ok := existing.(map[string]interface{}); ok {
 					mergedSecrets[relPath] = utils.DeepMerge(existingMap, secretData)
@@ -217,6 +193,87 @@ func (p *Pipeline) mergeTarget(ctx context.Context, targetName string, dryRun bo
 	}
 
 	return result
+}
+
+// sourceReadResult holds one source's secrets plus the order they were listed
+// in, so the sequential merge can preserve deterministic per-source ordering.
+type sourceReadResult struct {
+	secrets map[string]map[string]interface{}
+	order   []string
+}
+
+// mergeParallelism returns the configured concurrent-source-read limit,
+// defaulting to 4 and never exceeding the number of sources.
+func (p *Pipeline) mergeParallelism(n int) int {
+	limit := p.config.Pipeline.Merge.Parallel
+	if limit <= 0 {
+		limit = 4
+	}
+	if limit > n {
+		limit = n
+	}
+	if limit < 1 {
+		limit = 1
+	}
+	return limit
+}
+
+// readSourcesConcurrently reads every source path concurrently (bounded by the
+// merge parallelism) and returns per-source results in the SAME order as
+// sourcePaths, so the caller can merge in priority order. Source-level failures
+// are collected and reported rather than aborting the whole merge.
+func (p *Pipeline) readSourcesConcurrently(ctx context.Context, sourceClient *vault.VaultClient, sourcePaths []string) ([]sourceReadResult, []string) {
+	results := make([]sourceReadResult, len(sourcePaths))
+	failures := make([]string, len(sourcePaths))
+	sem := make(chan struct{}, p.mergeParallelism(len(sourcePaths)))
+
+	var wg sync.WaitGroup
+	for i, sourcePath := range sourcePaths {
+		wg.Add(1)
+		go func(i int, sourcePath string) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
+			l := log.WithFields(log.Fields{"source": sourcePath, "priority": i})
+			secrets, err := sourceClient.ListSecrets(ctx, sourcePath)
+			if err != nil {
+				l.WithError(err).Warn("Failed to list secrets from source")
+				failures[i] = sourcePath
+				return
+			}
+
+			res := sourceReadResult{secrets: map[string]map[string]interface{}{}}
+			for _, secretPath := range secrets {
+				secretData, err := sourceClient.GetKVSecretOnce(ctx, secretPath)
+				if err != nil {
+					l.WithError(err).WithField("secret", secretPath).Warn("Failed to read secret")
+					continue
+				}
+				relPath := secretPath
+				if len(secretPath) > len(sourcePath) {
+					relPath = secretPath[len(sourcePath):]
+					if len(relPath) > 0 && relPath[0] == '/' {
+						relPath = relPath[1:]
+					}
+				}
+				if _, seen := res.secrets[relPath]; !seen {
+					res.order = append(res.order, relPath)
+				}
+				res.secrets[relPath] = secretData
+			}
+			results[i] = res
+		}(i, sourcePath)
+	}
+	wg.Wait()
+
+	var failedSources []string
+	for _, f := range failures {
+		if f != "" {
+			failedSources = append(failedSources, f)
+		}
+	}
+	return results, failedSources
 }
 
 // writeMergedBundleToVault writes the merged secrets to Vault, wiping existing data first

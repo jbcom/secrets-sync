@@ -62,9 +62,11 @@ func (p *Pipeline) awsClient(roleARN, region, name string) *aws.AwsClient {
 	}
 
 	client := &aws.AwsClient{
-		Name:    name,
-		RoleArn: roleARN,
-		Region:  region,
+		Name:       name,
+		RoleArn:    roleARN,
+		Region:     region,
+		MaxRetries: p.config.AWS.MaxRetries,
+		RetryMode:  p.config.AWS.RetryMode,
 	}
 
 	if auth := p.runtimeAWSAuth(); auth != nil {

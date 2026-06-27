@@ -61,7 +61,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 - [x] M2.1 OpenTelemetry tracing: spans across fetch/merge/sync + per-backend API calls; attributes target/source/operation/phase; OTLP/Jaeger/Zipkin exporters; configurable sampling. Config block `observability.tracing`. (Jaeger via native OTLP.)
 - [x] M2.2 Enhanced metrics: user-defined custom metrics via config; dependency-probe health endpoints.
 - [x] M2.3 Ship Prometheus alerting rules + Grafana dashboard templates under deploy/.
-- [ ] M2.4 Performance: discovery result caching (Organizations/Identity Center); configurable AWS retry/backoff; bulk batch ops; concurrent source reads with configurable limits.
+- [x] M2.4 Performance: discovery result caching (Organizations/Identity Center — ouCache/ouChildCache already present); configurable AWS retry/backoff (max_retries/retry_mode); concurrent source reads with configurable limit (merge.parallel) preserving deep-merge priority order.
 
 ### M3 v2.6.0 — Enterprise Governance
 - [ ] M3.1 Policy as Code: declarative allow/deny sync policies per target/source in config; validated during `validate`; pre-sync enforcement with dry-run preview.

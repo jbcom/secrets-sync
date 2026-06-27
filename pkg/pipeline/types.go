@@ -78,6 +78,11 @@ type AWSConfig struct {
 	ControlTower     ControlTowerConfig     `mapstructure:"control_tower" yaml:"control_tower"`
 	Organizations    OrganizationsConfig    `mapstructure:"organizations" yaml:"organizations"`
 	IdentityCenter   IdentityCenterConfig   `mapstructure:"identity_center" yaml:"identity_center"`
+
+	// MaxRetries overrides the AWS SDK retry attempt count (0 = SDK default).
+	MaxRetries int `mapstructure:"max_retries" yaml:"max_retries,omitempty"`
+	// RetryMode selects the SDK retry strategy: "standard" or "adaptive".
+	RetryMode string `mapstructure:"retry_mode" yaml:"retry_mode,omitempty"`
 }
 
 // ExecutionContextType defines where the pipeline runs from
