@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/jbcom/secrets-sync/pkg/observability"
 	log "github.com/sirupsen/logrus"
@@ -121,11 +123,13 @@ func startMetricsServer() {
 	mux := http.NewServeMux()
 	mux.Handle("/metrics", observability.Handler())
 
-	// Add health check endpoint
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
-	})
+	// Health and readiness endpoints backed by dependency probes. A liveness
+	// probe is always present; backend reachability probes are registered by
+	// the pipeline when it is constructed with a health checker.
+	health := observability.NewHealthChecker(5 * time.Second)
+	health.Register("live", func(context.Context) error { return nil })
+	mux.HandleFunc("/health", health.Handler())
+	mux.HandleFunc("/ready", health.Handler())
 
 	server := &http.Server{
 		Addr:    addr,

@@ -23,7 +23,8 @@ type Config struct {
 
 // ObservabilityConfig configures metrics and distributed tracing.
 type ObservabilityConfig struct {
-	Tracing observability.TracingConfig `mapstructure:"tracing" yaml:"tracing,omitempty"`
+	Tracing       observability.TracingConfig        `mapstructure:"tracing" yaml:"tracing,omitempty"`
+	CustomMetrics []observability.CustomMetricConfig `mapstructure:"custom_metrics" yaml:"custom_metrics,omitempty"`
 }
 
 // LogConfig controls logging behavior
