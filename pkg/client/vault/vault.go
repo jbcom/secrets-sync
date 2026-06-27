@@ -35,6 +35,13 @@ type LogicalClient interface {
 	ListWithContext(ctx context.Context, path string) (*api.Secret, error)
 }
 
+// Compile-time assertions that VaultClient satisfies the formal backend
+// contracts. Vault KV2 works as both a read source and a sync/merge target.
+var (
+	_ driver.SourceBackend = (*VaultClient)(nil)
+	_ driver.TargetBackend = (*VaultClient)(nil)
+)
+
 // VaultClient is a single self-contained vault client
 type VaultClient struct {
 	Path       string `yaml:"path,omitempty" json:"path,omitempty"`

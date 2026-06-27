@@ -24,6 +24,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Compile-time assertions that AwsClient satisfies the formal backend
+// contracts. AWS Secrets Manager works as both a read source and a sync target.
+var (
+	_ driver.SourceBackend = (*AwsClient)(nil)
+	_ driver.TargetBackend = (*AwsClient)(nil)
+)
+
 type AwsClient struct {
 	Name           string            `yaml:"name,omitempty" json:"name,omitempty"`
 	RoleArn        string            `yaml:"roleArn,omitempty" json:"roleArn,omitempty"`

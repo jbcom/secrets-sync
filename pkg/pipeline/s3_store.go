@@ -14,8 +14,13 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	awscredentials "github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/jbcom/secrets-sync/pkg/driver"
 	log "github.com/sirupsen/logrus"
 )
+
+// Compile-time assertion that S3MergeStore satisfies the formal MergeStore
+// contract. The Vault-backed merge path uses VaultClient directly.
+var _ driver.MergeStore = (*S3MergeStore)(nil)
 
 // SecretVersion represents a versioned secret with metadata
 type SecretVersion struct {
