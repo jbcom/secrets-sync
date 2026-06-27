@@ -24,6 +24,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Compile-time assertions that AwsClient satisfies the formal backend
+// contracts. AWS Secrets Manager works as both a read source and a sync target.
+var (
+	_ driver.SourceBackend = (*AwsClient)(nil)
+	_ driver.TargetBackend = (*AwsClient)(nil)
+)
+
 type AwsClient struct {
 	Name           string            `yaml:"name,omitempty" json:"name,omitempty"`
 	RoleArn        string            `yaml:"roleArn,omitempty" json:"roleArn,omitempty"`
@@ -49,6 +56,12 @@ type AwsClient struct {
 	// - Use ClearCache() to manually invalidate if needed
 	// - Failed write/delete operations do NOT clear the cache to avoid hiding errors
 	CacheTTL time.Duration `yaml:"cacheTTL,omitempty" json:"cacheTTL,omitempty"`
+
+	// MaxRetries overrides the AWS SDK retry attempt count (0 = SDK default).
+	MaxRetries int `yaml:"maxRetries,omitempty" json:"maxRetries,omitempty"`
+	// RetryMode selects the SDK retry strategy: "standard" or "adaptive"
+	// (empty = SDK default). Adaptive adds client-side rate limiting.
+	RetryMode string `yaml:"retryMode,omitempty" json:"retryMode,omitempty"`
 
 	// Runtime credentials are supplied by embedding callers and are never
 	// serialized. They let upstream packages own authentication and hand the
@@ -224,6 +237,15 @@ func (c *AwsClient) CreateClientWithEndpoint(ctx context.Context, endpoint strin
 	}
 	if c.Region != "" {
 		loadOptions = append(loadOptions, config.WithRegion(c.Region))
+	}
+	if c.MaxRetries > 0 {
+		loadOptions = append(loadOptions, config.WithRetryMaxAttempts(c.MaxRetries))
+	}
+	switch c.RetryMode {
+	case "standard":
+		loadOptions = append(loadOptions, config.WithRetryMode(aws.RetryModeStandard))
+	case "adaptive":
+		loadOptions = append(loadOptions, config.WithRetryMode(aws.RetryModeAdaptive))
 	}
 	if c.RuntimeAccessKeyID != "" && c.RuntimeSecretAccessKey != "" {
 		loadOptions = append(loadOptions, config.WithCredentialsProvider(

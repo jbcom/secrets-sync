@@ -1,0 +1,75 @@
+# Prometheus alerting rules for secrets-sync.
+#
+# Apply as a PrometheusRule (kube-prometheus-stack) or include the `groups`
+# block in a standalone Prometheus rule_files entry. Metric names match the
+# secrets_sync_* families exported on /metrics.
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: secrets-sync
+  labels:
+    app.kubernetes.io/name: secrets-sync
+    role: alert-rules
+spec:
+  groups:
+    - name: secrets-sync.pipeline
+      rules:
+        - alert: SecretsSyncPipelineErrors
+          expr: sum(rate(secrets_sync_pipeline_errors_total[5m])) by (phase) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "secrets-sync pipeline errors in phase {{ $labels.phase }}"
+            description: "The {{ $labels.phase }} phase has been erroring for 10m (rate {{ $value | printf \"%.3f\" }}/s)."
+
+        - alert: SecretsSyncHighSyncLatency
+          expr: histogram_quantile(0.95, sum(rate(secrets_sync_pipeline_execution_duration_seconds_bucket[10m])) by (le, phase)) > 0.1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "secrets-sync p95 latency above 100ms ({{ $labels.phase }})"
+            description: "p95 {{ $labels.phase }} duration is {{ $value | printf \"%.3f\" }}s, exceeding the 100ms SLO."
+
+        - alert: SecretsSyncNoActivity
+          expr: sum(increase(secrets_sync_pipeline_targets_processed_total[1h])) == 0
+          for: 1h
+          labels:
+            severity: info
+          annotations:
+            summary: "secrets-sync processed no targets in the last hour"
+            description: "No targets processed for 1h — the scheduled runner may be stuck or descheduled."
+
+    - name: secrets-sync.backends
+      rules:
+        - alert: SecretsSyncVaultErrors
+          expr: sum(rate(secrets_sync_vault_errors_total[5m])) > 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "secrets-sync Vault API errors"
+            description: "Vault API has been erroring for 10m (rate {{ $value | printf \"%.3f\" }}/s)."
+
+        - alert: SecretsSyncAWSCacheMissSpike
+          expr: |
+            sum(rate(secrets_sync_aws_cache_misses_total[10m]))
+              /
+            clamp_min(sum(rate(secrets_sync_aws_cache_hits_total[10m])) + sum(rate(secrets_sync_aws_cache_misses_total[10m])), 1)
+              > 0.8
+          for: 15m
+          labels:
+            severity: info
+          annotations:
+            summary: "secrets-sync AWS ListSecrets cache miss ratio high"
+            description: "AWS cache miss ratio is {{ $value | printf \"%.0%%\" }} — consider raising cache_ttl."
+
+        - alert: SecretsSyncHighAWSAPILatency
+          expr: histogram_quantile(0.95, sum(rate(secrets_sync_aws_api_call_duration_seconds_bucket[10m])) by (le)) > 1
+          for: 15m
+          labels:
+            severity: warning
+          annotations:
+            summary: "secrets-sync AWS API p95 latency above 1s"
+            description: "AWS Secrets Manager p95 call latency is {{ $value | printf \"%.2f\" }}s."

@@ -1,0 +1,78 @@
+# Fan a single Vault source out to targets across multiple secret stores.
+#
+# Each target selects its destination backend via the `backend:` block. When
+# `backend:` is omitted the target defaults to AWS Secrets Manager, preserving
+# the historical behavior. Supported drivers: aws, vault, azure, gcp,
+# kubernetes, http.
+
+vault:
+  address: https://vault.example.com/
+  namespace: platform/secrets
+  auth:
+    token:
+      token: ${VAULT_TOKEN}
+
+aws:
+  region: us-west-2
+
+sources:
+  app-secrets:
+    vault:
+      mount: secret
+      paths:
+        - hello/world
+
+merge_store:
+  vault:
+    mount: merged-secrets
+
+targets:
+  # Default backend (AWS Secrets Manager) — no `backend:` block needed.
+  aws-account:
+    account_id: "111111111111"
+    region: us-west-2
+    secret_prefix: /example/
+    imports:
+      - app-secrets
+
+  # Azure Key Vault target.
+  azure-vault:
+    imports:
+      - app-secrets
+    backend:
+      driver: azure
+      options:
+        vault_url: https://my-keyvault.vault.azure.net/
+
+  # GCP Secret Manager target, scoped to a project.
+  gcp-project:
+    imports:
+      - app-secrets
+    backend:
+      driver: gcp
+      path: my-gcp-project
+
+  # Kubernetes Secrets target in a namespace.
+  k8s-namespace:
+    imports:
+      - app-secrets
+    backend:
+      driver: kubernetes
+      path: team-platform
+      options:
+        secret_type: Opaque
+
+  # Generic HTTP/webhook store with bearer auth.
+  http-store:
+    imports:
+      - app-secrets
+    backend:
+      driver: http
+      path: secrets
+      options:
+        base_url: https://secrets.internal/api/v1
+        bearer_token: ${HTTP_STORE_TOKEN}
+
+pipeline:
+  dry_run: false
+  continue_on_error: false

@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jbcom/secrets-sync/pkg/audit"
 	"github.com/jbcom/secrets-sync/pkg/client/aws"
+	"github.com/jbcom/secrets-sync/pkg/condition"
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
+	"github.com/jbcom/secrets-sync/pkg/driver"
+	"github.com/jbcom/secrets-sync/pkg/observability"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -21,7 +25,9 @@ import (
 // Flow: MergeStore[bundle_path] → AWS[target_account]
 func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun bool) Result {
 	start := time.Now()
-	requestID := reqctx.GetRequestID(ctx)
+	ctx, span := observability.StartPhaseSpan(ctx, "sync", targetName)
+	defer span.End()
+	requestID := reqctx.SafeRequestID(ctx)
 	l := log.WithFields(log.Fields{
 		"action":     "syncTarget",
 		"target":     targetName,
@@ -37,6 +43,36 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 			Success:  false,
 			Error:    fmt.Errorf("target not found"),
 			Duration: time.Since(start),
+		}
+	}
+
+	// Enforce sync policy before doing any work. A deny for any import→target
+	// pair blocks the whole target sync with a clear, actionable error.
+	if denied := p.policyDenied(targetName, target); denied != nil {
+		l.WithError(denied).Warn("Sync blocked by policy")
+		return Result{
+			Target:   targetName,
+			Phase:    "sync",
+			Success:  false,
+			Error:    denied,
+			Duration: time.Since(start),
+		}
+	}
+
+	// Evaluate conditional-sync gates (env/tag/time-window). A target whose
+	// conditions are not met is skipped — a successful no-op, not a failure.
+	if target.Conditions != nil {
+		res := target.Conditions.Evaluate(condition.EvalContext{Now: time.Now(), Tags: target.Tags})
+		if !res.Allowed {
+			l.WithField("reason", res.Reason).Info("Sync skipped by conditional-sync gate")
+			return Result{
+				Target:    targetName,
+				Phase:     "sync",
+				Operation: "skipped",
+				Success:   true,
+				Duration:  time.Since(start),
+				Details:   ResultDetails{Message: fmt.Sprintf("skipped: %s", res.Reason)},
+			}
 		}
 	}
 
@@ -94,27 +130,34 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 		region = p.config.AWS.Region
 	}
 
-	// Initialize AWS client for target account
-	awsClient, err := p.getAWSClientForTarget(ctx, target)
+	// Resolve the target backend (AWS by default, else via the registry).
+	targetBackend, err := p.getTargetBackend(ctx, target)
 	if err != nil {
 		return Result{
 			Target:   targetName,
 			Phase:    "sync",
 			Success:  false,
-			Error:    fmt.Errorf("failed to get AWS client for target: %w", err),
+			Error:    fmt.Errorf("failed to get target backend: %w", err),
 			Duration: time.Since(start),
 		}
 	}
 
-	// Sync each secret to AWS
+	// If rollback is enabled, snapshot the target's current state before writing
+	// so a partial failure can be reverted.
+	snapshot, snapErr := p.snapshotForRollback(ctx, targetBackend)
+	if snapErr != nil {
+		l.WithError(snapErr).Warn("Rollback snapshot failed; proceeding without rollback protection")
+	}
+
+	// Sync each secret to the target backend.
 	var syncErrors []string
 	successCount := 0
 
 	for secretPath, data := range secretsData {
-		// Determine AWS secret name
-		awsSecretName := p.getAWSSecretName(targetName, secretPath)
+		// Determine the destination secret name.
+		destName := p.getAWSSecretName(targetName, secretPath)
 
-		// Convert data to JSON bytes for AWS
+		// Convert data to JSON bytes for the backend.
 		secretBytes, err := json.Marshal(data)
 		if err != nil {
 			l.WithError(err).WithField("secret", secretPath).Error("Failed to marshal secret data")
@@ -122,25 +165,35 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 			continue
 		}
 
-		// Create metadata for the write operation
+		// Create metadata for the write operation.
 		meta := metav1.ObjectMeta{
-			Name:      awsSecretName,
+			Name:      destName,
 			Namespace: targetName,
 		}
 
-		if _, err := awsClient.WriteSecret(ctx, meta, awsSecretName, secretBytes); err != nil {
+		if _, err := targetBackend.WriteSecret(ctx, meta, destName, secretBytes); err != nil {
 			l.WithError(err).WithFields(log.Fields{
-				"secret":    secretPath,
-				"awsSecret": awsSecretName,
-			}).Error("Failed to write secret to AWS")
+				"secret":     secretPath,
+				"destSecret": destName,
+				"driver":     targetBackend.Driver(),
+			}).Error("Failed to write secret to target backend")
+			p.audit(ctx, audit.Record{
+				Operation: audit.OpWrite, Driver: string(targetBackend.Driver()),
+				Target: targetName, Secret: destName, Success: false, Error: err.Error(),
+			})
 			syncErrors = append(syncErrors, secretPath)
 			continue
 		}
 
 		l.WithFields(log.Fields{
-			"secret":    secretPath,
-			"awsSecret": awsSecretName,
-		}).Debug("Secret synced to AWS")
+			"secret":     secretPath,
+			"destSecret": destName,
+			"driver":     targetBackend.Driver(),
+		}).Debug("Secret synced to target backend")
+		p.audit(ctx, audit.Record{
+			Operation: audit.OpWrite, Driver: string(targetBackend.Driver()),
+			Target: targetName, Secret: destName, Success: true,
+		})
 		successCount++
 	}
 
@@ -148,6 +201,11 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 	var lastErr error
 	if !success {
 		lastErr = fmt.Errorf("failed to sync %d secrets: %v", len(syncErrors), syncErrors)
+		// Attempt rollback to the pre-sync snapshot. Restore failures are
+		// appended to the error so the operator sees both.
+		if rbErr := p.rollback(ctx, targetBackend, targetName, snapshot); rbErr != nil {
+			lastErr = fmt.Errorf("%w; rollback also failed: %v", lastErr, rbErr)
+		}
 	}
 
 	l.WithFields(log.Fields{
@@ -217,7 +275,7 @@ func (p *Pipeline) readBundleSecrets(ctx context.Context, targetName, bundlePath
 			}
 			secretsData[relPath] = data
 		}
-	} else if p.s3Store != nil {
+	} else if bs := p.bundleStore(); bs != nil {
 		target, ok := p.config.Targets[targetName]
 		if !ok {
 			return nil, fmt.Errorf("target not found: %s", targetName)
@@ -230,9 +288,9 @@ func (p *Pipeline) readBundleSecrets(ctx context.Context, targetName, bundlePath
 		}
 		bundleID := BundleID(sourcePaths)
 
-		data, err := p.s3Store.ReadMergedBundle(ctx, targetName, bundleID)
+		data, err := bs.ReadMergedBundle(ctx, targetName, bundleID)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read bundle from S3: %w", err)
+			return nil, fmt.Errorf("failed to read bundle from bundle store: %w", err)
 		}
 		secretsData = data
 	}
@@ -257,6 +315,55 @@ func (p *Pipeline) getAWSClientForTarget(ctx context.Context, target Target) (*a
 	}
 
 	return client, nil
+}
+
+// policyDenied evaluates the sync policy for every import→target pair and
+// returns a descriptive error if any is denied, or nil when all are allowed.
+// When no policy is configured the engine defaults to allow, so this is a
+// no-op for users who haven't opted in.
+func (p *Pipeline) policyDenied(targetName string, target Target) error {
+	if p.policy == nil {
+		return nil
+	}
+	imports := target.Imports
+	if len(imports) == 0 {
+		// A target with no explicit imports is still subject to a wildcard rule
+		// matched against an empty source name.
+		if d := p.policy.Evaluate("", targetName); !d.Allowed {
+			return fmt.Errorf("sync to target %q denied by policy rule %q", targetName, d.Rule)
+		}
+		return nil
+	}
+	for _, source := range imports {
+		if d := p.policy.Evaluate(source, targetName); !d.Allowed {
+			return fmt.Errorf("sync of source %q to target %q denied by policy rule %q", source, targetName, d.Rule)
+		}
+	}
+	return nil
+}
+
+// getTargetBackend resolves the sync destination for a target. When no explicit
+// backend is configured (or it names "aws"), it returns the AWS client built by
+// getAWSClientForTarget, preserving cross-account role assumption. Otherwise it
+// constructs the backend through the registry from the target's backend config.
+func (p *Pipeline) getTargetBackend(ctx context.Context, target Target) (driver.TargetBackend, error) {
+	if target.Backend == nil || target.Backend.Driver == "" || target.Backend.Driver == string(driver.DriverNameAws) {
+		return p.getAWSClientForTarget(ctx, target)
+	}
+
+	spec := driver.BackendSpec{
+		Driver:  driver.DriverName(target.Backend.Driver),
+		Path:    target.Backend.Path,
+		Options: target.Backend.Options,
+	}
+	backend, err := p.backends.NewTarget(spec)
+	if err != nil {
+		return nil, err
+	}
+	if err := backend.Init(ctx); err != nil {
+		return nil, fmt.Errorf("init %s target backend: %w", spec.Driver, err)
+	}
+	return backend, nil
 }
 
 // getRoleARNForTarget returns the role ARN for assuming into the target account

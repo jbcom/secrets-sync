@@ -176,7 +176,21 @@ func ExecuteTyped[T any](cb *CircuitBreaker, ctx context.Context, fn func(contex
 		var zero T
 		return zero, err
 	}
-	return result.(T), nil
+	// A function that legitimately returns a nil pointer/interface produces
+	// result == any(nil). A bare result.(T) would PANIC when T is an interface
+	// type; a comma-ok assertion would wrongly report failure for that valid
+	// nil. Handle nil explicitly by returning the zero value of T (which is the
+	// correct nil), and only error on a genuine type mismatch.
+	if result == nil {
+		var zero T
+		return zero, nil
+	}
+	v, ok := result.(T)
+	if !ok {
+		var zero T
+		return zero, fmt.Errorf("circuitbreaker: unexpected result type %T", result)
+	}
+	return v, nil
 }
 
 // WrapError wraps an error with circuit breaker information

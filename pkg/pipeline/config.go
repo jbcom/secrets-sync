@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/jbcom/secrets-sync/pkg/driver"
+	"github.com/jbcom/secrets-sync/pkg/policy"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -195,12 +197,30 @@ func (c *Config) Validate() error {
 		if target.AccountID != "" && !isValidAWSAccountID(target.AccountID) {
 			return fmt.Errorf("target %q: invalid account_id format %q (must be 12 digits)", name, target.AccountID)
 		}
+		// Validate an explicit backend selector names a supported driver.
+		if target.Backend != nil && target.Backend.Driver != "" {
+			if !driver.DriverIsSupported(driver.DriverName(target.Backend.Driver)) {
+				return fmt.Errorf("target %q: unsupported backend driver %q", name, target.Backend.Driver)
+			}
+		}
+		// Validate conditional-sync rules (time formats, timezones).
+		if target.Conditions != nil {
+			if err := target.Conditions.Validate(); err != nil {
+				return fmt.Errorf("target %q: %w", name, err)
+			}
+		}
 		// Note: imports are NOT validated here - they can be resolved dynamically
 		// via fuzzy matching against AWS Organizations or Vault mounts
 	}
 
 	// Validate inheritance if targets reference each other
 	if err := c.ValidateTargetInheritance(); err != nil {
+		return err
+	}
+
+	// Compile sync policies so invalid regexes/actions fail at validate time
+	// rather than mid-sync.
+	if _, err := policy.Compile(c.Policy); err != nil {
 		return err
 	}
 

@@ -79,3 +79,15 @@ func TestGetElapsedTime(t *testing.T) {
 		t.Errorf("GetElapsedTime returned %v for context without request context", elapsed)
 	}
 }
+
+func TestSafeRequestIDStripsControlChars(t *testing.T) {
+	ctx := WithRequestContext(context.Background(), &RequestContext{RequestID: "abc\r\ninjected\x00x"})
+	if got := SafeRequestID(ctx); got != "abcinjectedx" {
+		t.Fatalf("control chars not stripped: %q", got)
+	}
+	// A normal UUID-like ID passes through unchanged.
+	ctx = WithRequestContext(context.Background(), &RequestContext{RequestID: "550e8400-e29b-41d4-a716-446655440000"})
+	if got := SafeRequestID(ctx); got != "550e8400-e29b-41d4-a716-446655440000" {
+		t.Fatalf("clean id altered: %q", got)
+	}
+}

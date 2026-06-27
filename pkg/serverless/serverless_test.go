@@ -1,7 +1,8 @@
-package main
+package serverless
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 )
 
 func TestRuntimeAuthMapsProviderSession(t *testing.T) {
-	auth := runtimeAuth(providerSession{
+	auth := runtimeAuth(ProviderSession{
 		VaultAddress:       "https://vault.example.test",
 		VaultNamespace:     "platform",
 		VaultToken:         "vault-token",
@@ -32,7 +33,7 @@ func TestRuntimeAuthMapsProviderSession(t *testing.T) {
 		t.Fatalf("AWS runtime auth not mapped: %#v", auth.AWS)
 	}
 
-	delegated := runtimeAuth(providerSession{
+	delegated := runtimeAuth(ProviderSession{
 		DelegateAuth:       true,
 		VaultToken:         "ignored-vault-token",
 		AWSAccessKeyID:     "ignored-access-key",
@@ -47,7 +48,7 @@ func TestRuntimeAuthMapsProviderSession(t *testing.T) {
 }
 
 func TestPipelineOptionsDefaultsToFullPipeline(t *testing.T) {
-	opts, err := pipelineOptions(requestOptions{
+	opts, err := pipelineOptions(RequestOptions{
 		DryRun:       true,
 		Targets:      "prod,staging",
 		OutputFormat: "json",
@@ -71,13 +72,13 @@ func TestPipelineOptionsDefaultsToFullPipeline(t *testing.T) {
 }
 
 func TestPipelineOptionsRejectsUnknownOperation(t *testing.T) {
-	if _, err := pipelineOptions(requestOptions{Operation: "merg"}); err == nil {
+	if _, err := pipelineOptions(RequestOptions{Operation: "merg"}); err == nil {
 		t.Fatal("pipelineOptions should reject unknown operations")
 	}
 }
 
 func TestResolveConfigWritesInlineYAMLToTempFile(t *testing.T) {
-	path, cleanup, err := resolveConfig(context.Background(), request{
+	path, cleanup, err := resolveConfig(context.Background(), Request{
 		ConfigYAML: "targets:\n  prod:\n    imports: []\n",
 	})
 	if cleanup != nil {
@@ -92,5 +93,24 @@ func TestResolveConfigWritesInlineYAMLToTempFile(t *testing.T) {
 	}
 	if string(data) != "targets:\n  prod:\n    imports: []\n" {
 		t.Fatalf("temp config contents = %q", data)
+	}
+}
+
+func TestHandleMissingConfigReportsError(t *testing.T) {
+	// No config source → a clean error in the Response, not a panic.
+	resp := Handle(context.Background(), Request{})
+	if resp.Success || resp.ErrorMessage == "" {
+		t.Fatalf("expected failure response, got %+v", resp)
+	}
+}
+
+func TestMarshalResponse(t *testing.T) {
+	out := MarshalResponse(Response{Success: true, TargetCount: 2})
+	var got Response
+	if err := json.Unmarshal([]byte(out), &got); err != nil {
+		t.Fatalf("response should be valid JSON: %v", err)
+	}
+	if !got.Success || got.TargetCount != 2 {
+		t.Fatalf("round-trip mismatch: %+v", got)
 	}
 }

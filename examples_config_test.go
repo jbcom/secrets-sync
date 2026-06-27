@@ -44,7 +44,7 @@ func TestPublicDocsAndExamplesDoNotAdvertiseRemovedAPISurfaces(t *testing.T) {
 		"Sync Operator",
 		"memory queue",
 		"microservices mode",
-		"Vault | GCP Secret Manager | ✅ Supported",
+		// GitHub Secrets is still not a supported store.
 		"Vault | GitHub Secrets | ✅ Supported",
 	}
 

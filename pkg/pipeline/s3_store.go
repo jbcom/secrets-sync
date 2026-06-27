@@ -4,17 +4,30 @@ package pipeline
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	awscredentials "github.com/aws/aws-sdk-go-v2/credentials"
+	"github.com/aws/aws-sdk-go-v2/service/kms"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/jbcom/secrets-sync/pkg/crypto"
+	"github.com/jbcom/secrets-sync/pkg/driver"
 	log "github.com/sirupsen/logrus"
+)
+
+// Compile-time assertions that S3MergeStore satisfies the formal merge-store
+// contracts: the per-secret MergeStore view and the bundle-level BundleStore
+// view the merge/sync orchestration depends on.
+var (
+	_ driver.MergeStore  = (*S3MergeStore)(nil)
+	_ driver.BundleStore = (*S3MergeStore)(nil)
 )
 
 // SecretVersion represents a versioned secret with metadata
@@ -46,6 +59,11 @@ type S3MergeStore struct {
 	// Version management
 	VersioningEnabled bool
 	RetainVersions    int
+
+	// Cipher, when set, performs client-side envelope encryption of bundle
+	// bodies before upload (zero-knowledge mode) — S3 never sees plaintext.
+	// This is independent of the server-side KMSKeyID (SSE-KMS) field.
+	Cipher crypto.Cipher
 
 	client *s3.Client
 }
@@ -114,7 +132,45 @@ func NewS3MergeStoreWithRuntimeAuth(ctx context.Context, cfg *MergeStoreS3, regi
 		}).Debug("Versioning configured")
 	}
 
+	// Configure client-side encryption if enabled.
+	if cfg.Encryption != nil && cfg.Encryption.Enabled {
+		cipher, err := buildBundleCipher(awsCfg, cfg.Encryption)
+		if err != nil {
+			return nil, err
+		}
+		store.Cipher = cipher
+		l.Debug("Client-side bundle encryption enabled")
+	}
+
 	return store, nil
+}
+
+// buildBundleCipher constructs the client-side cipher from encryption config:
+// KMS envelope encryption when kms_key_id is set, else a static AES-256 key
+// read base64-encoded from the named environment variable.
+func buildBundleCipher(awsCfg aws.Config, cfg *EncryptionConfig) (crypto.Cipher, error) {
+	switch {
+	case cfg.KMSKeyID != "":
+		return crypto.NewKMSCipher(kms.NewFromConfig(awsCfg), cfg.KMSKeyID)
+	case cfg.PostQuantumSeedEnv != "":
+		seed := os.Getenv(cfg.PostQuantumSeedEnv)
+		if seed == "" {
+			return nil, fmt.Errorf("encryption.post_quantum_seed_env %q is empty", cfg.PostQuantumSeedEnv)
+		}
+		return crypto.NewPQCipherFromSeed(seed)
+	case cfg.KeyEnv != "":
+		raw := os.Getenv(cfg.KeyEnv)
+		if raw == "" {
+			return nil, fmt.Errorf("encryption.key_env %q is empty", cfg.KeyEnv)
+		}
+		key, err := base64.StdEncoding.DecodeString(raw)
+		if err != nil {
+			return nil, fmt.Errorf("encryption key from %s is not valid base64: %w", cfg.KeyEnv, err)
+		}
+		return crypto.NewStaticKeyCipher(key)
+	default:
+		return nil, fmt.Errorf("encryption enabled but no key source (kms_key_id, post_quantum_seed_env, or key_env) is set")
+	}
 }
 
 // keyPath returns the full S3 key for a given target and secret name
@@ -313,11 +369,22 @@ func (s *S3MergeStore) WriteMergedBundle(ctx context.Context, targetName, bundle
 		return fmt.Errorf("failed to marshal bundle: %w", err)
 	}
 
+	// Client-side envelope encryption: encrypt before the bytes leave the
+	// process so S3 only ever stores ciphertext.
+	contentType := "application/json"
+	if s.Cipher != nil {
+		jsonData, err = s.Cipher.Encrypt(ctx, jsonData)
+		if err != nil {
+			return fmt.Errorf("failed to encrypt bundle: %w", err)
+		}
+		contentType = "application/octet-stream"
+	}
+
 	input := &s3.PutObjectInput{
 		Bucket:      aws.String(s.Bucket),
 		Key:         aws.String(key),
 		Body:        bytes.NewReader(jsonData),
-		ContentType: aws.String("application/json"),
+		ContentType: aws.String(contentType),
 	}
 
 	// Use KMS encryption if configured
@@ -362,6 +429,14 @@ func (s *S3MergeStore) ReadMergedBundle(ctx context.Context, targetName, bundleI
 	body, err := io.ReadAll(output.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read body: %w", err)
+	}
+
+	// Reverse client-side encryption before unmarshaling.
+	if s.Cipher != nil {
+		body, err = s.Cipher.Decrypt(ctx, body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decrypt bundle: %w", err)
+		}
 	}
 
 	// The bundle is stored as map[string]interface{} but we need map[string]map[string]interface{}

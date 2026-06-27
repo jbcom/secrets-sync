@@ -39,8 +39,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jbcom/secrets-sync/pkg/audit"
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	"github.com/jbcom/secrets-sync/pkg/diff"
+	"github.com/jbcom/secrets-sync/pkg/driver"
+	"github.com/jbcom/secrets-sync/pkg/observability"
+	"github.com/jbcom/secrets-sync/pkg/policy"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -66,7 +70,12 @@ type Pipeline struct {
 
 	awsCtx      *AWSExecutionContext
 	s3Store     *S3MergeStore
+	replicated  *ReplicatingBundleStore
 	runtimeAuth *RuntimeAuth
+	backends    *driver.Registry
+	tracing     *observability.TracerProvider
+	policy      *policy.Engine
+	auditor     *audit.Logger
 
 	results   []Result
 	resultsMu sync.Mutex
@@ -120,6 +129,7 @@ type ResultDetails struct {
 	DestinationPath  string   `json:"destination_path,omitempty"`
 	RoleARN          string   `json:"role_arn,omitempty"`
 	FailedImports    []string `json:"failed_imports,omitempty"`
+	Message          string   `json:"message,omitempty"`
 }
 
 // New creates a new Pipeline from configuration
@@ -133,9 +143,16 @@ func New(cfg *Config) (*Pipeline, error) {
 		return nil, fmt.Errorf("failed to build dependency graph: %w", err)
 	}
 
+	policyEngine, err := policy.Compile(cfg.Policy)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sync policy: %w", err)
+	}
+
 	return &Pipeline{
-		config: cfg,
-		graph:  graph,
+		config:   cfg,
+		graph:    graph,
+		backends: newBackendRegistry(),
+		policy:   policyEngine,
 	}, nil
 }
 
@@ -180,10 +197,53 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 			log.WithError(err).Warn("Failed to initialize S3 merge store")
 		} else {
 			p.s3Store = s3Store
+			// Build cross-region replicas if configured.
+			if replicated := p.buildReplicatedStore(ctx, runtimeCfg.MergeStore.S3, s3Store); replicated != nil {
+				p.replicated = replicated
+			}
 		}
 	}
 
+	// Initialize distributed tracing if configured. A disabled config installs
+	// a no-op provider, so the rest of the pipeline traces unconditionally.
+	tp, err := observability.InitTracing(ctx, runtimeCfg.Observability.Tracing)
+	if err != nil {
+		log.WithError(err).Warn("Failed to initialize tracing")
+	} else {
+		p.tracing = tp
+	}
+
+	// Initialize audit logging if a destination is configured.
+	auditor, err := p.buildAuditor(ctx, runtimeCfg.Audit)
+	if err != nil {
+		log.WithError(err).Warn("Failed to initialize audit logging")
+	} else {
+		p.auditor = auditor
+	}
+
 	return p, nil
+}
+
+// Shutdown flushes and releases pipeline-owned resources (currently the tracer
+// provider). It is safe to call even when tracing was never configured.
+func (p *Pipeline) Shutdown(ctx context.Context) error {
+	if p == nil {
+		return nil
+	}
+	var firstErr error
+	// Flush and close the audit sink first so buffered entries (e.g. a
+	// bufio-backed FileSink) are not lost on shutdown.
+	if p.auditor != nil {
+		if err := p.auditor.Close(); err != nil {
+			firstErr = err
+		}
+	}
+	if p.tracing != nil {
+		if err := p.tracing.Shutdown(ctx); err != nil && firstErr == nil {
+			firstErr = err
+		}
+	}
+	return firstErr
 }
 
 func cloneConfig(cfg *Config) (*Config, error) {
@@ -231,7 +291,7 @@ func (p *Pipeline) Run(ctx context.Context, opts Options) ([]Result, error) {
 
 	l := log.WithFields(log.Fields{
 		"action":     "Pipeline.Run",
-		"request_id": reqCtx.RequestID,
+		"request_id": reqctx.SafeRequestID(ctx),
 		"operation":  opts.Operation,
 		"dry_run":    opts.DryRun,
 	})

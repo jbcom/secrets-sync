@@ -3,91 +3,80 @@ package pipeline
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 
+	"github.com/jbcom/secrets-sync/pkg/driver"
+	"github.com/jbcom/secrets-sync/pkg/observability"
 	log "github.com/sirupsen/logrus"
 )
 
-// fetchVaultSecrets fetches all secrets from a Vault path
-func (p *Pipeline) fetchVaultSecrets(ctx context.Context, path string) (map[string]interface{}, error) {
-	l := log.WithFields(log.Fields{
-		"action":     "fetchVaultSecrets",
-		"path_depth": len(strings.Split(path, "/")),
-	})
+// fetchSourceSecrets reads every secret beneath path from any registered source
+// backend, returning a name→value map. It is the driver-generic fetch path that
+// new providers route through; the Vault- and AWS-specific helpers below remain
+// for the paths that still need provider-specific construction/auth.
+func (p *Pipeline) fetchSourceSecrets(ctx context.Context, src driver.SourceBackend, path string) (map[string]interface{}, error) {
+	ctx, span := observability.StartBackendSpan(ctx, string(src.Driver()), "fetch")
+	defer span.End()
 
-	vaultClient := p.vaultClient(path)
-
-	if err := vaultClient.Init(ctx); err != nil {
-		l.WithError(err).Debug("Failed to initialize Vault client")
+	if err := src.Init(ctx); err != nil {
 		return nil, err
 	}
-	defer vaultClient.Close()
+	defer src.Close()
 
-	secretsList, err := vaultClient.ListSecrets(ctx, path)
+	names, err := src.ListSecrets(ctx, path)
 	if err != nil {
-		l.WithError(err).Debug("Failed to list secrets")
 		return map[string]interface{}{}, nil
 	}
 
-	secrets := make(map[string]interface{})
-	for _, secretName := range secretsList {
-		secretPath := fmt.Sprintf("%s/%s", path, secretName)
-		secretData, err := vaultClient.GetSecret(ctx, secretPath)
-		if err != nil {
-			l.WithError(err).WithField("secret_path_depth", len(strings.Split(secretPath, "/"))).Debug("Failed to get secret")
-			continue
-		}
-
-		var data interface{}
-		if err := json.Unmarshal(secretData, &data); err != nil {
-			l.WithError(err).WithField("secret_path_depth", len(strings.Split(secretPath, "/"))).Debug("Failed to parse secret")
-			continue
-		}
-		secrets[secretName] = data
+	// A trailing-slash boundary is required so that a scope of "kv/app" does not
+	// match a sibling secret under "kv/application" (which would mangle the key).
+	var prefix string
+	if path != "" {
+		prefix = strings.TrimRight(path, "/") + "/"
 	}
 
+	secrets := make(map[string]interface{}, len(names))
+	for _, name := range names {
+		// Backends like Vault return fully-qualified names already carrying the
+		// scope prefix; flat backends like AWS return bare names. Read with the
+		// fully-qualified path, key by the scope-relative name.
+		secretPath := name
+		hasPrefix := prefix != "" && strings.HasPrefix(name, prefix)
+		if prefix != "" && !hasPrefix {
+			secretPath = prefix + name
+		}
+		raw, err := src.GetSecret(ctx, secretPath)
+		if err != nil {
+			log.WithError(err).Debug("Failed to get secret from source backend")
+			continue
+		}
+		var data interface{}
+		if err := json.Unmarshal(raw, &data); err != nil {
+			log.WithError(err).Debug("Failed to parse secret from source backend")
+			continue
+		}
+		key := name
+		if hasPrefix {
+			key = strings.TrimPrefix(name, prefix)
+		}
+		secrets[key] = data
+	}
 	return secrets, nil
 }
 
-// fetchAWSSecrets fetches all secrets from AWS Secrets Manager
+// fetchVaultSecrets fetches all secrets from a Vault path. The Vault client is
+// constructed with full runtime auth via vaultClient(); reading is delegated to
+// the driver-generic fetchSourceSecrets so every source backend shares one code
+// path.
+func (p *Pipeline) fetchVaultSecrets(ctx context.Context, path string) (map[string]interface{}, error) {
+	return p.fetchSourceSecrets(ctx, p.vaultClient(path), path)
+}
+
+// fetchAWSSecrets fetches all secrets from AWS Secrets Manager. The AWS client
+// is constructed with full cross-account role/region/runtime auth via
+// awsClient(); reading is delegated to the driver-generic fetchSourceSecrets.
 func (p *Pipeline) fetchAWSSecrets(ctx context.Context, roleARN, region string) (map[string]interface{}, error) {
-	l := log.WithFields(log.Fields{
-		"action":       "fetchAWSSecrets",
-		"has_role_arn": roleARN != "",
-		"has_region":   region != "",
-	})
-
-	awsClient := p.awsClient(roleARN, region, "fetch-current-state")
-
-	if err := awsClient.Init(ctx); err != nil {
-		l.WithError(err).Debug("Failed to initialize AWS client")
-		return nil, err
-	}
-
-	secretsList, err := awsClient.ListSecrets(ctx, "")
-	if err != nil {
-		l.WithError(err).Debug("Failed to list AWS secrets")
-		return map[string]interface{}{}, nil
-	}
-
-	secrets := make(map[string]interface{})
-	for _, secretName := range secretsList {
-		secretData, err := awsClient.GetSecret(ctx, secretName)
-		if err != nil {
-			l.WithError(err).WithField("secretName", secretName).Debug("Failed to get secret")
-			continue
-		}
-
-		var data interface{}
-		if err := json.Unmarshal(secretData, &data); err != nil {
-			l.WithError(err).WithField("secretName", secretName).Debug("Failed to parse secret")
-			continue
-		}
-		secrets[secretName] = data
-	}
-
-	return secrets, nil
+	return p.fetchSourceSecrets(ctx, p.awsClient(roleARN, region, "fetch-current-state"), "")
 }
 
 // fetchS3MergeSecrets fetches all secrets from S3 merge store for a target
