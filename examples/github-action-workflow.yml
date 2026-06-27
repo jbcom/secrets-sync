@@ -4,7 +4,7 @@ name: Sync Secrets with SecretSync
 # as a GitHub Action for automated secrets synchronization.
 #
 # Pin third-party actions to exact commits and pin SecretSync to a released
-# component tag for reproducible runs.
+# semver tag for reproducible runs.
 
 on:
   # Scheduled sync every 6 hours
@@ -67,7 +67,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Validate Configuration (Dry Run)
-        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+        uses: jbcom/secrets-sync@vX.Y.Z
         with:
           config: config.yaml
           dry-run: 'true'
@@ -107,7 +107,7 @@ jobs:
           role-session-name: GitHubActions-SecretSync-${{ github.run_id }}
       
       - name: Run SecretSync
-        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+        uses: jbcom/secrets-sync@vX.Y.Z
         with:
           config: ${{ steps.config.outputs.config }}
           targets: ${{ github.event.inputs.targets || '' }}

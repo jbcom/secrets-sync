@@ -361,7 +361,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Run Pipeline
-        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+        uses: jbcom/secrets-sync@vX.Y.Z
         with:
           config: config.yaml
           targets: ${{ inputs.targets || '' }}

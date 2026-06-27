@@ -8,8 +8,7 @@ GitHub releases during the normal release path.
 
 - `release.yml` owns release-please version detection, changelog updates,
   release PRs, and Git tags.
-- The root package name is `secrets-sync`, so Go component release tags use the
-  `secrets-sync-vX.Y.Z` shape.
+- Release-please uses plain semver tags in the `vX.Y.Z` shape.
 - `cd.yml` runs only after release-please reports a Go release.
 - GoReleaser builds CLI binary archives, Kubernetes controller archives, Lambda
   archives, and checksums.
@@ -72,8 +71,7 @@ Current workflow action pins:
 2. Let the release workflow open or update the release-please PR.
 3. Review the release PR for correct changelog and manifest updates.
 4. Merge the release PR.
-5. Confirm the release workflow created the expected `secrets-sync-vX.Y.Z`
-   GitHub release.
+5. Confirm the release workflow created the expected `vX.Y.Z` GitHub release.
 6. Confirm GoReleaser uploaded CLI archives, controller archives, Lambda archives, and
    `checksums.txt`.
 7. Confirm GHCR shows `ghcr.io/jbcom/secrets-sync` tags for the component
@@ -82,7 +80,7 @@ Current workflow action pins:
 9. Verify the action can be referenced with:
 
 ```yaml
-- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+- uses: jbcom/secrets-sync@vX.Y.Z
   with:
     config: config.yaml
 ```
@@ -99,14 +97,14 @@ Checklist:
 - `action.yml` exists at repository root.
 - `action.yml` metadata, inputs, branding, and Docker image reference are valid.
 - `README.md`, `docs/GITHUB_ACTIONS.md`, and
-  `docs/ACTION_QUICK_REFERENCE.md` show the component tag shape.
+  `docs/ACTION_QUICK_REFERENCE.md` show the plain semver tag shape.
 - Security, privacy, support, contributing, and license documents are present.
 - A real release exists for the tag being published.
 
 ## Post-Release Verification
 
 ```bash
-gh release view secrets-sync-vX.Y.Z --repo jbcom/secrets-sync
+gh release view vX.Y.Z --repo jbcom/secrets-sync
 gh workflow run ci.yml --repo jbcom/secrets-sync
 ```
 

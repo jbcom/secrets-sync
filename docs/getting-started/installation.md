@@ -44,7 +44,7 @@ Use the packaged action from this standalone repository and pin to a release
 tag. Replace `X.Y.Z` with a published release version:
 
 ```yaml
-- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+- uses: jbcom/secrets-sync@vX.Y.Z
   with:
     config: config.yaml
 ```

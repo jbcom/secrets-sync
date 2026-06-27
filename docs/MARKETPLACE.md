@@ -38,10 +38,10 @@ currently supported store matrix.
 ## Release Tags
 
 Release-please manages releases for the root package named `secrets-sync`.
-Marketplace examples should therefore use component release tags:
+Marketplace examples should therefore use plain semver release tags:
 
 ```yaml
-- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+- uses: jbcom/secrets-sync@vX.Y.Z
 ```
 
 Do not document old monorepo package tags using the `secrets-sync-v...` shape.
@@ -67,7 +67,7 @@ documented if the repository intentionally creates and maintains those aliases.
 1. Merge normal changes to `main` using Conventional Commit prefixes.
 2. Let release-please open or update the release PR.
 3. Merge the release PR after review.
-4. Confirm the release workflow created a `secrets-sync-vX.Y.Z` GitHub release.
+4. Confirm the release workflow created a `vX.Y.Z` GitHub release.
 5. Confirm GoReleaser uploaded binary assets and `checksums.txt`.
 6. In the GitHub release UI, publish that release to Marketplace.
 7. Verify the Marketplace page renders the README and action metadata correctly.
@@ -99,7 +99,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Sync Secrets
-        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+        uses: jbcom/secrets-sync@vX.Y.Z
         with:
           config: config.yaml
           output-format: github
@@ -134,14 +134,14 @@ Use concise copy that matches the implementation:
 After publication:
 
 ```bash
-gh release view secrets-sync-vX.Y.Z --repo jbcom/secrets-sync
+gh release view vX.Y.Z --repo jbcom/secrets-sync
 gh workflow run ci.yml --repo jbcom/secrets-sync
 ```
 
 Also check:
 
 - Marketplace page links to the standalone repository.
-- The README usage example references `secrets-sync-vX.Y.Z`.
+- The README usage example references `vX.Y.Z`.
 - Inputs shown by Marketplace match `action.yml`.
 - No docs mention old `secrets-sync-v...` monorepo package tags.
 
@@ -149,7 +149,7 @@ Also check:
 
 ### Can users pin `@main`?
 
-They can, but documentation should recommend a component release tag because
+They can, but documentation should recommend a stable semver release tag because
 `main` is mutable.
 
 ### Should we publish a `v1` alias?
