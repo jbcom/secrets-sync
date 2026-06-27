@@ -236,7 +236,11 @@ func (p *Pipeline) readSourcesConcurrently(ctx context.Context, sourceClient *va
 			defer func() { <-sem }()
 
 			l := log.WithFields(log.Fields{"source": sourcePath, "priority": i})
-			secrets, err := sourceClient.ListSecrets(ctx, sourcePath)
+			// Use the no-reauth ListSecretsOnce: the shared sourceClient was
+			// already authenticated by Init() before these goroutines launched,
+			// so calling ListSecrets here would trigger N concurrent re-logins
+			// against Vault for no benefit.
+			secrets, err := sourceClient.ListSecretsOnce(ctx, sourcePath)
 			if err != nil {
 				l.WithError(err).Warn("Failed to list secrets from source")
 				failures[i] = sourcePath
