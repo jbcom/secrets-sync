@@ -6,7 +6,7 @@ requirements.
 
 ## Current Status
 
-SecretSync v2.3.1 is the current release. The shipped surface includes:
+The shipped surface includes:
 
 - Go CLI with `pipeline`, `validate`, `graph`, `context`, `migrate`, and
   `version` subcommands
@@ -14,15 +14,29 @@ SecretSync v2.3.1 is the current release. The shipped surface includes:
 - GitHub Action (`action.yml`) with `--output github` diff reporting
 - GHCR distroless image (`ghcr.io/jbcom/secrets-sync`)
 - Helm chart (CronJob runner + optional controller)
-- Kubernetes `CredentialSynchronization` CRD + controller
-- AWS Lambda entrypoint (inline, S3-hosted, or packaged config)
+- Kubernetes `CredentialSynchronization` CRD + controller, with per-target
+  timezone and stagger-window scheduling
+- AWS Lambda and Azure Functions serverless entrypoints (inline, S3-hosted, or
+  packaged config) over a shared serverless core
 - `secrets_sync` gopy binding published as `secrets-sync-python-binding`
-- Vault KV2 source + merge store
-- AWS Secrets Manager source + sync target
-- S3 merge store with secret versioning
+- A driver-generic backend abstraction (formal source/target/merge-store
+  interfaces + registry) underpinning all providers
+- Sources and sync targets: Vault KV2, AWS Secrets Manager, Azure Key Vault,
+  GCP Secret Manager, Kubernetes Secrets, and a generic HTTP/webhook store
+- S3 and Vault merge stores with secret versioning and cross-region replication
 - AWS Organizations + Identity Center dynamic target discovery
-- Prometheus metrics (`/metrics` + `/health`)
-- Two-phase merge → sync pipeline with inheritance, diff, and dry-run
+- Prometheus metrics (`/metrics`), dependency-probe health/readiness endpoints,
+  user-defined custom metrics, and a shipped Grafana dashboard + alerting rules
+- OpenTelemetry distributed tracing (OTLP/Zipkin/stdout exporters)
+- Governance: declarative allow/deny sync policies, tamper-evident hash-chained
+  audit logging (file/S3/CloudWatch), client-side merge-store encryption
+  (KMS / static key / post-quantum ML-KEM-768), and automatic rollback on
+  sync failure
+- Workflow controls: conditional sync (env/tag/time-window gating) and
+  multi-replica coordination (S3 lease lock leader election + work partitioning)
+- A pluggable cache layer (in-memory TTL; Redis/Memcached-ready interface)
+- Two-phase merge → sync pipeline with inheritance, diff, dry-run, and
+  configurable concurrency and AWS retry/backoff
 
 ### Repository scope boundary
 
@@ -39,122 +53,48 @@ for this repository:
 - Plugin architecture (runtime plugins belong in `agentic-fabric`; provider
   plugins belong in `vendor-fabric`)
 
-## Upcoming Releases
+## Recently shipped
 
-### v2.4.0 - Additional Secret Stores
+The major roadmap themes below have all landed and are reflected in **Current
+Status** above. Release numbers are assigned by release automation, not encoded
+here.
 
-**Theme**: Expand the provider matrix beyond Vault and AWS.
+### Additional secret stores
+Azure Key Vault, GCP Secret Manager, Kubernetes Secrets, and a generic
+HTTP/webhook store all work as sources and sync targets, alongside the original
+Vault and AWS Secrets Manager backends — routed through a common backend
+abstraction (formal interfaces + registry) so the pipeline orchestration is
+provider-agnostic.
 
-#### Azure Key Vault
-- Full read/write support as both source and sync target
-- Azure AD authentication (service principal, managed identity, workload
-  identity federation)
-- Cross-tenant sync via Azure RBAC role assignments
+### Observability & tracing
+OpenTelemetry distributed tracing (OTLP/Zipkin/stdout exporters, configurable
+sampling, target/source/operation/phase span attributes); user-defined custom
+metrics; dependency-probe health/readiness endpoints; a shipped Grafana
+dashboard and Prometheus alerting rules; discovery caching, configurable AWS
+retry/backoff, and concurrent source reads.
 
-#### Google Cloud Secret Manager
-- Full read/write support as both source and sync target
-- Service account and workload identity authentication
-- Project-level secret isolation
+### Enterprise governance
+Declarative allow/deny sync policies validated at `validate` time and enforced
+pre-sync; tamper-evident hash-chained audit logging to file, S3, or CloudWatch;
+client-side merge-store encryption (KMS, user-supplied key, or post-quantum
+ML-KEM-768) in zero-knowledge mode; and automatic rollback on sync failure.
 
-#### Kubernetes Secrets
-- Direct sync to Kubernetes clusters as a target backend
-- Namespace-scoped writes with RBAC
-- Support for `Dockerconfigjson`, `TLS`, and Opaque secret types
+### Advanced workflows
+Conditional sync gating (environment, tag, time window); per-target controller
+scheduling with stagger windows and timezone awareness; and multi-replica
+coordination via an S3 lease-lock leader election with work partitioning.
 
-#### Generic HTTP Store
-- Webhook-based integration for custom secret stores
-- Configurable auth (bearer token, mTLS, custom headers)
-- Retry and circuit-breaker integration
+### Scale & distribution
+Cross-region merge-store replication; a pluggable cache layer (in-memory TTL,
+Redis/Memcached-ready); and an Azure Functions serverless entrypoint sharing a
+common serverless core with AWS Lambda.
 
-### v2.5.0 - Observability & Tracing
+## Forward look
 
-**Theme**: Production-grade observability for complex pipelines.
-
-#### OpenTelemetry Distributed Tracing
-- Trace correlation across Vault, AWS, and pipeline operations
-- Span attributes for target, source, operation, and phase
-- Jaeger, Zipkin, and OTLP exporter support
-- Configurable sampling rates
-
-#### Enhanced Metrics
-- User-defined custom metrics via config
-- Pre-built Prometheus alerting rules
-- Official Grafana dashboard templates
-- Advanced health check endpoints (dependency probes)
-
-#### Performance Optimizations
-- Discovery result caching (Organizations, Identity Center)
-- Configurable AWS retry/backoff settings
-- Bulk batch operations for large secret sets
-- Concurrent source reads with configurable limits
-
-### v2.6.0 - Enterprise Governance
-
-**Theme**: Security, compliance, and operational safety.
-
-#### Policy as Code
-- Declarative sync policies in config (allow/deny rules per target/source)
-- Policy validation during `secrets-sync validate`
-- Pre-sync policy enforcement with dry-run preview
-
-#### Audit Logging
-- Structured audit log for every secret read/write/delete
-- Tamper-evident log chaining (hash chain)
-- Configurable log destinations (file, CloudWatch, S3)
-
-#### Client-Side Encryption
-- Optional encryption-at-rest for the S3 merge store
-- KMS-managed or user-supplied encryption keys
-- Zero-knowledge mode: secrets encrypted before reaching the merge store
-
-#### Rollback Automation
-- Automatic rollback on sync failure detection
-- Version-aware rollback using the S3 version store
-- Configurable rollback windows and safety checks
-
-### v2.7.0 - Advanced Workflows
-
-**Theme**: Flexible pipeline orchestration.
-
-#### Conditional Sync
-- Condition-based sync gating (environment, tag, time window)
-- Configurable sync triggers and filters
-- Skip rules for specific source/target combinations
-
-#### Per-Target Scheduling
-- Cron-like scheduling per target via the Kubernetes controller
-- Staggered sync windows to avoid provider rate limits
-- Time-zone-aware schedule evaluation
-
-#### Multi-Instance Coordination
-- Leader election for multi-replica controller deployments
-- Distributed locking via S3 conditional writes
-- Work partitioning across concurrent pipeline instances
-
-## Future Considerations (v3.0+)
-
-### Edge Computing
-- Edge deployment patterns for global secret distribution
-- Regional merge stores with cross-region replication
-
-### Advanced Security
-- Post-quantum cryptographic algorithms for encryption-at-rest
-- Zero-trust security model for controller-to-provider communication
-- Cross-organization federated identity for multi-org discovery
-
-### Scale
-- Horizontal scaling with Redis/Memcached caching layer
-- Event-driven async processing with message queues
-- Additional serverless targets (Azure Functions) beyond AWS Lambda
-
-## Community Priorities
-
-Based on community feedback, we're prioritizing:
-
-1. **Azure Key Vault Support** (high demand from enterprise users) — v2.4.0
-2. **Enhanced Kubernetes Integration** (DevOps community priority) — v2.4.0
-3. **Distributed Tracing** (observability gap) — v2.5.0
-4. **Policy as Code** (security team requirements) — v2.6.0
+The shipped surface covers the planned enterprise feature set. Future direction
+is driven by community needs — see below. Candidate areas include additional
+provider backends, deeper edge/global-distribution patterns, and further
+serverless runtimes.
 
 ## How to Influence the Roadmap
 

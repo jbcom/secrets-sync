@@ -80,5 +80,5 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 - [x] M5.3 Scale: pluggable cache layer (pkg/cache Cache interface + in-memory TTL + GetOrCompute; Redis/Memcached slot in via the interface); Azure Functions serverless target (cmd/secrets-sync-azurefunc) over a shared pkg/serverless core (Lambda refactored to a thin adapter). Event-driven async: serverless entrypoints are the queue/event-trigger surface (Lambda event + Azure Functions trigger).
 
 ### M6 Release hygiene
-- [ ] M6.1 Update ROADMAP.md "Current Status" to reflect shipped surface; move completed items.
+- [x] M6.1 Update ROADMAP.md "Current Status" to reflect shipped surface; moved completed v2.4–v3.0 items into a descriptive "Recently shipped" section (no version-numbered headers; release-please owns versions).
 - [ ] M6.2 Full `just ci` green; docs warnings=errors; vuln scan clean. Open the single PR.
