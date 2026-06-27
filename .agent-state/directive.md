@@ -46,7 +46,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 - [x] M0.1 Define `SecretBackend` source/target interfaces + `MergeStore` interface in pkg/driver (formalize the implicit contract; AWS+Vault already return Driver()).
 - [x] M0.2 Add a backend registry/factory: `DriverName → constructor`, keyed off config. Replace `DriverIsSupported` static list with registry membership.
 - [x] M0.3 Make `Source` config driver-generic: add provider fields alongside Vault/AWS without breaking existing YAML; route `fetch.go` through the registry instead of hardcoded vault/aws branches.
-- [ ] M0.4 Make `Target` config driver-generic: `Target` gains an optional backend selector (default aws for back-compat); refactor `syncTarget` (sync.go) to resolve a target backend via registry instead of constructing `aws.AwsClient` directly.
+- [x] M0.4 Make `Target` config driver-generic: `Target` gains an optional backend selector (default aws for back-compat); refactor `syncTarget` (sync.go) to resolve a target backend via registry instead of constructing `aws.AwsClient` directly.
 - [ ] M0.5 Make `MergeStore` registry-driven (Vault/S3 today) so new merge backends slot in.
 - [ ] M0.6 Migrate AWS + Vault clients onto the formal interfaces; assert interface satisfaction at compile time (`var _ driver.SourceBackend = ...`). Keep all existing tests green.
 

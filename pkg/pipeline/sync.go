@@ -8,6 +8,7 @@ import (
 
 	"github.com/jbcom/secrets-sync/pkg/client/aws"
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
+	"github.com/jbcom/secrets-sync/pkg/driver"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -94,27 +95,27 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 		region = p.config.AWS.Region
 	}
 
-	// Initialize AWS client for target account
-	awsClient, err := p.getAWSClientForTarget(ctx, target)
+	// Resolve the target backend (AWS by default, else via the registry).
+	targetBackend, err := p.getTargetBackend(ctx, target)
 	if err != nil {
 		return Result{
 			Target:   targetName,
 			Phase:    "sync",
 			Success:  false,
-			Error:    fmt.Errorf("failed to get AWS client for target: %w", err),
+			Error:    fmt.Errorf("failed to get target backend: %w", err),
 			Duration: time.Since(start),
 		}
 	}
 
-	// Sync each secret to AWS
+	// Sync each secret to the target backend.
 	var syncErrors []string
 	successCount := 0
 
 	for secretPath, data := range secretsData {
-		// Determine AWS secret name
-		awsSecretName := p.getAWSSecretName(targetName, secretPath)
+		// Determine the destination secret name.
+		destName := p.getAWSSecretName(targetName, secretPath)
 
-		// Convert data to JSON bytes for AWS
+		// Convert data to JSON bytes for the backend.
 		secretBytes, err := json.Marshal(data)
 		if err != nil {
 			l.WithError(err).WithField("secret", secretPath).Error("Failed to marshal secret data")
@@ -122,25 +123,27 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 			continue
 		}
 
-		// Create metadata for the write operation
+		// Create metadata for the write operation.
 		meta := metav1.ObjectMeta{
-			Name:      awsSecretName,
+			Name:      destName,
 			Namespace: targetName,
 		}
 
-		if _, err := awsClient.WriteSecret(ctx, meta, awsSecretName, secretBytes); err != nil {
+		if _, err := targetBackend.WriteSecret(ctx, meta, destName, secretBytes); err != nil {
 			l.WithError(err).WithFields(log.Fields{
-				"secret":    secretPath,
-				"awsSecret": awsSecretName,
-			}).Error("Failed to write secret to AWS")
+				"secret":     secretPath,
+				"destSecret": destName,
+				"driver":     targetBackend.Driver(),
+			}).Error("Failed to write secret to target backend")
 			syncErrors = append(syncErrors, secretPath)
 			continue
 		}
 
 		l.WithFields(log.Fields{
-			"secret":    secretPath,
-			"awsSecret": awsSecretName,
-		}).Debug("Secret synced to AWS")
+			"secret":     secretPath,
+			"destSecret": destName,
+			"driver":     targetBackend.Driver(),
+		}).Debug("Secret synced to target backend")
 		successCount++
 	}
 
@@ -257,6 +260,30 @@ func (p *Pipeline) getAWSClientForTarget(ctx context.Context, target Target) (*a
 	}
 
 	return client, nil
+}
+
+// getTargetBackend resolves the sync destination for a target. When no explicit
+// backend is configured (or it names "aws"), it returns the AWS client built by
+// getAWSClientForTarget, preserving cross-account role assumption. Otherwise it
+// constructs the backend through the registry from the target's backend config.
+func (p *Pipeline) getTargetBackend(ctx context.Context, target Target) (driver.TargetBackend, error) {
+	if target.Backend == nil || target.Backend.Driver == "" || target.Backend.Driver == string(driver.DriverNameAws) {
+		return p.getAWSClientForTarget(ctx, target)
+	}
+
+	spec := driver.BackendSpec{
+		Driver:  driver.DriverName(target.Backend.Driver),
+		Path:    target.Backend.Path,
+		Options: target.Backend.Options,
+	}
+	backend, err := p.backends.NewTarget(spec)
+	if err != nil {
+		return nil, err
+	}
+	if err := backend.Init(ctx); err != nil {
+		return nil, fmt.Errorf("init %s target backend: %w", spec.Driver, err)
+	}
+	return backend, nil
 }
 
 // getRoleARNForTarget returns the role ARN for assuming into the target account

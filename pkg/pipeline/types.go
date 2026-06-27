@@ -204,6 +204,21 @@ type Target struct {
 	Region       string   `mapstructure:"region" yaml:"region"`
 	SecretPrefix string   `mapstructure:"secret_prefix" yaml:"secret_prefix"`
 	RoleARN      string   `mapstructure:"role_arn" yaml:"role_arn"`
+
+	// Backend selects the sync destination driver. When unset it defaults to
+	// AWS Secrets Manager, preserving the historical AWS-only behavior. Set it
+	// to route a target to Azure, GCP, Kubernetes, HTTP, or Vault instead.
+	Backend *TargetBackendConfig `mapstructure:"backend" yaml:"backend,omitempty"`
+}
+
+// TargetBackendConfig selects and configures a non-default sync target backend.
+// Driver is a driver.DriverName ("azure", "gcp", "kubernetes", "http", "vault",
+// "aws"); Path is the backend's scope (mount, namespace, base URL, ...); Options
+// carries driver-specific settings consumed by that backend's factory.
+type TargetBackendConfig struct {
+	Driver  string         `mapstructure:"driver" yaml:"driver"`
+	Path    string         `mapstructure:"path" yaml:"path,omitempty"`
+	Options map[string]any `mapstructure:"options" yaml:"options,omitempty"`
 }
 
 // UnmarshalYAML implements custom YAML unmarshaling to support shorthand format.
