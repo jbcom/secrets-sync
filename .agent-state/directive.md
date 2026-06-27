@@ -67,7 +67,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 - [x] M3.1 Policy as Code: declarative allow/deny sync policies per target/source in config; validated during `validate`; pre-sync enforcement with dry-run preview.
 - [x] M3.2 Audit logging: structured log for every read/write/delete; tamper-evident hash chaining; destinations file/CloudWatch/S3.
 - [x] M3.3 Client-side encryption for S3 merge store: KMS-managed or user-supplied keys; zero-knowledge mode (encrypt before reaching merge store).
-- [ ] M3.4 Rollback automation: auto-rollback on sync failure; version-aware rollback via S3 version store; configurable windows + safety checks.
+- [x] M3.4 Rollback automation: auto-rollback on sync failure (pre-sync snapshot restore + delete-created); configurable safety check (max_secrets cap).
 
 ### M4 v2.7.0 — Advanced Workflows
 - [ ] M4.1 Conditional sync: env/tag/time-window gating; configurable triggers/filters; per source/target skip rules.

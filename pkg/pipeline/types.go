@@ -389,15 +389,26 @@ type AccountsListDiscovery struct {
 
 // PipelineSettings configures pipeline execution
 type PipelineSettings struct {
-	Merge           MergeSettings `mapstructure:"merge" yaml:"merge"`
-	Sync            SyncSettings  `mapstructure:"sync" yaml:"sync"`
-	DryRun          bool          `mapstructure:"dry_run" yaml:"dry_run"`
-	ContinueOnError bool          `mapstructure:"continue_on_error" yaml:"continue_on_error"`
+	Merge           MergeSettings  `mapstructure:"merge" yaml:"merge"`
+	Sync            SyncSettings   `mapstructure:"sync" yaml:"sync"`
+	Rollback        RollbackConfig `mapstructure:"rollback" yaml:"rollback,omitempty"`
+	DryRun          bool           `mapstructure:"dry_run" yaml:"dry_run"`
+	ContinueOnError bool           `mapstructure:"continue_on_error" yaml:"continue_on_error"`
 }
 
 // MergeSettings configures the merge phase
 type MergeSettings struct {
 	Parallel int `mapstructure:"parallel" yaml:"parallel"`
+}
+
+// RollbackConfig configures automatic rollback on sync failure.
+type RollbackConfig struct {
+	// Enabled turns on pre-sync snapshotting and post-failure restore.
+	Enabled bool `mapstructure:"enabled" yaml:"enabled"`
+	// MaxSecrets is a safety cap: rollback is skipped (and the failure left as-is
+	// with a clear error) if the target holds more than this many secrets, to
+	// avoid a large unintended restore. 0 means no cap.
+	MaxSecrets int `mapstructure:"max_secrets" yaml:"max_secrets,omitempty"`
 }
 
 // SyncSettings configures the sync phase

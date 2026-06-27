@@ -124,6 +124,13 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 		}
 	}
 
+	// If rollback is enabled, snapshot the target's current state before writing
+	// so a partial failure can be reverted.
+	snapshot, snapErr := p.snapshotForRollback(ctx, targetBackend)
+	if snapErr != nil {
+		l.WithError(snapErr).Warn("Rollback snapshot failed; proceeding without rollback protection")
+	}
+
 	// Sync each secret to the target backend.
 	var syncErrors []string
 	successCount := 0
@@ -176,6 +183,11 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 	var lastErr error
 	if !success {
 		lastErr = fmt.Errorf("failed to sync %d secrets: %v", len(syncErrors), syncErrors)
+		// Attempt rollback to the pre-sync snapshot. Restore failures are
+		// appended to the error so the operator sees both.
+		if rbErr := p.rollback(ctx, targetBackend, targetName, snapshot); rbErr != nil {
+			lastErr = fmt.Errorf("%w; rollback also failed: %v", lastErr, rbErr)
+		}
 	}
 
 	l.WithFields(log.Fields{

@@ -135,6 +135,23 @@ bearer token, custom headers, or mTLS client certificates.
 A full multi-provider example lives at
 [`examples/multi-provider-targets.yaml`](../examples/multi-provider-targets.yaml).
 
+## Automatic rollback
+
+When enabled, the sync phase snapshots a target's current secret values before
+writing and, if the sync fails partway, restores the snapshot — re-writing
+mutated secrets to their prior values and deleting any created during the failed
+run. A `max_secrets` safety cap skips rollback (leaving a clear error) when a
+target unexpectedly holds more secrets than expected.
+
+```yaml
+pipeline:
+  rollback:
+    enabled: true
+    max_secrets: 500   # 0 = no cap
+```
+
+Rollback writes are themselves audited (actor `rollback`).
+
 ## Sync policies (policy as code)
 
 Gate which sources may sync to which targets with declarative allow/deny rules.
