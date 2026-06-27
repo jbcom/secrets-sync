@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -223,7 +224,8 @@ func (c *Controller) BuildCronJob(obj *unstructured.Unstructured) (*batchv1.Cron
 			},
 		},
 		Spec: batchv1.CronJobSpec{
-			Schedule:          spec.Schedule,
+			Schedule:          staggerSchedule(spec.Schedule, obj.GetName(), spec.StaggerMinutes),
+			TimeZone:          timeZonePtr(spec.Timezone),
 			Suspend:           &spec.Suspend,
 			ConcurrencyPolicy: batchv1.ForbidConcurrent,
 			JobTemplate: batchv1.JobTemplateSpec{
@@ -271,6 +273,8 @@ func (c *Controller) BuildCronJob(obj *unstructured.Unstructured) (*batchv1.Cron
 
 type credentialSynchronizationSpec struct {
 	Schedule           string
+	Timezone           string
+	StaggerMinutes     int
 	Suspend            bool
 	Image              string
 	ConfigName         string
@@ -294,6 +298,9 @@ func parseSpec(obj *unstructured.Unstructured, config Config) (credentialSynchro
 	if schedule == "" {
 		return credentialSynchronizationSpec{}, fmt.Errorf("%s/%s spec.schedule is required", obj.GetNamespace(), obj.GetName())
 	}
+
+	timezone, _, _ := unstructured.NestedString(obj.Object, "spec", "timezone")
+	staggerMinutes64, _, _ := unstructured.NestedInt64(obj.Object, "spec", "staggerMinutes")
 
 	configName, _, _ := unstructured.NestedString(obj.Object, "spec", "configRef", "name")
 	if configName == "" {
@@ -347,6 +354,8 @@ func parseSpec(obj *unstructured.Unstructured, config Config) (credentialSynchro
 
 	return credentialSynchronizationSpec{
 		Schedule:           schedule,
+		Timezone:           timezone,
+		StaggerMinutes:     int(staggerMinutes64),
 		Suspend:            suspend,
 		Image:              image,
 		ConfigName:         configName,
@@ -420,6 +429,39 @@ func cronJobName(name string) string {
 
 func int32Ptr(value int32) *int32 {
 	return &value
+}
+
+// timeZonePtr returns a pointer to the timezone name, or nil when unset so the
+// CronJob uses the cluster default.
+func timeZonePtr(tz string) *string {
+	if tz == "" {
+		return nil
+	}
+	return &tz
+}
+
+// staggerSchedule deterministically offsets a cron schedule's minute field by a
+// per-name amount within [0, staggerMinutes), spreading many targets across a
+// window to avoid hammering a provider at the same instant. It only rewrites a
+// schedule whose minute field is a single literal number (e.g. "0 2 * * *");
+// any expression with lists/ranges/steps is returned unchanged so we never
+// corrupt a complex schedule. staggerMinutes <= 1 is a no-op.
+func staggerSchedule(schedule, name string, staggerMinutes int) string {
+	if staggerMinutes <= 1 {
+		return schedule
+	}
+	fields := strings.Fields(schedule)
+	if len(fields) != 5 {
+		return schedule
+	}
+	base, err := strconv.Atoi(fields[0])
+	if err != nil || base < 0 || base > 59 {
+		return schedule
+	}
+	sum := sha256.Sum256([]byte(name))
+	offset := int(sum[0]) % staggerMinutes
+	fields[0] = strconv.Itoa((base + offset) % 60)
+	return strings.Join(fields, " ")
 }
 
 // NamespacedName returns a stable string identifier for controller logs.
