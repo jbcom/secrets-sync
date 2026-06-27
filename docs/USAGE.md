@@ -135,6 +135,32 @@ bearer token, custom headers, or mTLS client certificates.
 A full multi-provider example lives at
 [`examples/multi-provider-targets.yaml`](../examples/multi-provider-targets.yaml).
 
+## Conditional sync
+
+Gate a target's sync on environment variables, target tags, and recurring time
+windows. All configured conditions must hold; a target whose conditions are not
+met is skipped (a successful no-op, not a failure).
+
+```yaml
+targets:
+  prod-eu:
+    imports: [shared]
+    tags:
+      tier: critical
+    conditions:
+      env:
+        DEPLOY_ENV: production      # env var must equal this value
+      tags:
+        tier: critical              # target tag must match
+      time_windows:                 # sync only during a maintenance window
+        - start: "01:00"
+          end: "05:00"
+          timezone: Europe/Berlin
+```
+
+Time windows are recurring daily local-time ranges; a window where `end` is
+before `start` wraps past midnight (e.g. `22:00`–`02:00`).
+
 ## Automatic rollback
 
 When enabled, the sync phase snapshots a target's current secret values before

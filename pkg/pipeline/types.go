@@ -4,6 +4,7 @@ package pipeline
 import (
 	"fmt"
 
+	"github.com/jbcom/secrets-sync/pkg/condition"
 	"github.com/jbcom/secrets-sync/pkg/observability"
 	"github.com/jbcom/secrets-sync/pkg/policy"
 	"gopkg.in/yaml.v3"
@@ -253,6 +254,14 @@ type Target struct {
 	// AWS Secrets Manager, preserving the historical AWS-only behavior. Set it
 	// to route a target to Azure, GCP, Kubernetes, HTTP, or Vault instead.
 	Backend *TargetBackendConfig `mapstructure:"backend" yaml:"backend,omitempty"`
+
+	// Tags are arbitrary key/value labels on the target, usable by conditional
+	// sync rules.
+	Tags map[string]string `mapstructure:"tags" yaml:"tags,omitempty"`
+
+	// Conditions gate whether this target syncs (environment, tag, time-window).
+	// When unset the target always syncs.
+	Conditions *condition.Config `mapstructure:"conditions" yaml:"conditions,omitempty"`
 }
 
 // TargetBackendConfig selects and configures a non-default sync target backend.

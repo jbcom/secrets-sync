@@ -8,6 +8,7 @@ import (
 
 	"github.com/jbcom/secrets-sync/pkg/audit"
 	"github.com/jbcom/secrets-sync/pkg/client/aws"
+	"github.com/jbcom/secrets-sync/pkg/condition"
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	"github.com/jbcom/secrets-sync/pkg/driver"
 	"github.com/jbcom/secrets-sync/pkg/observability"
@@ -55,6 +56,23 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 			Success:  false,
 			Error:    denied,
 			Duration: time.Since(start),
+		}
+	}
+
+	// Evaluate conditional-sync gates (env/tag/time-window). A target whose
+	// conditions are not met is skipped — a successful no-op, not a failure.
+	if target.Conditions != nil {
+		res := target.Conditions.Evaluate(condition.EvalContext{Now: time.Now(), Tags: target.Tags})
+		if !res.Allowed {
+			l.WithField("reason", res.Reason).Info("Sync skipped by conditional-sync gate")
+			return Result{
+				Target:    targetName,
+				Phase:     "sync",
+				Operation: "skipped",
+				Success:   true,
+				Duration:  time.Since(start),
+				Details:   ResultDetails{Message: fmt.Sprintf("skipped: %s", res.Reason)},
+			}
 		}
 	}
 

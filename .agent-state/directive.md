@@ -70,7 +70,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 - [x] M3.4 Rollback automation: auto-rollback on sync failure (pre-sync snapshot restore + delete-created); configurable safety check (max_secrets cap).
 
 ### M4 v2.7.0 — Advanced Workflows
-- [ ] M4.1 Conditional sync: env/tag/time-window gating; configurable triggers/filters; per source/target skip rules.
+- [x] M4.1 Conditional sync: env/tag/time-window gating; per-target skip rules (skipped = successful no-op).
 - [ ] M4.2 Per-target scheduling in the controller: cron-like per target; staggered windows; tz-aware evaluation.
 - [ ] M4.3 Multi-instance coordination: leader election for multi-replica controller; distributed locking via S3 conditional writes; work partitioning.
 

@@ -128,6 +128,7 @@ type ResultDetails struct {
 	DestinationPath  string   `json:"destination_path,omitempty"`
 	RoleARN          string   `json:"role_arn,omitempty"`
 	FailedImports    []string `json:"failed_imports,omitempty"`
+	Message          string   `json:"message,omitempty"`
 }
 
 // New creates a new Pipeline from configuration

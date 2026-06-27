@@ -203,6 +203,12 @@ func (c *Config) Validate() error {
 				return fmt.Errorf("target %q: unsupported backend driver %q", name, target.Backend.Driver)
 			}
 		}
+		// Validate conditional-sync rules (time formats, timezones).
+		if target.Conditions != nil {
+			if err := target.Conditions.Validate(); err != nil {
+				return fmt.Errorf("target %q: %w", name, err)
+			}
+		}
 		// Note: imports are NOT validated here - they can be resolved dynamically
 		// via fuzzy matching against AWS Organizations or Vault mounts
 	}
