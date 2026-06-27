@@ -25,6 +25,13 @@ type Backend interface {
 type SourceBackend interface {
 	Backend
 	// ListSecrets enumerates secret names/paths beneath the given path.
+	//
+	// Path semantics are backend-specific. Flat stores (AWS Secrets Manager)
+	// treat an empty path as "list everything". Hierarchical stores (Vault KV2)
+	// require a non-empty mount-scoped path; callers must pass the backend's
+	// configured scope rather than "" for those. The driver-generic fetch path
+	// always supplies a concrete path, so this divergence is not observable
+	// through the pipeline.
 	ListSecrets(ctx context.Context, path string) ([]string, error)
 	// GetSecret reads the raw secret payload at the given path.
 	GetSecret(ctx context.Context, path string) ([]byte, error)

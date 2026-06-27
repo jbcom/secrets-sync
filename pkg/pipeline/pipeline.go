@@ -41,6 +41,7 @@ import (
 
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	"github.com/jbcom/secrets-sync/pkg/diff"
+	"github.com/jbcom/secrets-sync/pkg/driver"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -67,6 +68,7 @@ type Pipeline struct {
 	awsCtx      *AWSExecutionContext
 	s3Store     *S3MergeStore
 	runtimeAuth *RuntimeAuth
+	backends    *driver.Registry
 
 	results   []Result
 	resultsMu sync.Mutex
@@ -134,8 +136,9 @@ func New(cfg *Config) (*Pipeline, error) {
 	}
 
 	return &Pipeline{
-		config: cfg,
-		graph:  graph,
+		config:   cfg,
+		graph:    graph,
+		backends: newBackendRegistry(),
 	}, nil
 }
 
