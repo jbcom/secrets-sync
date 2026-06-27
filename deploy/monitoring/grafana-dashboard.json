@@ -1,0 +1,121 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "Prometheus data source scraping secrets-sync /metrics",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "title": "SecretSync",
+  "uid": "secrets-sync",
+  "tags": ["secrets-sync"],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "datasource",
+        "type": "datasource",
+        "query": "prometheus",
+        "current": { "text": "Prometheus", "value": "${DS_PROMETHEUS}" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Targets processed (rate)",
+      "type": "timeseries",
+      "datasource": "${datasource}",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(secrets_sync_pipeline_targets_processed_total[5m])) by (status)",
+          "legendFormat": "{{status}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Pipeline errors (rate by phase)",
+      "type": "timeseries",
+      "datasource": "${datasource}",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "sum(rate(secrets_sync_pipeline_errors_total[5m])) by (phase)",
+          "legendFormat": "{{phase}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Phase duration p50/p95",
+      "type": "timeseries",
+      "datasource": "${datasource}",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(secrets_sync_pipeline_execution_duration_seconds_bucket[5m])) by (le, phase))",
+          "legendFormat": "p50 {{phase}}"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(secrets_sync_pipeline_execution_duration_seconds_bucket[5m])) by (le, phase))",
+          "legendFormat": "p95 {{phase}}"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "AWS API latency p95",
+      "type": "timeseries",
+      "datasource": "${datasource}",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "s" } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(secrets_sync_aws_api_call_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "aws p95"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(secrets_sync_vault_api_call_duration_seconds_bucket[5m])) by (le))",
+          "legendFormat": "vault p95"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "AWS cache hit ratio",
+      "type": "stat",
+      "datasource": "${datasource}",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 } },
+      "targets": [
+        {
+          "expr": "sum(rate(secrets_sync_aws_cache_hits_total[10m])) / clamp_min(sum(rate(secrets_sync_aws_cache_hits_total[10m])) + sum(rate(secrets_sync_aws_cache_misses_total[10m])), 1)",
+          "legendFormat": "hit ratio"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Vault errors (rate)",
+      "type": "timeseries",
+      "datasource": "${datasource}",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "sum(rate(secrets_sync_vault_errors_total[5m])) by (error_type)",
+          "legendFormat": "{{error_type}}"
+        }
+      ]
+    }
+  ]
+}
