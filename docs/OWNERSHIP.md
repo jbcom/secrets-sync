@@ -22,8 +22,8 @@ invokes the CLI or native Go bindings.
 | Surface | Current repository | Install target |
 | --- | --- | --- |
 | Base data primitives, inputs, logging, and workflows | `jbcom/extended-data` | `extended-data` |
-| Vendor API connectors | `jbcom/vendor-connectors` | `vendor-connectors[...]` |
-| SecretSync agent framework tools | `jbcom/agentic-crew` | `agentic-crew[secrets-sync]` |
+| Cloud and vendor API connectors | `jbcom/cloud-connectors-python` | `cloud-connectors[...]` |
+| SecretSync agent framework tools | `jbcom/agent-orchestration` | `agentic-crew[secrets-sync]` |
 
 The bridge package has no optional feature extras. It provides backend
 selection for the CLI and native runtime only; framework wrappers belong in the

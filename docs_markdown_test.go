@@ -317,8 +317,8 @@ func TestOwnershipMapDocumentsSplitBoundaries(t *testing.T) {
 		"packages/secrets-sync-bridge",
 		"secrets_sync_native",
 		"jbcom/extended-data",
-		"jbcom/vendor-connectors",
-		"jbcom/agentic-crew",
+		"jbcom/cloud-connectors-python",
+		"jbcom/agent-orchestration",
 		"agentic-crew[secrets-sync]",
 	} {
 		if !strings.Contains(text, required) {

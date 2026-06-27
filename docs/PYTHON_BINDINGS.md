@@ -104,7 +104,7 @@ assert bridge.native_available in {True, False}
 
 ## Agent Tools
 
-Agent framework integrations live in `agentic-crew`, where optional framework
+Agent framework integrations live in `jbcom/agent-orchestration`, where optional framework
 dependencies already belong. Use `agentic-crew[secrets-sync]` when a CrewAI,
 LangChain, LangGraph, or Strands workflow needs SecretSync tools. This keeps
 `secrets-sync-bridge` as a narrow Python interface over the Go CLI contract.

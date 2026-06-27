@@ -189,7 +189,7 @@ if not result["success"]:
 
 ### AI Agent Integration
 
-SecretSync agent tools are owned by `agentic-crew`, not this repository. Install
+SecretSync agent tools are owned by `jbcom/agent-orchestration`, not this repository. Install
 `agentic-crew[secrets-sync]` when a CrewAI, LangChain, LangGraph, or Strands
 workflow needs to validate configs, run dry-runs, or execute pipelines.
 
