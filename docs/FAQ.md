@@ -251,7 +251,7 @@ Use the GitHub Action:
 
 ```yaml
 - name: Sync Secrets
-  uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+  uses: jbcom/secrets-sync@vX.Y.Z
   with:
     config: config.yaml
     dry-run: 'false'

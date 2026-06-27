@@ -93,7 +93,7 @@ When reporting bugs, please include:
    
    # If using GitHub Action
    # Include the version/tag from your workflow
-   uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+   uses: jbcom/secrets-sync@vX.Y.Z
    ```
 
 2. **Configuration** (sanitized - remove secrets!)
@@ -234,7 +234,7 @@ CI before applying changes.
 For GitHub Actions:
 ```yaml
 # Pin to an exact package release tag
-uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+uses: jbcom/secrets-sync@vX.Y.Z
 
 # Track the branch tip (not recommended for production)
 uses: jbcom/secrets-sync@main

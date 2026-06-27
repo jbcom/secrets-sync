@@ -92,15 +92,14 @@ jobs:
         run: |
           set -euo pipefail
           tag="${GO_TAG}"
-          if [[ ! "$tag" =~ ^secrets-sync-v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Refusing to publish image for unexpected tag: $tag" >&2
             exit 1
           fi
-          version="${tag#secrets-sync-}"
+          version="$tag"
           major="${version%%.*}"
           image="ghcr.io/jbcom/secrets-sync"
-          docker build --build-arg VERSION="$tag" -t "$image:$tag" -t "$image:$version" -t "$image:$major" -t "$image:latest" .
-          docker push "$image:$tag"
+          docker build --build-arg VERSION="$tag" -t "$image:$version" -t "$image:$major" -t "$image:latest" .
           docker push "$image:$version"
           docker push "$image:$major"
           docker push "$image:latest"

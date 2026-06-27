@@ -3,14 +3,14 @@
 ## Installation
 
 ```yaml
-- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+- uses: jbcom/secrets-sync@vX.Y.Z
 ```
 
 ## Minimal Example
 
 ```yaml
 - name: Sync Secrets
-  uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+  uses: jbcom/secrets-sync@vX.Y.Z
   with:
     config: config.yaml
   env:
@@ -43,7 +43,7 @@
 ### Dry Run (PR Validation)
 
 ```yaml
-- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+- uses: jbcom/secrets-sync@vX.Y.Z
   with:
     config: config.yaml
     dry-run: 'true'
@@ -53,7 +53,7 @@
 ### Specific Targets
 
 ```yaml
-- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+- uses: jbcom/secrets-sync@vX.Y.Z
   with:
     config: config.yaml
     targets: 'Staging,Production'
@@ -62,7 +62,7 @@
 ### Merge Only
 
 ```yaml
-- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+- uses: jbcom/secrets-sync@vX.Y.Z
   with:
     config: config.yaml
     merge-only: 'true'
@@ -71,7 +71,7 @@
 ### With Exit Codes
 
 ```yaml
-- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+- uses: jbcom/secrets-sync@vX.Y.Z
   with:
     config: config.yaml
     dry-run: 'true'
@@ -82,7 +82,7 @@
 ### Debug Mode
 
 ```yaml
-- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+- uses: jbcom/secrets-sync@vX.Y.Z
   with:
     config: config.yaml
     log-level: 'debug'
@@ -116,7 +116,7 @@ jobs:
           aws-region: us-east-1
       
       - name: Sync Secrets
-        uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+        uses: jbcom/secrets-sync@vX.Y.Z
         with:
           config: config.yaml
         env:
@@ -231,7 +231,7 @@ Use with `continue-on-error: true` to handle:
 ```yaml
 - name: Check Changes
   id: check
-  uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+  uses: jbcom/secrets-sync@vX.Y.Z
   with:
     dry-run: 'true'
     exit-code: 'true'
@@ -248,7 +248,7 @@ Use with `continue-on-error: true` to handle:
 
 ```yaml
 - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-- uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+- uses: jbcom/secrets-sync@vX.Y.Z
   with:
     config: path/to/config.yaml  # Relative to repo root
 ```
@@ -273,7 +273,7 @@ Ensure OIDC is configured correctly and trust policy allows your repository.
 
 ```yaml
 # Recommended: Pin to a package release tag
-uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+uses: jbcom/secrets-sync@vX.Y.Z
 
 # Not recommended: Track the branch tip
 uses: jbcom/secrets-sync@main

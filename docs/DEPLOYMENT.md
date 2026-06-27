@@ -124,7 +124,7 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::123456789012:role/SecretSyncRunner
           aws-region: us-east-1
-      - uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
+      - uses: jbcom/secrets-sync@vX.Y.Z
         with:
           config: config.yaml
           dry-run: "true"

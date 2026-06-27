@@ -60,8 +60,8 @@ func TestDeploymentGuideUsesCurrentPipelineSurface(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read docs/DEPLOYMENT.md: %v", err)
 	}
-	if !strings.Contains(string(deploymentGuide), "jbcom/secrets-sync@secrets-sync-vX.Y.Z") {
-		t.Fatal("docs/DEPLOYMENT.md should document the GitHub Action release tag")
+	if !strings.Contains(string(deploymentGuide), "jbcom/secrets-sync@vX.Y.Z") {
+		t.Fatal("docs/DEPLOYMENT.md should document the plain semver GitHub Action release tag")
 	}
 
 	for _, forbidden := range []string{
@@ -101,9 +101,9 @@ func TestArchitectureAuditCurrentShapeReferencesExistingPaths(t *testing.T) {
 
 	text := string(content)
 	start := strings.Index(text, "## Current Shape")
-	end := strings.Index(text, "## Future Release Work")
+	end := strings.Index(text, "## Release And Action Status")
 	if start < 0 || end < 0 || end <= start {
-		t.Fatal("docs/ARCHITECTURE_AUDIT.md should have a current shape section before future release work")
+		t.Fatal("docs/ARCHITECTURE_AUDIT.md should have a current shape section before release status")
 	}
 
 	currentShape := text[start:end]

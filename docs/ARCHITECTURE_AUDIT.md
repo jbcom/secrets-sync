@@ -50,15 +50,13 @@ The main runtime path is the two-phase pipeline:
 ## Release And Action Status
 
 - CI and release workflows are SHA-pinned to current stable action releases.
-- Release-please owns the `secrets-sync-vX.Y.Z` component tag shape.
+- Release-please owns the plain semver `vX.Y.Z` tag shape.
 - GoReleaser builds binary release artifacts from release-created tags.
 - The Docker action image tag remains `ghcr.io/jbcom/secrets-sync:v1` until digest
   refresh can be automated.
 
-## Future Release Work
+## Release Follow-Up
 
-- The Marketplace and action docs should continue to use the component release
-  tag placeholder until the first standalone repository release exists.
 - The Docker action should eventually move to a digest-pinned image reference
   once release automation can update that digest as part of publication.
 
