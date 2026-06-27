@@ -13,11 +13,15 @@ func TestDocsDoNotAdvertiseOldCurrentVersion(t *testing.T) {
 	forbiddenByPath := map[string][]string{
 		"docs/ROADMAP.md": {
 			"Current Status: v1.2.0",
+			"Pre-Launch Stabilization",
 			"Future Considerations (v2.0+)",
 			"### v1.3.0",
 			"### v1.4.0",
 			"### v1.5.0",
 			"coming in v1.3.0",
+			"### v2.1.0",
+			"### v2.2.0",
+			"### v2.3.0",
 		},
 		"docs/FAQ.md": {
 			"SecretSync v1.2.0 is production-ready",

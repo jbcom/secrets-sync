@@ -1,152 +1,179 @@
 # SecretSync Roadmap
 
-This roadmap outlines the planned development direction for SecretSync. It's a living document that evolves based on community feedback and changing requirements.
+This roadmap outlines the planned development direction for SecretSync. It's a
+living document that evolves based on community feedback and changing
+requirements.
 
-## Current Status: Pre-Launch Stabilization
+## Current Status
 
-The independent SecretSync repository is in pre-launch stabilization. The launch
-surface includes the Go CLI, structured JSON output, GitHub Action, GHCR
-distroless image, Helm CronJob runner, Kubernetes
-`CredentialSynchronization` controller, AWS Lambda entrypoint, and
-`secrets_sync` gopy binding published as `secrets-sync-python-binding`.
+SecretSync v2.3.1 is the current release. The shipped surface includes:
+
+- Go CLI with `pipeline`, `validate`, `graph`, `context`, `migrate`, and
+  `version` subcommands
+- Structured JSON output with CI-friendly exit codes
+- GitHub Action (`action.yml`) with `--output github` diff reporting
+- GHCR distroless image (`ghcr.io/jbcom/secrets-sync`)
+- Helm chart (CronJob runner + optional controller)
+- Kubernetes `CredentialSynchronization` CRD + controller
+- AWS Lambda entrypoint (inline, S3-hosted, or packaged config)
+- `secrets_sync` gopy binding published as `secrets-sync-python-binding`
+- Vault KV2 source + merge store
+- AWS Secrets Manager source + sync target
+- S3 merge store with secret versioning
+- AWS Organizations + Identity Center dynamic target discovery
+- Prometheus metrics (`/metrics` + `/health`)
+- Two-phase merge → sync pipeline with inheritance, diff, and dry-run
+
+### Repository scope boundary
+
+`secrets-sync` owns the canonical Go runtime, CLI, pipeline semantics, GHCR
+image, GitHub Action, Helm chart, Kubernetes CRD/controller, Lambda
+entrypoint, documentation, and gopy binding. The following belong in
+downstream repos (`vendor-fabric`, `agentic-fabric`) and are **not** planned
+for this repository:
+
+- Agent framework adapters and runtime wrappers
+- Web dashboard / management UI
+- Mobile apps
+- REST/GraphQL API servers
+- Plugin architecture (runtime plugins belong in `agentic-fabric`; provider
+  plugins belong in `vendor-fabric`)
 
 ## Upcoming Releases
 
-### v2.1.0 - Observability & Integrations
+### v2.4.0 - Additional Secret Stores
 
-**Theme**: Enhanced monitoring and ecosystem integrations
+**Theme**: Expand the provider matrix beyond Vault and AWS.
 
-#### 🔍 Distributed Tracing
-- **OpenTelemetry Integration**: Full distributed tracing support
-- **Trace Correlation**: Link traces across Vault, AWS, and pipeline operations
-- **Performance Insights**: Identify bottlenecks in complex pipelines
-- **Jaeger/Zipkin Support**: Export traces to popular tracing systems
+#### Azure Key Vault
+- Full read/write support as both source and sync target
+- Azure AD authentication (service principal, managed identity, workload
+  identity federation)
+- Cross-tenant sync via Azure RBAC role assignments
 
-#### 🔌 Additional Secret Stores
-- **Azure Key Vault**: Full read/write support with Azure AD authentication
-- **Google Cloud Secret Manager**: GCP integration with service account auth
-- **Kubernetes Secrets**: Direct sync to Kubernetes clusters
-- **Generic HTTP Store**: Webhook-based integration for custom stores
+#### Google Cloud Secret Manager
+- Full read/write support as both source and sync target
+- Service account and workload identity authentication
+- Project-level secret isolation
 
-#### 📊 Enhanced Monitoring
-- **Custom Metrics**: User-defined metrics for business logic
-- **Alerting Rules**: Pre-built Prometheus alerting rules
-- **Grafana Dashboards**: Official dashboard templates
-- **Health Checks**: Advanced health check endpoints
+#### Kubernetes Secrets
+- Direct sync to Kubernetes clusters as a target backend
+- Namespace-scoped writes with RBAC
+- Support for `Dockerconfigjson`, `TLS`, and Opaque secret types
 
-#### 🔧 Developer Experience
-- **Configuration Validation**: Enhanced validation with suggestions
-- **Interactive Setup**: CLI wizard for initial configuration
-- **Configuration Templates**: Pre-built templates for common patterns
-- **IDE Extensions**: VS Code extension for configuration editing
+#### Generic HTTP Store
+- Webhook-based integration for custom secret stores
+- Configurable auth (bearer token, mTLS, custom headers)
+- Retry and circuit-breaker integration
 
-### v2.2.0 - Enterprise Features
+### v2.5.0 - Observability & Tracing
 
-**Theme**: Advanced enterprise capabilities and governance
+**Theme**: Production-grade observability for complex pipelines.
 
-#### 🛡️ Advanced Security
-- **Policy as Code**: Define sync policies in code with validation
-- **Approval Workflows**: Multi-stage approval for production changes
-- **Audit Logging**: Comprehensive audit trails with tamper protection
-- **Encryption at Rest**: Client-side encryption for merge store
+#### OpenTelemetry Distributed Tracing
+- Trace correlation across Vault, AWS, and pipeline operations
+- Span attributes for target, source, operation, and phase
+- Jaeger, Zipkin, and OTLP exporter support
+- Configurable sampling rates
 
-#### 🏢 Multi-Tenancy
-- **Tenant Isolation**: Logical separation of configurations and data
-- **RBAC Integration**: Role-based access control with external providers
-- **Resource Quotas**: Limits on secrets, targets, and operations per tenant
-- **Billing Integration**: Usage tracking and cost allocation
+#### Enhanced Metrics
+- User-defined custom metrics via config
+- Pre-built Prometheus alerting rules
+- Official Grafana dashboard templates
+- Advanced health check endpoints (dependency probes)
 
-#### 🔄 Advanced Workflows
-- **Conditional Sync**: Sync based on conditions and triggers
-- **Scheduled Operations**: Cron-like scheduling for different targets
-- **Rollback Automation**: Automatic rollback on failure detection
-- **Blue/Green Deployments**: Support for deployment strategies
+#### Performance Optimizations
+- Discovery result caching (Organizations, Identity Center)
+- Configurable AWS retry/backoff settings
+- Bulk batch operations for large secret sets
+- Concurrent source reads with configurable limits
 
-#### 📈 Scale Optimizations
-- **Horizontal Scaling**: Multi-instance coordination
-- **Caching Layer**: Redis/Memcached integration for large deployments
-- **Batch Operations**: Bulk secret operations for efficiency
-- **Rate Limiting**: Intelligent rate limiting and backoff
+### v2.6.0 - Enterprise Governance
 
-### v2.3.0 - Ecosystem & Platform
+**Theme**: Security, compliance, and operational safety.
 
-**Theme**: Platform features and ecosystem growth
+#### Policy as Code
+- Declarative sync policies in config (allow/deny rules per target/source)
+- Policy validation during `secrets-sync validate`
+- Pre-sync policy enforcement with dry-run preview
 
-#### 🎛️ Management UI
-- **Web Dashboard**: Browser-based configuration and monitoring
-- **Visual Pipeline Builder**: Drag-and-drop pipeline configuration
-- **Real-time Monitoring**: Live pipeline execution monitoring
-- **User Management**: Built-in user authentication and authorization
+#### Audit Logging
+- Structured audit log for every secret read/write/delete
+- Tamper-evident log chaining (hash chain)
+- Configurable log destinations (file, CloudWatch, S3)
 
-#### 🔧 Kubernetes Runtime
-- **GitOps Examples**: ArgoCD/Flux examples for scheduled pipeline runners
-- **Helm Chart Improvements**: Advanced deployment options for direct CronJob
-  and controller installs
-- **Multi-Cluster Patterns**: Run scoped pipeline jobs per cluster or account boundary
+#### Client-Side Encryption
+- Optional encryption-at-rest for the S3 merge store
+- KMS-managed or user-supplied encryption keys
+- Zero-knowledge mode: secrets encrypted before reaching the merge store
 
-#### 🌐 API & Integrations
-- **REST API**: Full REST API for programmatic access
-- **GraphQL API**: Flexible query interface for complex operations
-- **Webhook System**: Event-driven integrations with external systems
-- **Plugin Architecture**: Extensible plugin system for custom functionality
+#### Rollback Automation
+- Automatic rollback on sync failure detection
+- Version-aware rollback using the S3 version store
+- Configurable rollback windows and safety checks
 
-#### 📱 Mobile & CLI
-- **Mobile App**: iOS/Android app for monitoring and emergency operations
-- **Enhanced CLI**: Improved user experience with autocomplete and help
-- **Shell Integration**: Bash/Zsh completion and integration
-- **Configuration Management**: CLI-based configuration management
+### v2.7.0 - Advanced Workflows
+
+**Theme**: Flexible pipeline orchestration.
+
+#### Conditional Sync
+- Condition-based sync gating (environment, tag, time window)
+- Configurable sync triggers and filters
+- Skip rules for specific source/target combinations
+
+#### Per-Target Scheduling
+- Cron-like scheduling per target via the Kubernetes controller
+- Staggered sync windows to avoid provider rate limits
+- Time-zone-aware schedule evaluation
+
+#### Multi-Instance Coordination
+- Leader election for multi-replica controller deployments
+- Distributed locking via S3 conditional writes
+- Work partitioning across concurrent pipeline instances
 
 ## Future Considerations (v3.0+)
 
-### Major Architecture Evolution
+### Edge Computing
+- Edge deployment patterns for global secret distribution
+- Regional merge stores with cross-region replication
 
-#### 🏗️ Microservices Architecture
-- **Service Mesh Integration**: Istio/Linkerd integration
-- **Event-Driven Architecture**: Async processing with message queues
-- **Additional Serverless Targets**: Azure Functions or other non-AWS
-  deployments beyond the current AWS Lambda runtime
-- **Edge Computing**: Edge deployment for global secret distribution
+### Advanced Security
+- Post-quantum cryptographic algorithms for encryption-at-rest
+- Zero-trust security model for controller-to-provider communication
+- Cross-organization federated identity for multi-org discovery
 
-#### 🤖 AI/ML Integration
-- **Anomaly Detection**: ML-based detection of unusual secret access patterns
-- **Predictive Scaling**: AI-driven resource scaling based on usage patterns
-- **Smart Recommendations**: Configuration optimization suggestions
-- **Natural Language Queries**: Query secrets using natural language
-
-#### 🔮 Next-Generation Features
-- **Zero-Trust Architecture**: Built-in zero-trust security model
-- **Quantum-Safe Cryptography**: Post-quantum cryptographic algorithms
-- **Blockchain Integration**: Immutable audit trails using blockchain
-- **Federated Identity**: Cross-organization identity federation
+### Scale
+- Horizontal scaling with Redis/Memcached caching layer
+- Event-driven async processing with message queues
+- Additional serverless targets (Azure Functions) beyond AWS Lambda
 
 ## Community Priorities
 
 Based on community feedback, we're prioritizing:
 
-1. **Azure Key Vault Support** (High demand from enterprise users)
-2. **Web UI** (Requested by operations teams)
-3. **Enhanced Kubernetes Integration** (DevOps community priority)
-4. **Policy as Code** (Security team requirements)
+1. **Azure Key Vault Support** (high demand from enterprise users) — v2.4.0
+2. **Enhanced Kubernetes Integration** (DevOps community priority) — v2.4.0
+3. **Distributed Tracing** (observability gap) — v2.5.0
+4. **Policy as Code** (security team requirements) — v2.6.0
 
 ## How to Influence the Roadmap
 
-### 🗳️ Community Input
+### Community Input
 - **GitHub Issues**: Share your use cases and requirements
-- **Feature Requests**: Create detailed feature requests with business justification
+- **Feature Requests**: Create detailed feature requests with business
+  justification
 - **User Surveys**: Participate in periodic user surveys
-- **Community Calls**: Join monthly community calls when scheduled
 
-### 🤝 Contributions
+### Contributions
 - **Code Contributions**: Implement features you need
 - **Documentation**: Improve docs and examples
 - **Testing**: Help test beta features
 - **Feedback**: Provide feedback on proposed features
 
-### 💼 Enterprise Partnerships
+### Enterprise Partnerships
 - **Design Partnerships**: Work with us to design enterprise features
 - **Beta Testing**: Early access to enterprise features
-- **Custom Development**: Sponsored development for specific needs
-- **Support Contracts**: Priority support and feature development
+- **Sponsored Development**: Fund development of specific features
 
 ## Release Schedule
 
@@ -160,14 +187,16 @@ Based on community feedback, we're prioritizing:
 - **Alpha Releases**: 4 weeks before minor releases
 - **Beta Releases**: 2 weeks before minor releases
 - **Release Candidates**: 1 week before major releases
-- **Early Access**: Available for enterprise partners
 
 ## Clean Break Policy
 
 - **Configuration**: Prefer one current shape over compatibility aliases.
-- **API**: Breaking changes are acceptable when they keep the implementation honest.
-- **CLI**: Removed flags and fields should fail loudly with clear replacement guidance.
-- **Migration Docs**: Document replacement configuration rather than carrying shims.
+- **API**: Breaking changes are acceptable when they keep the implementation
+  honest.
+- **CLI**: Removed flags and fields should fail loudly with clear replacement
+  guidance.
+- **Migration Docs**: Document replacement configuration rather than carrying
+  shims.
 
 ## Success Metrics
 
@@ -181,27 +210,6 @@ Based on community feedback, we're prioritizing:
 - **Adoption**: 10,000+ GitHub stars by end of 2026
 - **Contributors**: 100+ community contributors
 - **Deployments**: 1,000+ production deployments
-- **Ecosystem**: 50+ community plugins and integrations
-
-## Get Involved
-
-### 🚀 Early Adopters
-- Test beta features and provide feedback
-- Share your use cases and requirements
-- Contribute to documentation and examples
-- Help other users in the community
-
-### 🛠️ Contributors
-- Implement features from the roadmap
-- Fix bugs and improve performance
-- Write tests and improve code quality
-- Review pull requests and help with releases
-
-### 🏢 Enterprise Users
-- Partner with us on enterprise feature design
-- Provide feedback on scalability and security
-- Share success stories and case studies
-- Sponsor development of specific features
 
 ---
 
@@ -210,6 +218,6 @@ Based on community feedback, we're prioritizing:
 - **Roadmap Feedback**: [GitHub Issues](https://github.com/jbcom/secrets-sync/issues)
 - **Feature Requests**: [GitHub Issues](https://github.com/jbcom/secrets-sync/issues)
 - **Enterprise Inquiries**: Contact us through GitHub Issues
-- **Community**: Join our growing community of users and contributors
 
-**This roadmap is a living document and will evolve based on community needs and feedback. Your input shapes the future of SecretSync!**
+**This roadmap is a living document and will evolve based on community needs
+and feedback.**
