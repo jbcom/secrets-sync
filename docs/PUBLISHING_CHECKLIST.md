@@ -126,9 +126,11 @@ fails after release-please creates a tag:
 
 1. Keep the failed tag intact while diagnosing unless the release is proven
    unrecoverable.
-2. Prefer rerunning the failed workflow job.
-3. If a bad GitHub release was published, delete only the bad release artifacts
-   needed for repair.
+2. Prefer rerunning the failed workflow job. The CD workflow removes existing
+   release assets for the same tag before rerunning GoReleaser so a partial
+   release can be replaced without deleting or moving the tag.
+3. If a bad GitHub release was published outside the workflow, delete only the
+   bad release artifacts needed for repair.
 4. Document the repair in the PR or release notes.
 
 Do not create moving major aliases such as `v1` unless the repository decides
