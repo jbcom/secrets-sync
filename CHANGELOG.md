@@ -7,6 +7,18 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0](https://github.com/jbcom/secrets-sync/compare/v2.2.0...v2.3.0) (2026-06-27)
+
+
+### Features
+
+* stabilize secrets-sync release surfaces ([2232946](https://github.com/jbcom/secrets-sync/commit/2232946c2a95ab48a9253473a66094f04b470c7c))
+
+
+### Bug Fixes
+
+* align release tags with standalone package ([#10](https://github.com/jbcom/secrets-sync/issues/10)) ([449cf3f](https://github.com/jbcom/secrets-sync/commit/449cf3f70173bc6d3d8d05c11f679bb9a44e762a))
+
 ## [2.2.0](https://github.com/jbcom/secrets-sync/compare/v2.1.1...v2.2.0) (2026-06-27)
 
 
