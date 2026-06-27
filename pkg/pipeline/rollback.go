@@ -40,10 +40,11 @@ func (p *Pipeline) snapshotForRollback(ctx context.Context, backend driver.Targe
 	for _, name := range names {
 		val, err := backend.GetSecret(ctx, name)
 		if err != nil {
-			// A secret that can't be read is recorded as absent so rollback will
-			// not fabricate a value for it.
-			log.WithError(err).WithField("secret", name).Debug("Snapshot: failed to read secret")
-			continue
+			// A partial snapshot is dangerous: an existing secret that we fail to
+			// capture would be misclassified as "created during sync" and DELETED
+			// during rollback. Fail the snapshot so rollback is skipped entirely
+			// rather than acting on incomplete state.
+			return nil, fmt.Errorf("snapshot: read secret %q: %w", name, err)
 		}
 		snap.secrets[name] = val
 	}

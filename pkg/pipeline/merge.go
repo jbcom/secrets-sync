@@ -133,6 +133,20 @@ func (p *Pipeline) mergeTarget(ctx context.Context, targetName string, dryRun bo
 		}
 	}
 
+	// Refuse to persist a partial bundle: if any source failed to list/read, the
+	// merged result is incomplete and writing it would silently overwrite a
+	// previously-good bundle with missing secrets. Fail the merge instead.
+	if len(failedSources) > 0 {
+		return Result{
+			Target:   targetName,
+			Phase:    "merge",
+			Success:  false,
+			Error:    fmt.Errorf("refusing to write partial bundle: failed to read %d sources: %v", len(failedSources), failedSources),
+			Duration: time.Since(start),
+			Details:  ResultDetails{FailedImports: failedSources},
+		}
+	}
+
 	// Write to merge store. The Vault path is path-based and legacy; the bundle
 	// store path goes through the driver.BundleStore interface.
 	var writeErr error
@@ -251,8 +265,13 @@ func (p *Pipeline) readSourcesConcurrently(ctx context.Context, sourceClient *va
 			for _, secretPath := range secrets {
 				secretData, err := sourceClient.GetKVSecretOnce(ctx, secretPath)
 				if err != nil {
-					l.WithError(err).WithField("secret", secretPath).Warn("Failed to read secret")
-					continue
+					// A secret that was listed but cannot be read means this
+					// source's contribution is incomplete; mark the whole source
+					// failed so the caller refuses to write a partial bundle
+					// rather than silently dropping the secret.
+					l.WithError(err).WithField("secret", secretPath).Warn("Failed to read secret; marking source failed")
+					failures[i] = sourcePath
+					return
 				}
 				relPath := secretPath
 				if len(secretPath) > len(sourcePath) {

@@ -82,6 +82,27 @@ func TestRollbackRestoresAndDeletes(t *testing.T) {
 	}
 }
 
+// failReadTarget lists a secret but fails to read it, to exercise the
+// partial-snapshot guard.
+type failReadTarget struct{ *fakeTarget }
+
+func (f *failReadTarget) ListSecrets(context.Context, string) ([]string, error) {
+	return []string{"existing"}, nil
+}
+func (f *failReadTarget) GetSecret(context.Context, string) ([]byte, error) {
+	return nil, fmt.Errorf("read denied")
+}
+
+func TestSnapshotFailsOnReadError(t *testing.T) {
+	p := &Pipeline{config: &Config{Pipeline: PipelineSettings{Rollback: RollbackConfig{Enabled: true}}}}
+	tgt := &failReadTarget{fakeTarget: newFakeTarget()}
+	// A read failure during snapshot must error (so rollback is skipped) rather
+	// than capture a partial snapshot that would mis-delete existing secrets.
+	if _, err := p.snapshotForRollback(context.Background(), tgt); err == nil {
+		t.Fatal("snapshot should fail when a secret cannot be read")
+	}
+}
+
 func TestRollbackMaxSecretsCap(t *testing.T) {
 	ctx := context.Background()
 	tgt := newFakeTarget()

@@ -64,26 +64,41 @@ func RunAsLeader(ctx context.Context, locker Locker, cfg LeaderConfig, onElected
 // runElected runs onElected with a heartbeat goroutine refreshing the lease, and
 // always releases the lock afterward (via a fresh context so a cancelled parent
 // still frees it for the next replica).
+//
+// onElected runs with a work context that is cancelled if the lease heartbeat
+// fails, so a leader that loses its lease (and could thus be superseded by
+// another replica) stops working rather than risking split-brain.
 func runElected(ctx context.Context, locker Locker, heartbeat time.Duration, onElected func(ctx context.Context) error) error {
-	hbCtx, stopHeartbeat := context.WithCancel(ctx)
-	defer stopHeartbeat()
+	workCtx, cancelWork := context.WithCancel(ctx)
+	defer cancelWork()
+
+	stopHeartbeat := make(chan struct{})
+	heartbeatDone := make(chan struct{})
 	go func() {
+		defer close(heartbeatDone)
 		t := time.NewTicker(heartbeat)
 		defer t.Stop()
 		for {
 			select {
-			case <-hbCtx.Done():
+			case <-stopHeartbeat:
+				return
+			case <-workCtx.Done():
 				return
 			case <-t.C:
-				if err := locker.Refresh(hbCtx); err != nil {
-					log.WithError(err).Warn("Leader lease refresh failed")
+				if err := locker.Refresh(workCtx); err != nil {
+					// Losing the lease means another replica may take over; cancel
+					// the work so we don't continue as a stale leader.
+					log.WithError(err).Error("Leader lease refresh failed; cancelling leadership")
+					cancelWork()
+					return
 				}
 			}
 		}
 	}()
 
-	runErr := onElected(ctx)
-	stopHeartbeat()
+	runErr := onElected(workCtx)
+	close(stopHeartbeat)
+	<-heartbeatDone
 
 	relCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()

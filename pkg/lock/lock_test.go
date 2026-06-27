@@ -205,6 +205,35 @@ func TestRunAsLeaderWaitsForLock(t *testing.T) {
 	}
 }
 
+// refreshFailLocker acquires successfully but fails every Refresh, to drive the
+// heartbeat-cancels-leadership path.
+type refreshFailLocker struct{ released bool }
+
+func (l *refreshFailLocker) Acquire(context.Context) error { return nil }
+func (l *refreshFailLocker) Refresh(context.Context) error { return fmt.Errorf("lease lost") }
+func (l *refreshFailLocker) Release(context.Context) error { l.released = true; return nil }
+
+func TestRunAsLeaderCancelsWorkOnHeartbeatFailure(t *testing.T) {
+	locker := &refreshFailLocker{}
+	// onElected blocks until its context is cancelled. With a fast heartbeat, the
+	// first failed Refresh must cancel the work context and unblock it.
+	err := RunAsLeader(context.Background(), locker, LeaderConfig{HeartbeatInterval: 10 * time.Millisecond}, func(ctx context.Context) error {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(5 * time.Second):
+			t.Error("work context was not cancelled after heartbeat failure")
+			return nil
+		}
+	})
+	if !errors.Is(err, context.Canceled) {
+		t.Fatalf("expected work cancellation, got %v", err)
+	}
+	if !locker.released {
+		t.Fatal("lock should still be released after cancellation")
+	}
+}
+
 func TestPartitioningIsDisjointAndComplete(t *testing.T) {
 	items := []string{"prod-a", "prod-b", "stg-a", "stg-b", "dev-a", "dev-b", "sandbox-1", "sandbox-2"}
 	const replicas = 3
