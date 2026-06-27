@@ -24,7 +24,7 @@ rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 
 cd "$REPO_ROOT"
-package_dirs="$(go list -f '{{.Dir}}' ./pkg/... ./python/...)"
+package_dirs="$(go list -f '{{.Dir}}' ./pkg/... ./python/secrets_sync)"
 while IFS= read -r pkg_dir; do
   [[ -z "$pkg_dir" ]] && continue
   rel_pkg="${pkg_dir#$REPO_ROOT/}"

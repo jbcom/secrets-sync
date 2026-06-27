@@ -62,6 +62,7 @@ jobs:
             Justfile
             scripts/check-python-binding.sh
             scripts/install-gopy.sh
+            scripts/python-binding-version.sh
             tools/check_python_dist.py
             tools/patch_python_dist.py
             python/secrets_sync/**/*.go
@@ -106,5 +107,7 @@ jobs:
             docs/conf.py
             scripts/generate-api-docs.sh
             scripts/validate-docs.sh
+            tools/*.py
+            tests/python/**/*.py
       - run: uv tool install tox --with tox-uv
       - run: just quality

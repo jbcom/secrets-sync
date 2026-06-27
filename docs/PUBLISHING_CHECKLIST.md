@@ -61,8 +61,7 @@ Current workflow action pins:
 | `actions/upload-pages-artifact` | `v5.0.0` | `fc324d3547104276b827a68afc52ff2a11cc49c9` |
 | `actions/deploy-pages` | `v5.0.0` | `cd2ce8fcbc39b97be8ca5fce6e763baed58fa128` |
 | `actions/upload-artifact` | `v5.0.0` | `330a01c490aca151604b8cf639adc76d48f6c5d4` |
-| `actions/download-artifact` | `v6.0.0` | `018cc2cf5baa6db3ef3c5f8a56943fffe632ef53` |
-| `pypa/gh-action-pypi-publish` | `v1.13.0` | `106e0b0b7c337fa67ed433972f777c6357f78598` |
+| `actions/download-artifact` | `v8.0.1` | `3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c` |
 
 ## Publishing Flow
 
