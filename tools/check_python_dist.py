@@ -56,7 +56,7 @@ def _unsupported_tags(tags: list[str]) -> list[str]:
     unsupported: list[str] = []
     for tag in tags:
         platform = tag.rsplit("-", 1)[-1]
-        if platform.startswith("linux_"):
+        if any(part.startswith("linux_") for part in platform.split(".")):
             unsupported.append(tag)
     return unsupported
 

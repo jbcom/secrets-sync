@@ -198,9 +198,14 @@ python-repair-wheels python_version="3.13":
       exit 0
     fi
 
+    if ! command -v patchelf &> /dev/null; then
+      echo "Error: patchelf is required to repair Linux wheels. Please install it." >&2
+      exit 1
+    fi
+
     dist_dir="python/build/secrets_sync/dist"
     shopt -s nullglob
-    wheels=("${dist_dir}"/*linux_*.whl)
+    wheels=("${dist_dir}"/*-linux_*.whl)
     if [[ "${#wheels[@]}" -eq 0 ]]; then
       exit 0
     fi
