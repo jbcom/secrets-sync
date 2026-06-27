@@ -87,7 +87,7 @@ func TestDocsImageTagMatchesDefaultImageConstant(t *testing.T) {
 		t.Fatal("could not extract DefaultImage version from pkg/kubernetes/controller.go")
 	}
 	currentTag := m[1]
-	staleTag := "v2.2.0"
+	imageTagRx := regexp.MustCompile(`ghcr\.io/jbcom/secrets-sync:(v[0-9]+\.[0-9]+\.[0-9]+)`)
 
 	var offenders []string
 	roots := []string{"docs", "README.md", "deploy"}
@@ -110,8 +110,11 @@ func TestDocsImageTagMatchesDefaultImageConstant(t *testing.T) {
 			if readErr != nil {
 				return readErr
 			}
-			if strings.Contains(string(content), "ghcr.io/jbcom/secrets-sync:"+staleTag) {
-				offenders = append(offenders, path+" references stale tag "+staleTag+" (current: "+currentTag+")")
+			for _, match := range imageTagRx.FindAllStringSubmatch(string(content), -1) {
+				tag := match[1]
+				if tag != currentTag {
+					offenders = append(offenders, path+" references stale tag "+tag+" (current: "+currentTag+")")
+				}
 			}
 			return nil
 		})
@@ -120,6 +123,6 @@ func TestDocsImageTagMatchesDefaultImageConstant(t *testing.T) {
 		}
 	}
 	if len(offenders) > 0 {
-		t.Fatalf("docs/deploy should not reference stale image tag %s:\n%s", staleTag, strings.Join(offenders, "\n"))
+		t.Fatalf("docs/deploy should not reference stale image tags (current: %s):\n%s", currentTag, strings.Join(offenders, "\n"))
 	}
 }
