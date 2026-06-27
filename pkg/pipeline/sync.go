@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/jbcom/secrets-sync/pkg/audit"
 	"github.com/jbcom/secrets-sync/pkg/client/aws"
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	"github.com/jbcom/secrets-sync/pkg/driver"
@@ -151,6 +152,10 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 				"destSecret": destName,
 				"driver":     targetBackend.Driver(),
 			}).Error("Failed to write secret to target backend")
+			p.audit(audit.Record{
+				Operation: audit.OpWrite, Driver: string(targetBackend.Driver()),
+				Target: targetName, Secret: destName, Success: false, Error: err.Error(),
+			})
 			syncErrors = append(syncErrors, secretPath)
 			continue
 		}
@@ -160,6 +165,10 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 			"destSecret": destName,
 			"driver":     targetBackend.Driver(),
 		}).Debug("Secret synced to target backend")
+		p.audit(audit.Record{
+			Operation: audit.OpWrite, Driver: string(targetBackend.Driver()),
+			Target: targetName, Secret: destName, Success: true,
+		})
 		successCount++
 	}
 

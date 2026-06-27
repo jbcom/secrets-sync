@@ -39,6 +39,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jbcom/secrets-sync/pkg/audit"
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	"github.com/jbcom/secrets-sync/pkg/diff"
 	"github.com/jbcom/secrets-sync/pkg/driver"
@@ -73,6 +74,7 @@ type Pipeline struct {
 	backends    *driver.Registry
 	tracing     *observability.TracerProvider
 	policy      *policy.Engine
+	auditor     *audit.Logger
 
 	results   []Result
 	resultsMu sync.Mutex
@@ -203,6 +205,14 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 		log.WithError(err).Warn("Failed to initialize tracing")
 	} else {
 		p.tracing = tp
+	}
+
+	// Initialize audit logging if a destination is configured.
+	auditor, err := p.buildAuditor(ctx, runtimeCfg.Audit)
+	if err != nil {
+		log.WithError(err).Warn("Failed to initialize audit logging")
+	} else {
+		p.auditor = auditor
 	}
 
 	return p, nil

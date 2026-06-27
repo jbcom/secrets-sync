@@ -161,6 +161,25 @@ target names; an empty pattern matches anything. Rules are evaluated in order
 and the first match wins; if none match, `default_action` applies. An empty
 policy permits everything.
 
+## Audit logging
+
+Record a tamper-evident audit entry for every secret write. Entries are linked
+into a sha256 hash chain, so any retroactive edit or deletion of a record is
+detectable. Secret values are never logged — only identifiers (driver, target,
+secret name, success/error). Configure any combination of destinations:
+
+```yaml
+audit:
+  file: /var/log/secrets-sync/audit.jsonl
+  s3_bucket: my-audit-bucket
+  s3_prefix: secrets-sync
+  cloudwatch_group: /secrets-sync/audit
+  cloudwatch_stream: pipeline
+```
+
+The S3 sink writes one immutable object per entry keyed by zero-padded sequence;
+the file sink appends JSONL. With no destination set, auditing is disabled.
+
 ## Distributed tracing
 
 Enable OpenTelemetry tracing with an `observability.tracing` block. Spans cover

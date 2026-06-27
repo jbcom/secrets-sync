@@ -21,6 +21,20 @@ type Config struct {
 	Pipeline       PipelineSettings         `mapstructure:"pipeline" yaml:"pipeline"`
 	Observability  ObservabilityConfig      `mapstructure:"observability" yaml:"observability,omitempty"`
 	Policy         policy.Config            `mapstructure:"policy" yaml:"policy,omitempty"`
+	Audit          AuditConfig              `mapstructure:"audit" yaml:"audit,omitempty"`
+}
+
+// AuditConfig configures tamper-evident audit logging destinations. When no
+// destination is set, auditing is disabled.
+type AuditConfig struct {
+	// File is a local path to append JSONL audit entries to.
+	File string `mapstructure:"file" yaml:"file,omitempty"`
+	// S3Bucket/S3Prefix write one immutable object per entry to S3.
+	S3Bucket string `mapstructure:"s3_bucket" yaml:"s3_bucket,omitempty"`
+	S3Prefix string `mapstructure:"s3_prefix" yaml:"s3_prefix,omitempty"`
+	// CloudWatchGroup/CloudWatchStream write entries as CloudWatch log events.
+	CloudWatchGroup  string `mapstructure:"cloudwatch_group" yaml:"cloudwatch_group,omitempty"`
+	CloudWatchStream string `mapstructure:"cloudwatch_stream" yaml:"cloudwatch_stream,omitempty"`
 }
 
 // ObservabilityConfig configures metrics and distributed tracing.
