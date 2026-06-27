@@ -199,10 +199,12 @@ By default replication is best-effort (primary success is sufficient); set
 
 For multi-replica controller deployments, two primitives prevent duplicate work:
 
-- **Leader election** via an S3 lock using conditional writes
-  (`If-None-Match: *`), so exactly one replica runs at a time. The lock is
-  released automatically when the elected replica finishes or its context is
-  cancelled.
+- **Leader election** via an S3 lease lock using conditional writes
+  (`If-None-Match: *`), so exactly one replica runs at a time. The lease carries
+  a TTL and is heartbeated while the leader works, so a replica that crashes
+  without releasing is automatically reclaimable once its lease expires — no
+  manual S3 cleanup is needed. The lock is released on normal completion or
+  context cancellation.
 - **Work partitioning** via stable hashing, so N replicas each process a
   disjoint slice of targets without a coordinator.
 
