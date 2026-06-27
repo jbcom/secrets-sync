@@ -1,8 +1,7 @@
 # Ownership Map
 
 `secrets-sync` owns the SecretSync product surface: the Go CLI, GitHub Action,
-deployment artifacts, documentation site, and the Python bridge package that
-invokes the CLI or native Go bindings.
+deployment artifacts, and documentation site.
 
 ## In This Repository
 
@@ -12,19 +11,16 @@ invokes the CLI or native Go bindings.
 | Go pipeline packages | `pkg/*` |
 | GitHub Action | `action.yml` |
 | Helm chart | `deploy/charts/secrets-sync` |
-| Python bridge distribution | `packages/secrets-sync-bridge` |
-| Python import package | `secrets_sync` |
-| Native gopy output package | `secrets_sync_native` |
-| Python binding source | `python/secrets_sync` |
 
 ## Outside This Repository
 
 | Surface | Current repository | Install target |
 | --- | --- | --- |
 | Base data primitives, inputs, logging, and workflows | `jbcom/extended-data` | `extended-data` |
-| Cloud and vendor API connectors | `jbcom/cloud-connectors-python` | `cloud-connectors[...]` |
-| SecretSync agent framework tools | `jbcom/agent-orchestration` | `agentic-crew[secrets-sync]` |
+| Vendor API connectors and Python-native SecretSync | `jbcom/vendor-fabric` | `vendor-fabric[secrets-sync]` |
+| SecretSync agent framework tools | `jbcom/vendor-fabric` | `vendor-fabric[ai,secrets-sync]` |
 
-The bridge package has no optional feature extras. It provides backend
-selection for the CLI and native runtime only; framework wrappers belong in the
-agentic layer.
+The Python package and generated binding source were retired from this
+repository. Python applications should use `vendor_fabric.secrets_sync`, which
+ports the pipeline concepts into Python and composes the Extended Data and
+vendor connector layers directly.

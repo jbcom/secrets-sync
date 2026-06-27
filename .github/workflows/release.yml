@@ -17,8 +17,6 @@ jobs:
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
-      bridge_release_created: ${{ steps.release.outputs['packages/secrets-sync-bridge--release_created'] }}
-      bridge_tag_name: ${{ steps.release.outputs['packages/secrets-sync-bridge--tag_name'] }}
     steps:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
@@ -29,7 +27,7 @@ jobs:
   dispatch-cd:
     name: Dispatch CD
     needs: release-please
-    if: needs.release-please.outputs.release_created == 'true' || needs.release-please.outputs.bridge_release_created == 'true'
+    if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
     permissions:
       actions: write
@@ -39,8 +37,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           GO_TAG: ${{ needs.release-please.outputs.tag_name }}
-          BRIDGE_TAG: ${{ needs.release-please.outputs.bridge_tag_name }}
         run: |
-          gh workflow run cd.yml --repo "$GH_REPO" --ref main \
-            -f go_tag="$GO_TAG" \
-            -f bridge_tag="$BRIDGE_TAG"
+          gh workflow run cd.yml --repo "$GH_REPO" --ref main -f go_tag="$GO_TAG"

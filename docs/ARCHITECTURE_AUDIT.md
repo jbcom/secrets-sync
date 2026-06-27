@@ -14,7 +14,6 @@ SecretSync is a standalone Go module with:
 - Diffing and exit-code behavior in `pkg/diff`.
 - Circuit breaker, request context, and observability support in `pkg`.
 - Docker action metadata in `action.yml`.
-- Optional Python binding sources under `python/secrets_sync`.
 - Helm runner chart under `deploy/charts/secrets-sync`, rendering a CronJob and
   config mount for the same CLI pipeline contract.
 
@@ -51,8 +50,8 @@ The main runtime path is the two-phase pipeline:
   tag placeholder until the first standalone repository release exists.
 - The Docker action should eventually move to a digest-pinned image reference
   once release automation can update that digest as part of publication.
-- Optional Python binding sources and any future native Kubernetes runtime
-  surface need separate release contracts before becoming first-class artifacts.
+- Any future native Kubernetes runtime surface needs a separate release contract
+  before becoming a first-class artifact.
 
 ## Development Rule
 

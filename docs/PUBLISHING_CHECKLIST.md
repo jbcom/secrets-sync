@@ -1,9 +1,8 @@
 # Publishing Checklist
 
-SecretSync releases are automated from `main` with release-please, GoReleaser,
-and PyPI trusted publishing for the Python bridge. Do not hand-edit versions,
-changelog entries, release tags, or GitHub releases during the normal release
-path.
+SecretSync releases are automated from `main` with release-please and
+GoReleaser. Do not hand-edit versions, changelog entries, release tags, or
+GitHub releases during the normal release path.
 
 ## Release Model
 
@@ -11,13 +10,9 @@ path.
   release PRs, and Git tags.
 - The root package name is `secrets-sync`, so Go component release tags use the
   `secrets-sync-vX.Y.Z` shape.
-- The bridge package name is `secrets-sync-bridge`, so Python component release
-  tags use the `secrets-sync-bridge-vX.Y.Z` shape.
-- `cd.yml` runs only after release-please reports a Go and/or bridge release.
+- `cd.yml` runs only after release-please reports a Go release.
 - GoReleaser builds binary archives and checksums. Container and Marketplace
   publication are separate release surfaces.
-- The bridge publish job uses OIDC trusted publishing through `uv publish`; no
-  PyPI token should be stored in repository secrets for the normal path.
 - The Docker action currently references `docker://jbcom/secrets-sync:v1` from
   `action.yml`; digest pinning should be added only when release automation can
   refresh that digest reliably.
@@ -31,7 +26,7 @@ diagnostics:
 go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
 go test ./...
 go build -o bin/secrets-sync ./cmd/secrets-sync
-tox -e py311,py312,py313,py314,lint,typecheck,docs,build
+tox -e lint,docs
 goreleaser check
 docker build -t secrets-sync-test .
 ```
@@ -69,10 +64,9 @@ Current workflow action pins:
 3. Review the release PR for correct changelog and manifest updates.
 4. Merge the release PR.
 5. Confirm the release workflow created the expected `secrets-sync-vX.Y.Z`
-   and/or `secrets-sync-bridge-vX.Y.Z` GitHub release.
+   GitHub release.
 6. Confirm GoReleaser uploaded archives and `checksums.txt` for Go releases.
-7. Confirm `cd.yml` published `secrets-sync-bridge` to PyPI for bridge releases.
-8. Verify the action can be referenced with:
+7. Verify the action can be referenced with:
 
 ```yaml
 - uses: jbcom/secrets-sync@secrets-sync-vX.Y.Z
@@ -100,7 +94,6 @@ Checklist:
 
 ```bash
 gh release view secrets-sync-vX.Y.Z --repo jbcom/secrets-sync
-gh release view secrets-sync-bridge-vX.Y.Z --repo jbcom/secrets-sync
 gh workflow run ci.yml --repo jbcom/secrets-sync
 ```
 

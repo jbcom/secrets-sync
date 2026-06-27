@@ -1,7 +1,6 @@
 # SecretSync Makefile
 
 .PHONY: all build test test-unit test-integration lint lint-fix deps fmt tidy clean help
-.PHONY: python-bindings python-install python-clean
 
 # Go parameters
 GOCMD=go
@@ -10,13 +9,6 @@ GOTEST=$(GOCMD) test
 GOMOD=$(GOCMD) mod
 GOFMT=$(GOCMD) fmt
 GOLINT=golangci-lint
-
-# Python binding parameters
-GOPY=gopy
-PYTHON=python3
-PYTHON_NATIVE_PKG=secrets_sync_native
-PYTHON_NATIVE_OUTPUT=python/$(PYTHON_NATIVE_PKG)
-PYTHON_GO_SOURCE=./python/secrets_sync
 
 # Build info
 BINARY_NAME=secrets-sync
@@ -34,33 +26,6 @@ all: lint test build
 build:
 	@mkdir -p bin
 	$(GOBUILD) -ldflags "$(LDFLAGS)" -o bin/$(BINARY_NAME) ./cmd/secrets-sync
-
-## Python bindings (via gopy)
-python-bindings:
-	@echo "Building Python bindings with gopy..."
-	@mkdir -p $(PYTHON_NATIVE_OUTPUT)
-	$(GOPY) pkg -output=$(PYTHON_NATIVE_OUTPUT) -vm=$(PYTHON) -name=$(PYTHON_NATIVE_PKG) \
-		-version=$(VERSION) \
-		-author="jbcom" \
-		-email="jon@jonbogaty.com" \
-		-url="https://github.com/jbcom/secrets-sync" \
-		-desc="Enterprise-grade secret synchronization pipeline with Python bindings" \
-		$(PYTHON_GO_SOURCE)
-	@echo "Python bindings generated in $(PYTHON_NATIVE_OUTPUT)"
-
-python-build: python-bindings
-	@echo "Building Python wheel..."
-	cd $(PYTHON_NATIVE_OUTPUT) && $(PYTHON) -m build
-
-python-install: python-bindings
-	@echo "Installing Python package locally..."
-	cd $(PYTHON_NATIVE_OUTPUT) && make install
-
-python-clean:
-	@echo "Cleaning Python bindings..."
-	rm -rf $(PYTHON_NATIVE_OUTPUT)/*.so $(PYTHON_NATIVE_OUTPUT)/*.c $(PYTHON_NATIVE_OUTPUT)/*.h \
-		$(PYTHON_NATIVE_OUTPUT)/build $(PYTHON_NATIVE_OUTPUT)/dist $(PYTHON_NATIVE_OUTPUT)/*.egg-info \
-		$(PYTHON_NATIVE_OUTPUT)/__pycache__ $(PYTHON_NATIVE_OUTPUT)/*.pyc $(PYTHON_NATIVE_OUTPUT)/*.pyo
 
 ## Test targets
 test: test-unit
@@ -160,9 +125,3 @@ help:
 	@echo "  tidy                  - Run go mod tidy"
 	@echo "  deps                  - Download and tidy dependencies"
 	@echo "  clean                 - Clean build artifacts and test containers"
-	@echo ""
-	@echo "Python binding targets:"
-	@echo "  python-bindings       - Generate Python bindings via gopy"
-	@echo "  python-build          - Build Python wheel package"
-	@echo "  python-install        - Install Python package locally"
-	@echo "  python-clean          - Clean Python build artifacts"

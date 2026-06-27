@@ -8,12 +8,6 @@
       "component": "secrets-sync",
       "release-type": "go",
       "changelog-path": "CHANGELOG.md"
-    },
-    "packages/secrets-sync-bridge": {
-      "package-name": "secrets-sync-bridge",
-      "component": "secrets-sync-bridge",
-      "release-type": "python",
-      "changelog-path": "CHANGELOG.md"
     }
   },
   "changelog-sections": [

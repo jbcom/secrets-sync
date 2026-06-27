@@ -1,9 +1,9 @@
 # SecretSync
 
 SecretSync is a Go CLI and GitHub Action for synchronizing secrets through a
-two-phase merge and sync pipeline. The repository also publishes the
-`secrets-sync-bridge` Python package for Python workflows that need to call the
-CLI and consume redacted, extended data payloads.
+two-phase merge and sync pipeline. Python-native vendor secret sync now lives
+in `vendor-fabric`, where it can use the Extended Data stack and vendor
+connectors directly.
 
 ```{toctree}
 :caption: Guides
@@ -22,7 +22,6 @@ GITHUB_ACTIONS
 ACTION_QUICK_REFERENCE
 OBSERVABILITY
 ERROR_CONTEXT
-PYTHON_BINDINGS
 OWNERSHIP
 SECURITY
 PRIVACY
@@ -42,8 +41,8 @@ testing/organizations-discovery-integration-tests
 ```
 
 ```{toctree}
-:caption: API Reference
+:caption: Python
 :maxdepth: 2
 
-api/index
+PYTHON_BINDINGS
 ```

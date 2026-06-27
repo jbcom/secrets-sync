@@ -40,14 +40,11 @@ gofmt ./...
 golangci-lint run
 ```
 
-## Building and Bindings
+## Building
 
 ```bash
 # Build the CLI
 make build
-
-# Generate Python bindings
-make python-bindings
 ```
 
 ## Pull Request Process

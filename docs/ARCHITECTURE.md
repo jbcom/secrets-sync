@@ -42,9 +42,8 @@ sync-only operation, or the full merge-plus-sync pipeline.
 - **GitHub Action**: `action.yml` packages the CLI contract for CI/CD workflows.
 - **Helm chart**: the chart renders a Kubernetes `CronJob` plus ConfigMap or
   existing config mount for scheduled pipeline execution.
-- **Python integration**: `secrets-sync-bridge` exposes one Python API over
-  local `secrets_sync_native` gopy bindings and the supported CLI JSON result
-  envelope.
+- **Python integration**: `vendor_fabric.secrets_sync` owns the Python-native
+  implementation in `jbcom/vendor-fabric`.
 
 ## Deployment Models
 
@@ -83,9 +82,9 @@ new public runtime contract.
 ## Integration Boundaries
 
 SecretSync owns the Go CLI, pipeline packages, release artifact, Docker action,
-Helm runner chart, and `secrets-sync-bridge` package. Python applications should
-use the bridge; direct generated bindings install as `secrets_sync_native` and
-are selected through the bridge's `backend` option.
+and Helm runner chart. Python applications should use
+`vendor_fabric.secrets_sync`, which composes the same pipeline concepts with
+Extended Data primitives and vendor connectors directly.
 
 The stable cross-language contract is:
 

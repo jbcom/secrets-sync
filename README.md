@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub release](https://img.shields.io/github/release/jbcom/secrets-sync.svg)](https://github.com/jbcom/secrets-sync/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jbcom/secrets-sync)](https://goreportcard.com/report/github.com/jbcom/secrets-sync)
-[![Python Integration](https://img.shields.io/badge/python-integration-blue.svg)](./docs/PYTHON_BINDINGS.md)
+[![Python Integration](https://img.shields.io/badge/python-vendor--fabric-blue.svg)](./docs/PYTHON_BINDINGS.md)
 
 [Quick Start](#quick-start) • [Repo Docs](./docs/) • [Python Integration](#python-integration) • [Examples](./examples/) • [GitHub Action](./docs/GITHUB_ACTIONS.md)
 
@@ -18,16 +18,14 @@
 
 SecretSync provides **fully automated, enterprise-grade secret synchronization** across multiple cloud providers and secret stores. Built for scale with a **two-phase pipeline architecture** (merge → sync), it supports inheritance, dynamic target discovery, and CI/CD-friendly diff reporting.
 
-## 🏢 Independent Repository, Python Bridge
+## 🏢 Independent Go Repository, Python-Native Vendor Fabric
 
 SecretSync is an independent [jbcom/secrets-sync](https://github.com/jbcom/secrets-sync) repository and MIT-licensed release artifact for secret synchronization workflows.
 
-**🐍 Python Integration**: SecretSync is available to Python through the
-`secrets-sync-bridge` package, which can use local `secrets_sync_native` gopy
-bindings or the supported `secrets-sync` CLI contract and returns redacted
-`ExtendedDict` payloads. The bridge depends on
-[extended-data](https://github.com/jbcom/extended-data) for data boundaries and
-redaction, but it remains a standalone package.
+**🐍 Python Integration**: Python-native SecretSync capabilities live in
+[vendor-fabric](https://github.com/jbcom/vendor-fabric). Use
+`vendor_fabric.secrets_sync` when Python code should compose secret sync with
+Extended Data primitives, vendor connectors, and agent workflows.
 
 **🚀 Perfect for:** Multi-account AWS environments, Kubernetes deployments, CI/CD pipelines, and enterprise secret management at scale.
 
@@ -132,66 +130,21 @@ make build
 
 ## Python Integration
 
-The recommended Python surface is the `secrets-sync-bridge` package. It exposes
-one `secrets_sync` import over the `secrets-sync` CLI and local gopy bindings,
-returning mapping-style `ExtendedDict` payloads from configuration, dry-run,
-merge, sync, and full pipeline operations.
-
-The repository also includes direct gopy binding sources under
-`python/secrets_sync`. Generated bindings use the separate
-`secrets_sync_native` import so they do not collide with the bridge package.
-
-### Building Python Bindings
+The recommended Python surface is `vendor_fabric.secrets_sync`:
 
 ```bash
-# Install prerequisites
-pip install pybindgen build
-go install golang.org/x/tools/cmd/goimports@latest
-go install github.com/go-python/gopy@latest
-
-# Build Python bindings
-make python-bindings
-
-# Install locally
-make python-install
+pip install "vendor-fabric[secrets-sync]"
 ```
 
-### Using secrets-sync-bridge
-
-The recommended way to use SecretSync from Python is the bridge package:
-
-```bash
-pip install secrets-sync-bridge
-```
-
-By default, the bridge uses `backend="auto"`: it runs through
-`secrets_sync_native` when that generated package is installed and otherwise
-falls back to the `secrets-sync` CLI on `PATH`. Use `backend="cli"` or
-`backend="native"` to require one runtime explicitly.
-
-```python
-from secrets_sync import SecretsSyncBridge
-
-bridge = SecretsSyncBridge()
-
-validation = bridge.validate_config("pipeline.yaml")
-if not validation["valid"]:
-    raise SystemExit(validation["message"])
-
-result = bridge.dry_run("pipeline.yaml")
-
-assert "secrets_processed" in result
-assert "diff_output" in result
-
-if not result["success"]:
-    raise SystemExit("Dry run failed; run secrets-sync directly in a secure terminal for diagnostics.")
-```
+This repository no longer publishes a Python package or generated bindings.
+Python users get a direct Python implementation in `vendor-fabric`; shell, CI,
+and scheduled workloads continue to use the Go CLI and GitHub Action here.
 
 ### AI Agent Integration
 
-SecretSync agent tools are owned by `jbcom/agent-orchestration`, not this repository. Install
-`agentic-crew[secrets-sync]` when a CrewAI, LangChain, LangGraph, or Strands
-workflow needs to validate configs, run dry-runs, or execute pipelines.
+SecretSync agent tools are owned by `vendor-fabric`. Install
+`vendor-fabric[ai,secrets-sync]` when a CrewAI, LangChain, LangGraph, or
+Strands workflow needs to validate configs, run dry-runs, or execute pipelines.
 
 ### Basic Usage
 
@@ -204,6 +157,9 @@ secrets-sync pipeline --config pipeline.yaml --dry-run --output side-by-side
 
 # Full pipeline execution with metrics
 secrets-sync pipeline --config pipeline.yaml --metrics-port 9090
+
+# Stable machine-readable CLI contract
+secrets-sync pipeline --config pipeline.yaml --output json
 
 # CI/CD mode (exit codes: 0=no changes, 1=changes, 2=errors)
 secrets-sync pipeline --config pipeline.yaml --dry-run --diff --output json --exit-code

@@ -9,7 +9,6 @@ copyright = "2025-2026, Jon Bogaty"  # noqa: A001
 
 extensions = [
     "myst_parser",
-    "autodoc2",
     "sphinx_copybutton",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
@@ -61,15 +60,3 @@ napoleon_numpy_docstring = False
 napoleon_include_init_with_doc = True
 napoleon_use_param = True
 napoleon_use_rtype = True
-
-autodoc2_packages = [
-    {
-        "path": "../packages/secrets-sync-bridge/src/secrets_sync",
-        "module": "secrets_sync",
-        "exclude_dirs": ["__pycache__"],
-    }
-]
-autodoc2_render_plugin = "myst"
-autodoc2_hidden_objects = ["inherited", "dunder"]
-autodoc2_class_docstring = "merge"
-autodoc2_module_summary = True

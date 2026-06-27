@@ -255,14 +255,25 @@ func TestGettingStartedUsesCurrentPipelineConfigShape(t *testing.T) {
 	}
 }
 
-func TestPythonDocsUseBridgeRuntimeContract(t *testing.T) {
-	attributeStyleResult := regexp.MustCompile(`\bresult\.`)
+func TestPythonDocsUseVendorFabricContract(t *testing.T) {
 	paths := []string{"README.md", "docs/PYTHON_BINDINGS.md"}
 	forbidden := []string{
 		"bindings aren't installed",
 		"from secrets_sync import get_tools",
+		"from secrets_sync import SecretsSyncBridge",
 		"is_valid, message",
 		"print(result[\"diff_output\"])",
+		"backend=\"auto\"",
+		"bridge.cli_available",
+		"bridge.native_available",
+		"secrets_sync_native",
+		"agentic-crew[secrets-sync]",
+		"pip install secrets-sync-bridge",
+	}
+	required := []string{
+		"vendor_fabric.secrets_sync",
+		"vendor-fabric[secrets-sync]",
+		"secrets-sync pipeline --config pipeline.yaml --output json",
 	}
 
 	for _, path := range paths {
@@ -277,30 +288,10 @@ func TestPythonDocsUseBridgeRuntimeContract(t *testing.T) {
 				t.Fatalf("%s should not document stale Python integration surface %q", path, phrase)
 			}
 		}
-		if attributeStyleResult.MatchString(text) {
-			t.Fatalf("%s should use mapping-style result access, not result.attribute examples", path)
-		}
-	}
-
-	content, err := os.ReadFile("docs/PYTHON_BINDINGS.md")
-	if err != nil {
-		t.Fatalf("read docs/PYTHON_BINDINGS.md: %v", err)
-	}
-	text := string(content)
-	for _, required := range []string{
-		"backend=\"auto\"",
-		"bridge.cli_available",
-		"bridge.native_available",
-		"secrets_sync_native",
-		"validation = bridge.validate_config",
-		"result[\"success\"]",
-		"result[\"secrets_processed\"]",
-		"from secrets_sync import SecretsSyncBridge",
-		"agentic-crew[secrets-sync]",
-		"secrets-sync pipeline --output json",
-	} {
-		if !strings.Contains(text, required) {
-			t.Fatalf("docs/PYTHON_BINDINGS.md should document current Python contract %q", required)
+		for _, phrase := range required {
+			if !strings.Contains(text, phrase) {
+				t.Fatalf("%s should document current Python integration boundary %q", path, phrase)
+			}
 		}
 	}
 }
@@ -314,15 +305,23 @@ func TestOwnershipMapDocumentsSplitBoundaries(t *testing.T) {
 
 	for _, required := range []string{
 		"cmd/secrets-sync",
-		"packages/secrets-sync-bridge",
-		"secrets_sync_native",
 		"jbcom/extended-data",
-		"jbcom/cloud-connectors-python",
-		"jbcom/agent-orchestration",
-		"agentic-crew[secrets-sync]",
+		"jbcom/vendor-fabric",
+		"vendor-fabric[secrets-sync]",
+		"vendor-fabric[ai,secrets-sync]",
 	} {
 		if !strings.Contains(text, required) {
 			t.Fatalf("docs/OWNERSHIP.md should document boundary %q", required)
+		}
+	}
+	for _, forbidden := range []string{
+		"packages/secrets-sync-bridge",
+		"secrets_sync_native",
+		"jbcom/agent-orchestration",
+		"agentic-crew[secrets-sync]",
+	} {
+		if strings.Contains(text, forbidden) {
+			t.Fatalf("docs/OWNERSHIP.md should not document retired boundary %q", forbidden)
 		}
 	}
 }
