@@ -152,6 +152,12 @@ func buildBundleCipher(awsCfg aws.Config, cfg *EncryptionConfig) (crypto.Cipher,
 	switch {
 	case cfg.KMSKeyID != "":
 		return crypto.NewKMSCipher(kms.NewFromConfig(awsCfg), cfg.KMSKeyID)
+	case cfg.PostQuantumSeedEnv != "":
+		seed := os.Getenv(cfg.PostQuantumSeedEnv)
+		if seed == "" {
+			return nil, fmt.Errorf("encryption.post_quantum_seed_env %q is empty", cfg.PostQuantumSeedEnv)
+		}
+		return crypto.NewPQCipherFromSeed(seed)
 	case cfg.KeyEnv != "":
 		raw := os.Getenv(cfg.KeyEnv)
 		if raw == "" {
@@ -163,7 +169,7 @@ func buildBundleCipher(awsCfg aws.Config, cfg *EncryptionConfig) (crypto.Cipher,
 		}
 		return crypto.NewStaticKeyCipher(key)
 	default:
-		return nil, fmt.Errorf("encryption enabled but neither kms_key_id nor key_env is set")
+		return nil, fmt.Errorf("encryption enabled but no key source (kms_key_id, post_quantum_seed_env, or key_env) is set")
 	}
 }
 

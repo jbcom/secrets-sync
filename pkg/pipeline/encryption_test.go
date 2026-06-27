@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/jbcom/secrets-sync/pkg/crypto"
 )
 
 func TestBuildBundleCipherStaticKey(t *testing.T) {
@@ -34,6 +35,28 @@ func TestBuildBundleCipherKMS(t *testing.T) {
 	c, err := buildBundleCipher(aws.Config{Region: "us-east-1"}, &EncryptionConfig{Enabled: true, KMSKeyID: "alias/x"})
 	if err != nil || c == nil {
 		t.Fatalf("build kms cipher: c=%v err=%v", c, err)
+	}
+}
+
+func TestBuildBundleCipherPostQuantum(t *testing.T) {
+	// Generate a real ML-KEM seed and feed it via env.
+	_, seed, err := crypto.GeneratePQKey()
+	if err != nil {
+		t.Fatalf("generate pq key: %v", err)
+	}
+	t.Setenv("SS_PQ_SEED", seed)
+
+	c, err := buildBundleCipher(aws.Config{}, &EncryptionConfig{Enabled: true, PostQuantumSeedEnv: "SS_PQ_SEED"})
+	if err != nil {
+		t.Fatalf("build pq cipher: %v", err)
+	}
+	ct, err := c.Encrypt(context.Background(), []byte("quantum-safe"))
+	if err != nil {
+		t.Fatalf("encrypt: %v", err)
+	}
+	pt, err := c.Decrypt(context.Background(), ct)
+	if err != nil || string(pt) != "quantum-safe" {
+		t.Fatalf("pq round-trip: pt=%q err=%v", pt, err)
 	}
 }
 

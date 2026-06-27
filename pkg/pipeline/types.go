@@ -232,7 +232,7 @@ type MergeStoreS3 struct {
 }
 
 // EncryptionConfig configures client-side merge-store encryption. Exactly one
-// of KMSKeyID or KeyEnv must be set when Enabled.
+// of KMSKeyID, KeyEnv, or PostQuantumSeedEnv must be set when Enabled.
 type EncryptionConfig struct {
 	Enabled bool `mapstructure:"enabled" yaml:"enabled"`
 	// KMSKeyID enables KMS envelope encryption with the given key.
@@ -240,6 +240,9 @@ type EncryptionConfig struct {
 	// KeyEnv names an environment variable holding a base64-encoded 32-byte
 	// AES-256 key for user-supplied (static) key encryption.
 	KeyEnv string `mapstructure:"key_env" yaml:"key_env,omitempty"`
+	// PostQuantumSeedEnv names an environment variable holding a base64-encoded
+	// ML-KEM-768 decapsulation-key seed for quantum-resistant encryption.
+	PostQuantumSeedEnv string `mapstructure:"post_quantum_seed_env" yaml:"post_quantum_seed_env,omitempty"`
 }
 
 // VersioningConfig configures secret versioning

@@ -278,6 +278,24 @@ With KMS, a fresh data key is generated per write and stored KMS-wrapped
 alongside the ciphertext; the plaintext key never persists. With `key_env`, the
 same base64 32-byte key must be supplied to read bundles back.
 
+### Post-quantum encryption-at-rest
+
+For quantum-resistant encryption, supply an ML-KEM-768 (NIST FIPS 203)
+decapsulation-key seed:
+
+```yaml
+merge_store:
+  s3:
+    encryption:
+      enabled: true
+      post_quantum_seed_env: SECRETS_SYNC_PQ_SEED   # base64 ML-KEM-768 seed
+```
+
+Each write encapsulates a fresh shared secret against the key and stores the
+KEM ciphertext in the envelope; only the decapsulation-key holder can recover
+it, even against a quantum adversary. The bulk payload is AES-256-GCM with an
+HKDF-derived key, so the scheme is a standard hybrid KEM+DEM construction.
+
 ## Distributed tracing
 
 Enable OpenTelemetry tracing with an `observability.tracing` block. Spans cover
