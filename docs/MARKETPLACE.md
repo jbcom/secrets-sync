@@ -20,7 +20,7 @@ environments, AWS Organizations discovery, and CI/CD validation workflows.
 ## Supported Runtime Surface
 
 - GitHub Action using `action.yml`.
-- Docker image `ghcr.io/jbcom/secrets-sync:v1`.
+- Docker image `ghcr.io/jbcom/secrets-sync:v2.2.0`.
 - Go CLI `secrets-sync`.
 - Kubernetes CronJob or `CredentialSynchronization` controller using the same
   GHCR image.

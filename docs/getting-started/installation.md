@@ -20,10 +20,10 @@ go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 ## Run with Docker
 
 ```bash
-docker pull ghcr.io/jbcom/secrets-sync:v1
+docker pull ghcr.io/jbcom/secrets-sync:v2.2.0
 
 # Example alias for local CLI-style usage
-alias secrets-sync='docker run --rm -v "$PWD":/workspace -w /workspace ghcr.io/jbcom/secrets-sync:v1'
+alias secrets-sync='docker run --rm -v "$PWD":/workspace -w /workspace ghcr.io/jbcom/secrets-sync:v2.2.0'
 ```
 
 ## Build from Source

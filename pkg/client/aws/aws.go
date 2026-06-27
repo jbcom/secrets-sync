@@ -242,7 +242,11 @@ func (c *AwsClient) CreateClientWithEndpoint(ctx context.Context, endpoint strin
 	}
 	var provider aws.CredentialsProvider
 	if c.RoleArn != "" {
-		stsclient := sts.NewFromConfig(awscfg)
+		stsclient := sts.NewFromConfig(awscfg, func(options *sts.Options) {
+			if endpoint != "" {
+				options.BaseEndpoint = aws.String(endpoint)
+			}
+		})
 		provider = stscreds.NewAssumeRoleProvider(stsclient, c.RoleArn)
 		awscfg.Credentials = provider
 	}

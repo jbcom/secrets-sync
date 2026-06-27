@@ -91,12 +91,12 @@ that execute the same `secrets-sync pipeline` command.
 
 ## Integration Boundaries
 
-SecretSync owns the Go CLI, pipeline packages, release artifacts, GHCR image,
+secrets-sync owns the Go CLI, pipeline packages, release artifacts, GHCR image,
 Docker action, Helm runner chart, Kubernetes controller, CRD schema, Lambda entrypoint, and
-`secrets_sync` gopy binding. Python applications should use
-`vendor_fabric.secrets_sync`, which wraps that binding with Extended Data
-primitives, vendor connectors, optional `ProviderSession` handoff, and
-redaction.
+`secrets_sync` gopy binding. The repo-owned Python surface is published as
+`secrets-sync-python-binding` and imported as `secrets_sync`. Downstream packages
+may wrap that binding with vendor-specific coordination, but those wrappers are
+separate from this standalone repository.
 
 The stable cross-language contract is:
 

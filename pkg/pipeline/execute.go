@@ -200,19 +200,41 @@ func (p *Pipeline) executeParallel(ctx context.Context, targets []string, maxPar
 			observability.PipelineParallelWorkers.WithLabelValues("execute").Inc()
 			defer observability.PipelineParallelWorkers.WithLabelValues("execute").Dec()
 			for idx := range jobs {
+				if err := ctx.Err(); err != nil {
+					results[idx] = Result{
+						Target:  targets[idx],
+						Success: false,
+						Error:   err,
+					}
+					continue
+				}
 				results[idx] = fn(targets[idx])
 			}
 		}()
 	}
 
-	for i, target := range targets {
+dispatch:
+	for i := range targets {
+		if err := ctx.Err(); err != nil {
+			for j := i; j < len(targets); j++ {
+				results[j] = Result{
+					Target:  targets[j],
+					Success: false,
+					Error:   err,
+				}
+			}
+			break dispatch
+		}
 		select {
 		case <-ctx.Done():
-			results[i] = Result{
-				Target:  target,
-				Success: false,
-				Error:   ctx.Err(),
+			for j := i; j < len(targets); j++ {
+				results[j] = Result{
+					Target:  targets[j],
+					Success: false,
+					Error:   ctx.Err(),
+				}
 			}
+			break dispatch
 		case jobs <- i:
 		}
 	}

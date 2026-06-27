@@ -13,30 +13,30 @@ import "github.com/jbcom/secrets-sync/pkg/client/vault"
 
 ## Index
 
-- [type LogicalClient](<#LogicalClient>)
-- [type VaultClient](<#VaultClient>)
-  - [func NewClient\(cfg \*VaultClient\) \(\*VaultClient, error\)](<#NewClient>)
-  - [func \(c \*VaultClient\) Close\(\) error](<#VaultClient.Close>)
-  - [func \(in \*VaultClient\) DeepCopy\(\) \*VaultClient](<#VaultClient.DeepCopy>)
-  - [func \(in \*VaultClient\) DeepCopyInto\(out \*VaultClient\)](<#VaultClient.DeepCopyInto>)
-  - [func \(vc \*VaultClient\) DeleteSecret\(ctx context.Context, p string\) error](<#VaultClient.DeleteSecret>)
-  - [func \(vc \*VaultClient\) Driver\(\) driver.DriverName](<#VaultClient.Driver>)
-  - [func \(vc \*VaultClient\) GetKVSecretOnce\(ctx context.Context, s string\) \(map\[string\]interface\{\}, error\)](<#VaultClient.GetKVSecretOnce>)
-  - [func \(vc \*VaultClient\) GetPath\(\) string](<#VaultClient.GetPath>)
-  - [func \(vc \*VaultClient\) GetSecret\(ctx context.Context, s string\) \(\[\]byte, error\)](<#VaultClient.GetSecret>)
-  - [func \(vc \*VaultClient\) Init\(ctx context.Context\) error](<#VaultClient.Init>)
-  - [func \(vc \*VaultClient\) ListSecrets\(ctx context.Context, p string\) \(\[\]string, error\)](<#VaultClient.ListSecrets>)
-  - [func \(vc \*VaultClient\) ListSecretsOnce\(ctx context.Context, p string\) \(\[\]string, error\)](<#VaultClient.ListSecretsOnce>)
-  - [func \(vc \*VaultClient\) Login\(ctx context.Context\) error](<#VaultClient.Login>)
-  - [func \(vc \*VaultClient\) Meta\(\) map\[string\]any](<#VaultClient.Meta>)
-  - [func \(vc \*VaultClient\) NewClient\(ctx context.Context\) \(\*api.Client, error\)](<#VaultClient.NewClient>)
-  - [func \(vc \*VaultClient\) NewToken\(ctx context.Context\) error](<#VaultClient.NewToken>)
-  - [func \(c \*VaultClient\) SetDefaults\(defaults any\) error](<#VaultClient.SetDefaults>)
-  - [func \(vc \*VaultClient\) SetLogicalClient\(client LogicalClient\)](<#VaultClient.SetLogicalClient>)
-  - [func \(c \*VaultClient\) Validate\(\) error](<#VaultClient.Validate>)
-  - [func \(vc \*VaultClient\) WriteSecret\(ctx context.Context, meta metav1.ObjectMeta, s string, bData \[\]byte\) \(\[\]byte, error\)](<#VaultClient.WriteSecret>)
-  - [func \(vc \*VaultClient\) WriteSecretOnce\(ctx context.Context, p string, s map\[string\]interface\{\}, cas \*int\) \(map\[string\]interface\{\}, error\)](<#VaultClient.WriteSecretOnce>)
-  - [func \(vc \*VaultClient\) WriteSecretWithLatestCAS\(ctx context.Context, p string, s map\[string\]interface\{\}\) \(map\[string\]interface\{\}, error\)](<#VaultClient.WriteSecretWithLatestCAS>)
+- type LogicalClient
+- type VaultClient
+  - func NewClient\(cfg \*VaultClient\) \(\*VaultClient, error\)
+  - func \(c \*VaultClient\) Close\(\) error
+  - func \(in \*VaultClient\) DeepCopy\(\) \*VaultClient
+  - func \(in \*VaultClient\) DeepCopyInto\(out \*VaultClient\)
+  - func \(vc \*VaultClient\) DeleteSecret\(ctx context.Context, p string\) error
+  - func \(vc \*VaultClient\) Driver\(\) driver.DriverName
+  - func \(vc \*VaultClient\) GetKVSecretOnce\(ctx context.Context, s string\) \(map\[string\]interface\{\}, error\)
+  - func \(vc \*VaultClient\) GetPath\(\) string
+  - func \(vc \*VaultClient\) GetSecret\(ctx context.Context, s string\) \(\[\]byte, error\)
+  - func \(vc \*VaultClient\) Init\(ctx context.Context\) error
+  - func \(vc \*VaultClient\) ListSecrets\(ctx context.Context, p string\) \(\[\]string, error\)
+  - func \(vc \*VaultClient\) ListSecretsOnce\(ctx context.Context, p string\) \(\[\]string, error\)
+  - func \(vc \*VaultClient\) Login\(ctx context.Context\) error
+  - func \(vc \*VaultClient\) Meta\(\) map\[string\]any
+  - func \(vc \*VaultClient\) NewClient\(ctx context.Context\) \(\*api.Client, error\)
+  - func \(vc \*VaultClient\) NewToken\(ctx context.Context\) error
+  - func \(c \*VaultClient\) SetDefaults\(defaults any\) error
+  - func \(vc \*VaultClient\) SetLogicalClient\(client LogicalClient\)
+  - func \(c \*VaultClient\) Validate\(\) error
+  - func \(vc \*VaultClient\) WriteSecret\(ctx context.Context, meta metav1.ObjectMeta, s string, bData \[\]byte\) \(\[\]byte, error\)
+  - func \(vc \*VaultClient\) WriteSecretOnce\(ctx context.Context, p string, s map\[string\]interface\{\}, cas \*int\) \(map\[string\]interface\{\}, error\)
+  - func \(vc \*VaultClient\) WriteSecretWithLatestCAS\(ctx context.Context, p string, s map\[string\]interface\{\}\) \(map\[string\]interface\{\}, error\)
 
 
 <a name="LogicalClient"></a>
@@ -91,7 +91,7 @@ func NewClient(cfg *VaultClient) (*VaultClient, error)
 
 
 <a name="VaultClient.Close"></a>
-### func \(\*VaultClient\) [Close](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L905>)
+### func \(\*VaultClient\) [Close](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L907>)
 
 ```go
 func (c *VaultClient) Close() error
@@ -118,7 +118,7 @@ func (in *VaultClient) DeepCopyInto(out *VaultClient)
 DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non\-nil.
 
 <a name="VaultClient.DeleteSecret"></a>
-### func \(\*VaultClient\) [DeleteSecret](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L550>)
+### func \(\*VaultClient\) [DeleteSecret](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L552>)
 
 ```go
 func (vc *VaultClient) DeleteSecret(ctx context.Context, p string) error
@@ -136,7 +136,7 @@ func (vc *VaultClient) Driver() driver.DriverName
 
 
 <a name="VaultClient.GetKVSecretOnce"></a>
-### func \(\*VaultClient\) [GetKVSecretOnce](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L301>)
+### func \(\*VaultClient\) [GetKVSecretOnce](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L303>)
 
 ```go
 func (vc *VaultClient) GetKVSecretOnce(ctx context.Context, s string) (map[string]interface{}, error)
@@ -154,7 +154,7 @@ func (vc *VaultClient) GetPath() string
 
 
 <a name="VaultClient.GetSecret"></a>
-### func \(\*VaultClient\) [GetSecret](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L360>)
+### func \(\*VaultClient\) [GetSecret](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L362>)
 
 ```go
 func (vc *VaultClient) GetSecret(ctx context.Context, s string) ([]byte, error)
@@ -163,7 +163,7 @@ func (vc *VaultClient) GetSecret(ctx context.Context, s string) ([]byte, error)
 GetKVSecret will login and retry secret access on failure to gracefully handle token expiration
 
 <a name="VaultClient.Init"></a>
-### func \(\*VaultClient\) [Init](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L254>)
+### func \(\*VaultClient\) [Init](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L256>)
 
 ```go
 func (vc *VaultClient) Init(ctx context.Context) error
@@ -172,7 +172,7 @@ func (vc *VaultClient) Init(ctx context.Context) error
 
 
 <a name="VaultClient.ListSecrets"></a>
-### func \(\*VaultClient\) [ListSecrets](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L884>)
+### func \(\*VaultClient\) [ListSecrets](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L886>)
 
 ```go
 func (vc *VaultClient) ListSecrets(ctx context.Context, p string) ([]string, error)
@@ -181,7 +181,7 @@ func (vc *VaultClient) ListSecrets(ctx context.Context, p string) ([]string, err
 
 
 <a name="VaultClient.ListSecretsOnce"></a>
-### func \(\*VaultClient\) [ListSecretsOnce](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L626>)
+### func \(\*VaultClient\) [ListSecretsOnce](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L628>)
 
 ```go
 func (vc *VaultClient) ListSecretsOnce(ctx context.Context, p string) ([]string, error)
@@ -190,13 +190,13 @@ func (vc *VaultClient) ListSecretsOnce(ctx context.Context, p string) ([]string,
 
 
 <a name="VaultClient.Login"></a>
-### func \(\*VaultClient\) [Login](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L199>)
+### func \(\*VaultClient\) [Login](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L201>)
 
 ```go
 func (vc *VaultClient) Login(ctx context.Context) error
 ```
 
-Login creates a vault token with the k8s auth provider
+Login authenticates the Vault client. Runtime token handoff takes precedence; otherwise Kubernetes auth is used when a service account token is available, falling back to VAULT\_TOKEN for CLI\-style execution.
 
 <a name="VaultClient.Meta"></a>
 ### func \(\*VaultClient\) [Meta](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L144>)
@@ -217,7 +217,7 @@ func (vc *VaultClient) NewClient(ctx context.Context) (*api.Client, error)
 NewClients creates and returns a new vault client with a valid token or error
 
 <a name="VaultClient.NewToken"></a>
-### func \(\*VaultClient\) [NewToken](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L264>)
+### func \(\*VaultClient\) [NewToken](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L266>)
 
 ```go
 func (vc *VaultClient) NewToken(ctx context.Context) error
@@ -226,7 +226,7 @@ func (vc *VaultClient) NewToken(ctx context.Context) error
 
 
 <a name="VaultClient.SetDefaults"></a>
-### func \(\*VaultClient\) [SetDefaults](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L910>)
+### func \(\*VaultClient\) [SetDefaults](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L912>)
 
 ```go
 func (c *VaultClient) SetDefaults(defaults any) error
@@ -235,7 +235,7 @@ func (c *VaultClient) SetDefaults(defaults any) error
 
 
 <a name="VaultClient.SetLogicalClient"></a>
-### func \(\*VaultClient\) [SetLogicalClient](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L811>)
+### func \(\*VaultClient\) [SetLogicalClient](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L813>)
 
 ```go
 func (vc *VaultClient) SetLogicalClient(client LogicalClient)
@@ -253,7 +253,7 @@ func (c *VaultClient) Validate() error
 
 
 <a name="VaultClient.WriteSecret"></a>
-### func \(\*VaultClient\) [WriteSecret](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L394>)
+### func \(\*VaultClient\) [WriteSecret](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L396>)
 
 ```go
 func (vc *VaultClient) WriteSecret(ctx context.Context, meta metav1.ObjectMeta, s string, bData []byte) ([]byte, error)
@@ -269,7 +269,7 @@ When Merge is true, uses deepmerge semantics matching the original terraform\-aw
 - Type conflicts: OVERRIDE \(later value wins\)
 
 <a name="VaultClient.WriteSecretOnce"></a>
-### func \(\*VaultClient\) [WriteSecretOnce](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L454>)
+### func \(\*VaultClient\) [WriteSecretOnce](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L456>)
 
 ```go
 func (vc *VaultClient) WriteSecretOnce(ctx context.Context, p string, s map[string]interface{}, cas *int) (map[string]interface{}, error)
@@ -278,7 +278,7 @@ func (vc *VaultClient) WriteSecretOnce(ctx context.Context, p string, s map[stri
 WriteSecret writes a secret to Vault VaultClient at path p with secret value s
 
 <a name="VaultClient.WriteSecretWithLatestCAS"></a>
-### func \(\*VaultClient\) [WriteSecretWithLatestCAS](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L494>)
+### func \(\*VaultClient\) [WriteSecretWithLatestCAS](<https://github.com/jbcom/secrets-sync/blob/main/pkg/client/vault/vault.go#L496>)
 
 ```go
 func (vc *VaultClient) WriteSecretWithLatestCAS(ctx context.Context, p string, s map[string]interface{}) (map[string]interface{}, error)

@@ -3,6 +3,7 @@ package observability
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -40,7 +41,7 @@ var (
 			Name:      "secrets_listed_total",
 			Help:      "Total number of secrets listed from Vault",
 		},
-		[]string{"path"},
+		[]string{"mount"},
 	)
 
 	VaultTraversalDepth = prometheus.NewHistogramVec(
@@ -51,7 +52,7 @@ var (
 			Help:      "Depth reached during BFS traversal",
 			Buckets:   []float64{1, 5, 10, 20, 50, 100},
 		},
-		[]string{"path"},
+		[]string{"mount"},
 	)
 
 	VaultQueueSize = prometheus.NewGaugeVec(
@@ -61,7 +62,7 @@ var (
 			Name:      "queue_size",
 			Help:      "Current size of the BFS traversal queue",
 		},
-		[]string{"path"},
+		[]string{"mount"},
 	)
 
 	VaultErrors = prometheus.NewCounterVec(
@@ -192,6 +193,19 @@ var (
 		[]string{"operation"},
 	)
 )
+
+// VaultMountLabel returns a bounded Prometheus label for a Vault path.
+func VaultMountLabel(path string) string {
+	path = strings.Trim(path, "/")
+	if path == "" {
+		return "unknown"
+	}
+	mount, _, _ := strings.Cut(path, "/")
+	if mount == "" {
+		return "unknown"
+	}
+	return mount
+}
 
 // Registry holds all metrics
 var Registry = prometheus.NewRegistry()

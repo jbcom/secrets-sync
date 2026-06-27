@@ -35,13 +35,13 @@ func (p *Pipeline) fetchVaultSecrets(ctx context.Context, path string) (map[stri
 		secretPath := fmt.Sprintf("%s/%s", path, secretName)
 		secretData, err := vaultClient.GetSecret(ctx, secretPath)
 		if err != nil {
-			l.WithError(err).WithField("secretPath", secretPath).Debug("Failed to get secret")
+			l.WithError(err).WithField("secret_path_depth", len(strings.Split(secretPath, "/"))).Debug("Failed to get secret")
 			continue
 		}
 
 		var data interface{}
 		if err := json.Unmarshal(secretData, &data); err != nil {
-			l.WithError(err).WithField("secretPath", secretPath).Debug("Failed to parse secret")
+			l.WithError(err).WithField("secret_path_depth", len(strings.Split(secretPath, "/"))).Debug("Failed to parse secret")
 			continue
 		}
 		secrets[secretName] = data

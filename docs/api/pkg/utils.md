@@ -15,14 +15,14 @@ Package utils provides utility functions for secrets\-sync.
 
 ## Index
 
-- [func CompareSecretsJSON\(existing, new \[\]byte\) \(bool, error\)](<#CompareSecretsJSON>)
-- [func DeepEqual\(a, b interface\{\}\) bool](<#DeepEqual>)
-- [func DeepMerge\(dst, src map\[string\]interface\{\}\) map\[string\]interface\{\}](<#DeepMerge>)
-- [func DeepMergeJSON\(dst, src \[\]byte\) \(\[\]byte, error\)](<#DeepMergeJSON>)
+- func CompareSecretsJSON\(existing, new \[\]byte\) \(bool, error\)
+- func DeepEqual\(a, b interface\{\}\) bool
+- func DeepMerge\(dst, src map\[string\]interface\{\}\) map\[string\]interface\{\}
+- func DeepMergeJSON\(dst, src \[\]byte\) \(\[\]byte, error\)
 
 
 <a name="CompareSecretsJSON"></a>
-## func [CompareSecretsJSON](<https://github.com/jbcom/secrets-sync/blob/main/pkg/utils/deepmerge.go#L202>)
+## func [CompareSecretsJSON](<https://github.com/jbcom/secrets-sync/blob/main/pkg/utils/deepmerge.go#L200>)
 
 ```go
 func CompareSecretsJSON(existing, new []byte) (bool, error)
@@ -31,7 +31,7 @@ func CompareSecretsJSON(existing, new []byte) (bool, error)
 CompareSecretsJSON compares two JSON secret values for equality. Returns true if they are equivalent \(handling JSON number differences\).
 
 <a name="DeepEqual"></a>
-## func [DeepEqual](<https://github.com/jbcom/secrets-sync/blob/main/pkg/utils/deepmerge.go#L155>)
+## func [DeepEqual](<https://github.com/jbcom/secrets-sync/blob/main/pkg/utils/deepmerge.go#L153>)
 
 ```go
 func DeepEqual(a, b interface{}) bool
@@ -40,7 +40,7 @@ func DeepEqual(a, b interface{}) bool
 DeepEqual compares two values for deep equality. Handles JSON number comparison properly.
 
 <a name="DeepMerge"></a>
-## func [DeepMerge](<https://github.com/jbcom/secrets-sync/blob/main/pkg/utils/deepmerge.go#L21>)
+## func [DeepMerge](<https://github.com/jbcom/secrets-sync/blob/main/pkg/utils/deepmerge.go#L19>)
 
 ```go
 func DeepMerge(dst, src map[string]interface{}) map[string]interface{}
@@ -53,17 +53,12 @@ DeepMerge merges src into dst using the following strategy:
 - Scalars: OVERRIDE \(src replaces dst\)
 - Type conflicts: OVERRIDE \(src replaces dst\)
 
-This matches the behavior of Python's deepmerge.Merger with:
-
-```
-[(list, ["append"]), (dict, ["merge"]), (set, ["union"])],
-["override"], ["override"]
-```
+This matches Python's deepmerge.Merger strategy: list append, dict/map merge, set union, and override fallbacks.
 
 The function modifies dst in place and returns the merged result.
 
 <a name="DeepMergeJSON"></a>
-## func [DeepMergeJSON](<https://github.com/jbcom/secrets-sync/blob/main/pkg/utils/deepmerge.go#L125>)
+## func [DeepMergeJSON](<https://github.com/jbcom/secrets-sync/blob/main/pkg/utils/deepmerge.go#L123>)
 
 ```go
 func DeepMergeJSON(dst, src []byte) ([]byte, error)

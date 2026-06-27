@@ -23,6 +23,14 @@ Parameters:
   MemorySize:
     Type: Number
     Default: 512
+  ManagedSecretPrefix:
+    Type: String
+    Default: secrets-sync/
+    Description: Secrets Manager name prefix this Lambda may create or mutate.
+  AssumableRoleNamePattern:
+    Type: String
+    Default: secrets-sync-*
+    Description: IAM role name pattern this Lambda may assume for target account writes.
 
 Resources:
   SecretsSyncFunction:
@@ -44,15 +52,18 @@ Resources:
               Resource: !Sub arn:${AWS::Partition}:s3:::${ConfigBucket}/${ConfigKey}
             - Effect: Allow
               Action:
+                - secretsmanager:ListSecrets
+              Resource: "*"
+            - Effect: Allow
+              Action:
                 - secretsmanager:CreateSecret
                 - secretsmanager:DeleteSecret
                 - secretsmanager:DescribeSecret
                 - secretsmanager:GetSecretValue
-                - secretsmanager:ListSecrets
                 - secretsmanager:PutSecretValue
                 - secretsmanager:TagResource
                 - secretsmanager:UpdateSecret
-              Resource: "*"
+              Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ManagedSecretPrefix}*
             - Effect: Allow
               Action:
                 - organizations:DescribeOrganization
@@ -65,6 +76,9 @@ Resources:
             - Effect: Allow
               Action:
                 - sts:AssumeRole
+              Resource: !Sub arn:${AWS::Partition}:iam::*:role/${AssumableRoleNamePattern}
+            - Effect: Allow
+              Action:
                 - sts:GetCallerIdentity
               Resource: "*"
       Events:

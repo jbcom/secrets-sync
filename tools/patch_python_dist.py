@@ -68,12 +68,16 @@ def main() -> int:
 
     _patch_package_init(args.package_dir)
 
+    patched = False
     setup_py = args.package_dir / "setup.py"
-    if setup_py.exists() and _patch_setup_py(setup_py, args.name):
-        return 0
+    if setup_py.exists():
+        patched = _patch_setup_py(setup_py, args.name) or patched
 
     pyproject = args.package_dir / "pyproject.toml"
-    if pyproject.exists() and _patch_pyproject(pyproject, args.name):
+    if pyproject.exists():
+        patched = _patch_pyproject(pyproject, args.name) or patched
+
+    if patched:
         return 0
 
     print(

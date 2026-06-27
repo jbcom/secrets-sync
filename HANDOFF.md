@@ -11,7 +11,7 @@ spellings when they conflict.
 - Python import/module: `secrets_sync`
 - Python PyPI distribution: `secrets-sync-python-binding`
 - Metrics namespace: `secrets_sync`
-- Vendor facade entry point: `vendor_fabric.secrets_sync`
+- Repo-owned Python entry point: `secrets_sync`; downstream facades may wrap it.
 
 ## Current Source Shape
 
@@ -50,11 +50,11 @@ go build -o /tmp/secrets-sync-controller-handoff ./cmd/secrets-sync-controller
 /tmp/secrets-sync-handoff --help
 just lambda-build
 python3 -m py_compile tools/check_python_dist.py tools/patch_python_dist.py
-just python-build
+just python-matrix
 git diff --check
 ```
 
-`just python-build` uses `uv` for Python build dependencies and
+`just python-matrix` uses `uv` for Python build dependencies and
 `scripts/install-gopy.sh` to install gopy with a current Go-compatible
 `golang.org/x/tools` version.
 

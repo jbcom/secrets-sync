@@ -13,22 +13,22 @@ import "github.com/jbcom/secrets-sync/pkg/context"
 
 ## Index
 
-- [func GetElapsedTime\(ctx context.Context\) time.Duration](<#GetElapsedTime>)
-- [func GetRequestID\(ctx context.Context\) string](<#GetRequestID>)
-- [func WithRequestContext\(ctx context.Context, reqCtx \*RequestContext\) context.Context](<#WithRequestContext>)
-- [type ErrorBuilder](<#ErrorBuilder>)
-  - [func NewErrorBuilder\(ctx context.Context, operation string\) \*ErrorBuilder](<#NewErrorBuilder>)
-  - [func \(b \*ErrorBuilder\) Build\(message string, err error\) error](<#ErrorBuilder.Build>)
-  - [func \(b \*ErrorBuilder\) Errorf\(format string, args ...interface\{\}\) error](<#ErrorBuilder.Errorf>)
-  - [func \(b \*ErrorBuilder\) GetContext\(\) ErrorContext](<#ErrorBuilder.GetContext>)
-  - [func \(b \*ErrorBuilder\) WithPath\(path string\) \*ErrorBuilder](<#ErrorBuilder.WithPath>)
-  - [func \(b \*ErrorBuilder\) WithRetryCount\(count int\) \*ErrorBuilder](<#ErrorBuilder.WithRetryCount>)
-  - [func \(b \*ErrorBuilder\) WithSecretName\(name string\) \*ErrorBuilder](<#ErrorBuilder.WithSecretName>)
-  - [func \(b \*ErrorBuilder\) Wrap\(err error, message string\) error](<#ErrorBuilder.Wrap>)
-- [type ErrorContext](<#ErrorContext>)
-- [type RequestContext](<#RequestContext>)
-  - [func FromContext\(ctx context.Context\) \*RequestContext](<#FromContext>)
-  - [func NewRequestContext\(\) \*RequestContext](<#NewRequestContext>)
+- func GetElapsedTime\(ctx context.Context\) time.Duration
+- func GetRequestID\(ctx context.Context\) string
+- func WithRequestContext\(ctx context.Context, reqCtx \*RequestContext\) context.Context
+- type ErrorBuilder
+  - func NewErrorBuilder\(ctx context.Context, operation string\) \*ErrorBuilder
+  - func \(b \*ErrorBuilder\) Build\(message string, err error\) error
+  - func \(b \*ErrorBuilder\) Errorf\(format string, args ...interface\{\}\) error
+  - func \(b \*ErrorBuilder\) GetContext\(\) ErrorContext
+  - func \(b \*ErrorBuilder\) WithPath\(path string\) \*ErrorBuilder
+  - func \(b \*ErrorBuilder\) WithRetryCount\(count int\) \*ErrorBuilder
+  - func \(b \*ErrorBuilder\) WithSecretName\(name string\) \*ErrorBuilder
+  - func \(b \*ErrorBuilder\) Wrap\(err error, message string\) error
+- type ErrorContext
+- type RequestContext
+  - func FromContext\(ctx context.Context\) \*RequestContext
+  - func NewRequestContext\(\) \*RequestContext
 
 
 <a name="GetElapsedTime"></a>

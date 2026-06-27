@@ -16,8 +16,6 @@ rules:
       - get
       - list
       - watch
-      - update
-      - patch
   - apiGroups:
       - secrets-sync.jbcom.dev
     resources:

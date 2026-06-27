@@ -28,11 +28,14 @@ chmod -R u+w "$tmpdir/gopy-src"
 old='cflags = append(cflags, "-fPIC", "-Ofast")'
 new='cflags = append(cflags, "-fPIC", "-O3", "-ffast-math")'
 path="gopy-src/cmd_build.go"
-if ! grep -Fq "$old" "$path"; then
+if grep -Fq "$new" "$path"; then
+  echo "gopy CFLAGS are already patched"
+elif ! grep -Fq "$old" "$path"; then
   echo "expected gopy CFLAGS line not found in $path" >&2
   exit 1
+else
+  perl -0pi -e 's/\Q'"$old"'\E/'"$new"'/g' "$path"
 fi
-perl -0pi -e 's/\Q'"$old"'\E/'"$new"'/g' "$path"
 
 (
   cd "$tmpdir/gopy-src"

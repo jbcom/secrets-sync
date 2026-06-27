@@ -42,6 +42,7 @@ import (
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	"github.com/jbcom/secrets-sync/pkg/diff"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v3"
 )
 
 // Operation defines what the pipeline should do
@@ -146,19 +147,25 @@ func NewWithContext(ctx context.Context, cfg *Config) (*Pipeline, error) {
 // NewWithContextAndRuntimeAuth creates a new Pipeline with explicit runtime
 // authentication material supplied by an embedding caller.
 func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *RuntimeAuth) (*Pipeline, error) {
+	runtimeCfg := cfg
 	if auth != nil {
-		auth.applyToConfig(cfg)
+		var err error
+		runtimeCfg, err = cloneConfig(cfg)
+		if err != nil {
+			return nil, err
+		}
+		auth.applyToConfig(runtimeCfg)
 	}
 
-	p, err := New(cfg)
+	p, err := New(runtimeCfg)
 	if err != nil {
 		return nil, err
 	}
 	p.runtimeAuth = auth.copy()
 
 	// Initialize AWS execution context if configured
-	if cfg.AWS.ExecutionContext.Type != "" {
-		awsCtx, err := NewAWSExecutionContextWithRuntimeAuth(ctx, &cfg.AWS, p.runtimeAWSAuth())
+	if runtimeCfg.AWS.ExecutionContext.Type != "" {
+		awsCtx, err := NewAWSExecutionContextWithRuntimeAuth(ctx, &runtimeCfg.AWS, p.runtimeAWSAuth())
 		if err != nil {
 			log.WithError(err).Warn("Failed to initialize AWS execution context")
 		} else {
@@ -167,8 +174,8 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 	}
 
 	// Initialize S3 merge store if configured
-	if cfg.MergeStore.S3 != nil {
-		s3Store, err := NewS3MergeStoreWithRuntimeAuth(ctx, cfg.MergeStore.S3, cfg.AWS.Region, p.runtimeAWSAuth())
+	if runtimeCfg.MergeStore.S3 != nil {
+		s3Store, err := NewS3MergeStoreWithRuntimeAuth(ctx, runtimeCfg.MergeStore.S3, runtimeCfg.AWS.Region, p.runtimeAWSAuth())
 		if err != nil {
 			log.WithError(err).Warn("Failed to initialize S3 merge store")
 		} else {
@@ -177,6 +184,21 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 	}
 
 	return p, nil
+}
+
+func cloneConfig(cfg *Config) (*Config, error) {
+	if cfg == nil {
+		return nil, nil
+	}
+	data, err := yaml.Marshal(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("clone config: %w", err)
+	}
+	var cloned Config
+	if err := yaml.Unmarshal(data, &cloned); err != nil {
+		return nil, fmt.Errorf("clone config: %w", err)
+	}
+	return &cloned, nil
 }
 
 // NewFromFile creates a Pipeline from a configuration file
@@ -207,7 +229,12 @@ func (p *Pipeline) Run(ctx context.Context, opts Options) ([]Result, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	l := log.WithField("action", "Pipeline.Run")
+	l := log.WithFields(log.Fields{
+		"action":     "Pipeline.Run",
+		"request_id": reqCtx.RequestID,
+		"operation":  opts.Operation,
+		"dry_run":    opts.DryRun,
+	})
 
 	p.resultsMu.Lock()
 	p.results = nil

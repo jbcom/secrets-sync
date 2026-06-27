@@ -1,5 +1,10 @@
 set shell := ["bash", "-euo", "pipefail", "-c"]
 
+gopy_version := "v0.4.10"
+x_tools_version := "v0.47.0"
+gomarkdoc_version := "v1.1.0"
+macosx_deployment_target := "11.0"
+
 default:
     @just --list
 
@@ -64,7 +69,7 @@ lambda-build:
 # Install patched gopy and goimports into .tools/bin.
 python-tools:
     mkdir -p .tools/bin
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" GOBIN="$PWD/.tools/bin" bash scripts/install-gopy.sh
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" GOBIN="$PWD/.tools/bin" GOPY_VERSION="{{ gopy_version }}" X_TOOLS_VERSION="{{ x_tools_version }}" bash scripts/install-gopy.sh
 
 # Generate the gopy binding package.
 python-bindings python_version="3.13": python-tools
@@ -74,6 +79,10 @@ python-bindings python_version="3.13": python-tools
     python_dist="secrets-sync-python-binding"
     output="python/build/${python_pkg}"
     python_run=(uv run --no-project --python "{{ python_version }}" --with build --with pybindgen --with setuptools --with wheel --)
+
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+      export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-{{ macosx_deployment_target }}}"
+    fi
 
     echo "Generating Python bindings for Python {{ python_version }}..."
     rm -rf "${output}"
@@ -152,6 +161,10 @@ python-build python_version="3.13":
     output="python/build/${python_pkg}"
     python_run=(uv run --no-project --python "{{ python_version }}" --with build --with pybindgen --with setuptools --with wheel --)
 
+    if [[ "$(uname -s)" == "Darwin" ]]; then
+      export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-{{ macosx_deployment_target }}}"
+    fi
+
     just python-bindings "{{ python_version }}"
     echo "Building Python wheel for Python {{ python_version }}..."
     (cd "${output}" && "${python_run[@]}" python -m build)
@@ -175,7 +188,8 @@ python-check-dist python_version="3.13":
 # Install the generated wheel into the active Python environment.
 python-install python_version="3.13":
     just python-build "{{ python_version }}"
-    python -m pip install --force-reinstall python/build/secrets_sync/dist/*.whl
+    uv run --no-project --python "{{ python_version }}" -- \
+      python -m pip install --force-reinstall python/build/secrets_sync/dist/*.whl
 
 # Clean generated Python binding output.
 python-clean:
@@ -183,7 +197,7 @@ python-clean:
 
 # Generate API docs.
 docs-api:
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" bash scripts/generate-api-docs.sh
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" GOMARKDOC_VERSION="{{ gomarkdoc_version }}" bash scripts/generate-api-docs.sh
 
 # Build Sphinx docs with warnings treated as errors.
 docs: docs-api
@@ -237,7 +251,9 @@ test-env-up:
     docker-compose -f docker-compose.test.yml up -d localstack vault
     echo "Waiting for services to be healthy..."
     for i in {1..12}; do
-      if docker-compose -f docker-compose.test.yml ps | grep -q "(healthy)" 2>/dev/null; then
+      container_ids="$(docker-compose -f docker-compose.test.yml ps -q localstack vault)"
+      healthy_count="$(docker inspect -f '{{ "{{" }}if .State.Health{{ "}}" }}{{ "{{" }}.State.Health.Status{{ "}}" }}{{ "{{" }}else{{ "}}" }}unknown{{ "{{" }}end{{ "}}" }}' ${container_ids} 2>/dev/null | grep -c '^healthy$' || true)"
+      if [[ "${healthy_count}" -eq 2 ]]; then
         echo "Services are healthy."
         break
       fi

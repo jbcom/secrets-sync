@@ -17,29 +17,29 @@ This package exposes the core secrets synchronization functionality for use from
 
 ## Index
 
-- [Constants](<#constants>)
-- [type ConfigInfo](<#ConfigInfo>)
-  - [func GetConfigInfo\(configPath string\) \*ConfigInfo](<#GetConfigInfo>)
-- [type PipelineConfig](<#PipelineConfig>)
-  - [func NewPipelineConfig\(path string\) \*PipelineConfig](<#NewPipelineConfig>)
-- [type ProviderSession](<#ProviderSession>)
-  - [func NewProviderSession\(\) \*ProviderSession](<#NewProviderSession>)
-- [type StringListResult](<#StringListResult>)
-  - [func GetSources\(configPath string\) \*StringListResult](<#GetSources>)
-  - [func GetTargets\(configPath string\) \*StringListResult](<#GetTargets>)
-- [type SyncOptions](<#SyncOptions>)
-  - [func DefaultSyncOptions\(\) \*SyncOptions](<#DefaultSyncOptions>)
-- [type SyncResult](<#SyncResult>)
-  - [func DryRun\(configPath string\) \*SyncResult](<#DryRun>)
-  - [func DryRunWithSession\(configPath string, session \*ProviderSession\) \*SyncResult](<#DryRunWithSession>)
-  - [func Merge\(configPath string, dryRun bool\) \*SyncResult](<#Merge>)
-  - [func MergeWithSession\(configPath string, dryRun bool, session \*ProviderSession\) \*SyncResult](<#MergeWithSession>)
-  - [func RunPipeline\(configPath string, opts \*SyncOptions\) \*SyncResult](<#RunPipeline>)
-  - [func RunPipelineWithSession\(configPath string, opts \*SyncOptions, session \*ProviderSession\) \*SyncResult](<#RunPipelineWithSession>)
-  - [func Sync\(configPath string, dryRun bool\) \*SyncResult](<#Sync>)
-  - [func SyncWithSession\(configPath string, dryRun bool, session \*ProviderSession\) \*SyncResult](<#SyncWithSession>)
-- [type ValidationResult](<#ValidationResult>)
-  - [func ValidateConfig\(configPath string\) \*ValidationResult](<#ValidateConfig>)
+- Constants
+- type ConfigInfo
+  - func GetConfigInfo\(configPath string\) \*ConfigInfo
+- type PipelineConfig
+  - func NewPipelineConfig\(path string\) \*PipelineConfig
+- type ProviderSession
+  - func NewProviderSession\(\) \*ProviderSession
+- type StringListResult
+  - func GetSources\(configPath string\) \*StringListResult
+  - func GetTargets\(configPath string\) \*StringListResult
+- type SyncOptions
+  - func DefaultSyncOptions\(\) \*SyncOptions
+- type SyncResult
+  - func DryRun\(configPath string\) \*SyncResult
+  - func DryRunWithSession\(configPath string, session \*ProviderSession\) \*SyncResult
+  - func Merge\(configPath string, dryRun bool\) \*SyncResult
+  - func MergeWithSession\(configPath string, dryRun bool, session \*ProviderSession\) \*SyncResult
+  - func RunPipeline\(configPath string, opts \*SyncOptions\) \*SyncResult
+  - func RunPipelineWithSession\(configPath string, opts \*SyncOptions, session \*ProviderSession\) \*SyncResult
+  - func Sync\(configPath string, dryRun bool\) \*SyncResult
+  - func SyncWithSession\(configPath string, dryRun bool, session \*ProviderSession\) \*SyncResult
+- type ValidationResult
+  - func ValidateConfig\(configPath string\) \*ValidationResult
 
 
 ## Constants

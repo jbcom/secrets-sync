@@ -13,17 +13,17 @@ import "github.com/jbcom/secrets-sync/pkg/kubernetes"
 
 ## Index
 
-- [Constants](<#constants>)
-- [Variables](<#variables>)
-- [func BuildRESTConfig\(kubeconfig string\) \(\*rest.Config, error\)](<#BuildRESTConfig>)
-- [func NamespacedName\(obj \*unstructured.Unstructured\) string](<#NamespacedName>)
-- [type Config](<#Config>)
-- [type Controller](<#Controller>)
-  - [func NewController\(dynamicClient dynamic.Interface, kubeClient clientkubernetes.Interface, config Config\) \*Controller](<#NewController>)
-  - [func \(c \*Controller\) BuildCronJob\(obj \*unstructured.Unstructured\) \(\*batchv1.CronJob, error\)](<#Controller.BuildCronJob>)
-  - [func \(c \*Controller\) Reconcile\(ctx context.Context, obj \*unstructured.Unstructured\) error](<#Controller.Reconcile>)
-  - [func \(c \*Controller\) ReconcileAll\(ctx context.Context\) error](<#Controller.ReconcileAll>)
-  - [func \(c \*Controller\) Run\(ctx context.Context\) error](<#Controller.Run>)
+- Constants
+- Variables
+- func BuildRESTConfig\(kubeconfig string\) \(\*rest.Config, error\)
+- func NamespacedName\(obj \*unstructured.Unstructured\) string
+- type Config
+- type Controller
+  - func NewController\(dynamicClient dynamic.Interface, kubeClient clientkubernetes.Interface, config Config\) \*Controller
+  - func \(c \*Controller\) BuildCronJob\(obj \*unstructured.Unstructured\) \(\*batchv1.CronJob, error\)
+  - func \(c \*Controller\) Reconcile\(ctx context.Context, obj \*unstructured.Unstructured\) error
+  - func \(c \*Controller\) ReconcileAll\(ctx context.Context\) error
+  - func \(c \*Controller\) Run\(ctx context.Context\) error
 
 
 ## Constants
@@ -36,7 +36,7 @@ const (
     Version       = "v1alpha1"
     Kind          = "CredentialSynchronization"
     Resource      = "credentialsynchronizations"
-    DefaultImage  = "ghcr.io/jbcom/secrets-sync:latest"
+    DefaultImage  = "ghcr.io/jbcom/secrets-sync:v2.2.0"
     DefaultConfig = "config.yaml"
 )
 ```

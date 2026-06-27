@@ -43,7 +43,7 @@ Multiple installation options:
 go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 
 # Docker
-docker pull ghcr.io/jbcom/secrets-sync:v1
+docker pull ghcr.io/jbcom/secrets-sync:v2.2.0
 
 # Build from source
 git clone https://github.com/jbcom/secrets-sync.git

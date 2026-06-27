@@ -3,10 +3,11 @@ set -euo pipefail
 
 python_version="${PYTHON_VERSION:-3.13}"
 dist_dir="${PYTHON_DIST_DIR:-python/build/secrets_sync/dist}"
-wheel="$(find "$dist_dir" -name '*.whl' | sort | tail -1)"
+python_tag="cp${python_version/./}"
+wheel="$(find "$dist_dir" -name "*${python_tag}"'*.whl' | sort | tail -1)"
 
 if [[ -z "$wheel" ]]; then
-  echo "No wheel found in $dist_dir" >&2
+  echo "No wheel for Python ${python_version} (${python_tag}) found in $dist_dir" >&2
   exit 1
 fi
 

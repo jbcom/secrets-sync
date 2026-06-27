@@ -96,7 +96,7 @@ docker run --rm \
   -e VAULT_ADDR=https://vault.example.com \
   -e VAULT_ROLE_ID="$VAULT_ROLE_ID" \
   -e VAULT_SECRET_ID="$VAULT_SECRET_ID" \
-  ghcr.io/jbcom/secrets-sync:v1 \
+  ghcr.io/jbcom/secrets-sync:v2.2.0 \
   pipeline --config /config.yaml --dry-run --diff --output json
 ```
 
@@ -157,7 +157,7 @@ spec:
           serviceAccountName: secrets-sync
           containers:
             - name: secrets-sync
-              image: ghcr.io/jbcom/secrets-sync:v1
+              image: ghcr.io/jbcom/secrets-sync:v2.2.0
               args:
                 - pipeline
                 - --config
@@ -195,9 +195,8 @@ kubectl apply -f deploy/crds/examples/kubernetes-credential-synchronization.yaml
 ```
 
 The direct manifests install a `secrets-sync` namespace, controller service
-account, RBAC, and Deployment using `ghcr.io/jbcom/secrets-sync:latest`. Pin the
-image tag before production rollout if your cluster admission policy requires
-immutable tags.
+account, RBAC, and Deployment using `ghcr.io/jbcom/secrets-sync:v2.2.0`. Keep
+that value pinned to an immutable release tag or digest in production.
 
 The Helm chart supports both deployment paths. Enable `pipeline.enabled` for a
 single direct CronJob, or enable `controller.enabled` to install the controller

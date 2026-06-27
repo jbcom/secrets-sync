@@ -31,14 +31,30 @@ func TestRuntimeAuthMapsProviderSession(t *testing.T) {
 	if auth.AWS == nil || auth.AWS.Region != "us-west-2" {
 		t.Fatalf("AWS runtime auth not mapped: %#v", auth.AWS)
 	}
+
+	delegated := runtimeAuth(providerSession{
+		DelegateAuth:       true,
+		VaultToken:         "ignored-vault-token",
+		AWSAccessKeyID:     "ignored-access-key",
+		AWSSecretAccessKey: "ignored-secret-key",
+	})
+	if delegated == nil || !delegated.DelegateAuth {
+		t.Fatalf("delegate auth not mapped: %#v", delegated)
+	}
+	if delegated.Vault != nil || delegated.AWS != nil {
+		t.Fatalf("delegate auth should ignore explicit session fields: %#v", delegated)
+	}
 }
 
 func TestPipelineOptionsDefaultsToFullPipeline(t *testing.T) {
-	opts := pipelineOptions(requestOptions{
+	opts, err := pipelineOptions(requestOptions{
 		DryRun:       true,
 		Targets:      "prod,staging",
 		OutputFormat: "json",
 	})
+	if err != nil {
+		t.Fatalf("pipelineOptions returned error: %v", err)
+	}
 
 	if opts.Operation != pipeline.OperationPipeline {
 		t.Fatalf("Operation = %q, want %q", opts.Operation, pipeline.OperationPipeline)
@@ -51,6 +67,12 @@ func TestPipelineOptionsDefaultsToFullPipeline(t *testing.T) {
 	}
 	if opts.OutputFormat != diff.OutputFormatJSON {
 		t.Fatalf("OutputFormat = %q, want %q", opts.OutputFormat, diff.OutputFormatJSON)
+	}
+}
+
+func TestPipelineOptionsRejectsUnknownOperation(t *testing.T) {
+	if _, err := pipelineOptions(requestOptions{Operation: "merg"}); err == nil {
+		t.Fatal("pipelineOptions should reject unknown operations")
 	}
 }
 

@@ -31,7 +31,7 @@ diagnostics:
 just vuln
 just test-go
 just build-all
-just python-build
+just python-matrix
 just quality
 just goreleaser-check
 just docker-build secrets-sync-test

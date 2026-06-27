@@ -9,29 +9,21 @@
 - Binding source: `python/secrets_sync/secrets_sync.go`
 - Generated build output: `python/build/secrets_sync`
 
-## Recommended Python Entry Point
+## Installation
 
-Most Python applications should use the `vendor-fabric` facade:
-
-```bash
-pip install "vendor-fabric[secrets-sync]"
-```
-
-`vendor_fabric.secrets_sync` should consume the `secrets_sync` binding and add
-provider coordination, redaction, data shaping, and ExtendedData-aware
-composition. It may either delegate authentication to `secrets-sync` or own the
-provider handshake itself and pass the resulting authenticated medium through
-`ProviderSession`. It must not reimplement the canonical merge/sync pipeline
-semantics in Python.
-
-## Direct Binding Usage
-
-Direct consumers can install the generated binding distribution when they need
-the raw Go runtime contract:
+Python consumers install the repo-owned binding distribution directly:
 
 ```bash
 pip install secrets-sync-python-binding
 ```
+
+Downstream facades such as vendor-fabric should consume `secrets_sync` and add
+provider coordination, redaction, data shaping, and ExtendedData-aware
+composition outside this repository. They may either delegate authentication to
+`secrets-sync` or own the provider handshake and pass the resulting
+authenticated medium through `ProviderSession`.
+
+## Direct Binding Usage
 
 ```python
 import secrets_sync
@@ -101,14 +93,17 @@ use the normal config/environment authentication path instead.
 
 ```bash
 python -m pip install --upgrade build pybindgen setuptools wheel
-go install golang.org/x/tools/cmd/goimports@latest
-go install github.com/go-python/gopy@latest
+GOBIN="$PWD/.tools/bin" GOPY_VERSION=v0.4.10 X_TOOLS_VERSION=v0.47.0 \
+  bash scripts/install-gopy.sh
 just python-build
 ```
 
 `just python-build` generates the binding, patches the generated package
 metadata to `secrets-sync-python-binding`, builds a wheel, and verifies the
-wheel metadata before release.
+wheel metadata before release. On macOS, the Justfile defaults
+`MACOSX_DEPLOYMENT_TARGET` to `11.0` so local cgo builds do not inherit the
+host OS as the minimum supported wheel target; set that environment variable
+explicitly when a newer deployment target is intentional.
 
 ## Agent Runtime Boundary
 

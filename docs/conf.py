@@ -78,14 +78,6 @@ myst_enable_extensions = [
 ]
 myst_heading_anchors = 3
 
-# gomarkdoc emits package-local symbol links that MyST cannot resolve as
-# Sphinx cross-reference targets. Keep warnings strict for hand-written docs
-# while suppressing the generated API reference noise.
-suppress_warnings = [
-    "myst.header",
-    "myst.xref_missing",
-]
-
 intersphinx_mapping = {
     "python": ("https://docs.python.org/3", None),
 }

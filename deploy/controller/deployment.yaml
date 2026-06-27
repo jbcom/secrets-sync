@@ -26,7 +26,7 @@ spec:
         fsGroup: 65534
       containers:
         - name: controller
-          image: ghcr.io/jbcom/secrets-sync:latest
+          image: ghcr.io/jbcom/secrets-sync:v2.2.0
           imagePullPolicy: IfNotPresent
           command:
             - secrets-sync-controller

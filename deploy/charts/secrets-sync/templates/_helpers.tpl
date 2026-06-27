@@ -77,6 +77,6 @@ Create the name of the controller service account to use.
 {{- if .Values.controller.serviceAccount.create }}
 {{- default (printf "%s-controller" (include "secrets-sync.fullname" .) | trunc 63 | trimSuffix "-") .Values.controller.serviceAccount.name }}
 {{- else }}
-{{- default "default" .Values.controller.serviceAccount.name }}
+{{- required "controller.serviceAccount.name is required when controller.serviceAccount.create=false" .Values.controller.serviceAccount.name }}
 {{- end }}
 {{- end }}

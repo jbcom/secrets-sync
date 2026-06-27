@@ -403,6 +403,9 @@ func runtimeAuthFromSession(session *ProviderSession) *pipeline.RuntimeAuth {
 	}
 
 	auth := &pipeline.RuntimeAuth{DelegateAuth: session.DelegateAuth}
+	if auth.DelegateAuth {
+		return auth
+	}
 	if session.VaultAddress != "" || session.VaultNamespace != "" || session.VaultToken != "" {
 		auth.Vault = &pipeline.VaultRuntimeAuth{
 			Address:   session.VaultAddress,

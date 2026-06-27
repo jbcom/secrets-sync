@@ -13,28 +13,28 @@ import "github.com/jbcom/secrets-sync/pkg/discovery/identitycenter"
 
 ## Index
 
-- [type AccountAssignment](<#AccountAssignment>)
-- [type AccountConfig](<#AccountConfig>)
-- [type DiscoveredAccount](<#DiscoveredAccount>)
-- [type GroupMember](<#GroupMember>)
-- [type IdentityCenterClient](<#IdentityCenterClient>)
-  - [func NewClient\(cfg \*IdentityCenterClient\) \(\*IdentityCenterClient, error\)](<#NewClient>)
-  - [func \(c \*IdentityCenterClient\) Close\(\) error](<#IdentityCenterClient.Close>)
-  - [func \(in \*IdentityCenterClient\) DeepCopy\(\) \*IdentityCenterClient](<#IdentityCenterClient.DeepCopy>)
-  - [func \(in \*IdentityCenterClient\) DeepCopyInto\(out \*IdentityCenterClient\)](<#IdentityCenterClient.DeepCopyInto>)
-  - [func \(c \*IdentityCenterClient\) DeleteSecret\(ctx context.Context, name string\) error](<#IdentityCenterClient.DeleteSecret>)
-  - [func \(c \*IdentityCenterClient\) Driver\(\) driver.DriverName](<#IdentityCenterClient.Driver>)
-  - [func \(c \*IdentityCenterClient\) GetAccountAssignmentsForAccount\(accountID string\) \[\]AccountAssignment](<#IdentityCenterClient.GetAccountAssignmentsForAccount>)
-  - [func \(c \*IdentityCenterClient\) GetPath\(\) string](<#IdentityCenterClient.GetPath>)
-  - [func \(c \*IdentityCenterClient\) GetPermissionSetByName\(name string\) \*PermissionSet](<#IdentityCenterClient.GetPermissionSetByName>)
-  - [func \(c \*IdentityCenterClient\) GetSecret\(ctx context.Context, name string\) \(\[\]byte, error\)](<#IdentityCenterClient.GetSecret>)
-  - [func \(c \*IdentityCenterClient\) Init\(ctx context.Context\) error](<#IdentityCenterClient.Init>)
-  - [func \(c \*IdentityCenterClient\) ListSecrets\(ctx context.Context, path string\) \(\[\]string, error\)](<#IdentityCenterClient.ListSecrets>)
-  - [func \(c \*IdentityCenterClient\) Meta\(\) map\[string\]any](<#IdentityCenterClient.Meta>)
-  - [func \(c \*IdentityCenterClient\) SetDefaults\(cfg any\) error](<#IdentityCenterClient.SetDefaults>)
-  - [func \(c \*IdentityCenterClient\) Validate\(\) error](<#IdentityCenterClient.Validate>)
-  - [func \(c \*IdentityCenterClient\) WriteSecret\(ctx context.Context, meta metav1.ObjectMeta, path string, bSecrets \[\]byte\) \(\[\]byte, error\)](<#IdentityCenterClient.WriteSecret>)
-- [type PermissionSet](<#PermissionSet>)
+- type AccountAssignment
+- type AccountConfig
+- type DiscoveredAccount
+- type GroupMember
+- type IdentityCenterClient
+  - func NewClient\(cfg \*IdentityCenterClient\) \(\*IdentityCenterClient, error\)
+  - func \(c \*IdentityCenterClient\) Close\(\) error
+  - func \(in \*IdentityCenterClient\) DeepCopy\(\) \*IdentityCenterClient
+  - func \(in \*IdentityCenterClient\) DeepCopyInto\(out \*IdentityCenterClient\)
+  - func \(c \*IdentityCenterClient\) DeleteSecret\(ctx context.Context, name string\) error
+  - func \(c \*IdentityCenterClient\) Driver\(\) driver.DriverName
+  - func \(c \*IdentityCenterClient\) GetAccountAssignmentsForAccount\(accountID string\) \[\]AccountAssignment
+  - func \(c \*IdentityCenterClient\) GetPath\(\) string
+  - func \(c \*IdentityCenterClient\) GetPermissionSetByName\(name string\) \*PermissionSet
+  - func \(c \*IdentityCenterClient\) GetSecret\(ctx context.Context, name string\) \(\[\]byte, error\)
+  - func \(c \*IdentityCenterClient\) Init\(ctx context.Context\) error
+  - func \(c \*IdentityCenterClient\) ListSecrets\(ctx context.Context, path string\) \(\[\]string, error\)
+  - func \(c \*IdentityCenterClient\) Meta\(\) map\[string\]any
+  - func \(c \*IdentityCenterClient\) SetDefaults\(cfg any\) error
+  - func \(c \*IdentityCenterClient\) Validate\(\) error
+  - func \(c \*IdentityCenterClient\) WriteSecret\(ctx context.Context, meta metav1.ObjectMeta, path string, bSecrets \[\]byte\) \(\[\]byte, error\)
+- type PermissionSet
 
 
 <a name="AccountAssignment"></a>

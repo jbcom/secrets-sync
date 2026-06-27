@@ -195,7 +195,9 @@ func (vc *VaultClient) ensureAPIClient() (*api.Client, error) {
 	return vc.Client, err
 }
 
-// Login creates a vault token with the k8s auth provider
+// Login authenticates the Vault client. Runtime token handoff takes precedence;
+// otherwise Kubernetes auth is used when a service account token is available,
+// falling back to VAULT_TOKEN for CLI-style execution.
 func (vc *VaultClient) Login(ctx context.Context) error {
 	l := log.WithFields(log.Fields{
 		"has_address":   vc.Address != "",
@@ -207,6 +209,10 @@ func (vc *VaultClient) Login(ctx context.Context) error {
 	l.Trace("vault.Login")
 	if _, err := vc.ensureAPIClient(); err != nil {
 		return err
+	}
+	if vc.Token != "" {
+		vc.Client.SetToken(vc.Token)
+		return nil
 	}
 	var kubeTokenExists bool
 	ktp := "/var/run/secrets/kubernetes.io/serviceaccount/token"
@@ -242,11 +248,7 @@ func (vc *VaultClient) Login(ctx context.Context) error {
 		}
 		vc.Client.SetToken(secret.Auth.ClientToken)
 	} else {
-		if vc.Token != "" {
-			vc.Client.SetToken(vc.Token)
-		} else {
-			vc.Client.SetToken(os.Getenv("VAULT_TOKEN"))
-		}
+		vc.Client.SetToken(os.Getenv("VAULT_TOKEN"))
 	}
 	return nil
 }
@@ -675,7 +677,7 @@ func (vc *VaultClient) listSecretsRecursive(ctx context.Context, basePath string
 	for queueIdx < len(queue) {
 		// Track queue size
 		queueSize := len(queue) - queueIdx
-		observability.VaultQueueSize.WithLabelValues(basePath).Set(float64(queueSize))
+		observability.VaultQueueSize.WithLabelValues(observability.VaultMountLabel(basePath)).Set(float64(queueSize))
 
 		// Check for context cancellation
 		select {
@@ -701,7 +703,7 @@ func (vc *VaultClient) listSecretsRecursive(ctx context.Context, basePath string
 
 		// Check depth limit as safety measure
 		depth := strings.Count(strings.TrimPrefix(currentPath, basePath), "/")
-		observability.VaultTraversalDepth.WithLabelValues(basePath).Observe(float64(depth))
+		observability.VaultTraversalDepth.WithLabelValues(observability.VaultMountLabel(basePath)).Observe(float64(depth))
 
 		if depth > maxDepth {
 			observability.RecordError(observability.VaultErrors, "list_secrets", "max_depth_exceeded")
@@ -780,7 +782,7 @@ func (vc *VaultClient) listSecretsRecursive(ctx context.Context, basePath string
 	}
 
 	// Record successful listing metrics
-	observability.VaultSecretsListed.WithLabelValues(basePath).Add(float64(len(allSecrets)))
+	observability.VaultSecretsListed.WithLabelValues(observability.VaultMountLabel(basePath)).Add(float64(len(allSecrets)))
 
 	return allSecrets, nil
 }

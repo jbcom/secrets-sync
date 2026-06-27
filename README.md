@@ -24,9 +24,9 @@ SecretSync is an independent [jbcom/secrets-sync](https://github.com/jbcom/secre
 
 **🐍 Python Integration**: this repository owns the gopy binding source and
 publishes the `secrets-sync-python-binding` distribution, imported as
-`secrets_sync`. Most Python applications should still enter through
-`vendor_fabric.secrets_sync`, which wraps that binding with credential handoff,
-provider coordination, redaction, and Extended Data composition.
+`secrets_sync`. Downstream packages such as vendor-fabric can wrap it with
+credential handoff, provider coordination, redaction, and Extended Data
+composition.
 
 **🚀 Perfect for:** Multi-account AWS environments, Kubernetes deployments, CI/CD pipelines, and enterprise secret management at scale.
 
@@ -139,15 +139,15 @@ SecretSync owns the gopy binding contract for Python consumers.
 - Python import/module: `secrets_sync`
 - Binding source: `python/secrets_sync/secrets_sync.go`
 
-The recommended application surface is `vendor_fabric.secrets_sync`:
+The repo-owned application surface is the `secrets_sync` binding:
 
 ```bash
-pip install "vendor-fabric[secrets-sync]"
+pip install secrets-sync-python-binding
 ```
 
-That facade should consume the binding and add provider activation, redaction,
-data shaping, and ExtendedData-aware composition. It can either delegate
-authentication to `secrets-sync` or own the provider handshake and pass
+Downstream facades should consume this binding rather than reimplementing the
+merge/sync engine. They can either delegate authentication to `secrets-sync` or
+own the provider handshake and pass
 authenticated session material through `ProviderSession`.
 
 Direct binding consumers can install the generated wheel:
@@ -362,7 +362,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: secrets-sync
-              image: ghcr.io/jbcom/secrets-sync:v1
+              image: ghcr.io/jbcom/secrets-sync:v2.2.0
               args: ["pipeline", "--config", "/config/config.yaml", "--diff", "--output", "json"]
 ```
 
@@ -371,9 +371,9 @@ spec:
 ```bash
 # Run with config file
 docker run -v $(pwd)/config.yaml:/config.yaml \
-  ghcr.io/jbcom/secrets-sync:v1 pipeline --config /config.yaml
+  ghcr.io/jbcom/secrets-sync:v2.2.0 pipeline --config /config.yaml
 
-# Release image: ghcr.io/jbcom/secrets-sync:v1
+# Release image: ghcr.io/jbcom/secrets-sync:v2.2.0
 ```
 
 The published image is a Google Distroless static runtime containing both

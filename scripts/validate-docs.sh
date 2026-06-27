@@ -8,7 +8,7 @@ if grep -RIn --exclude-dir=_build --exclude-dir=api '<<<<<<<\|=======\|>>>>>>>' 
   exit 1
 fi
 
-if grep -RInE --exclude-dir=_build --exclude-dir=api 'secretssync|cmd/secretsync|deploy/charts/secretsync|SECRETSYNC|vaultsecretsync|VaultSecretSync' docs README.md HANDOFF.md SECRETS_SYNC_ALIGNMENT.md AGENTIC_REINFORCEMENT.md; then
+if grep -RInE --exclude-dir=_build --exclude-dir=api 'secretssync|\bsecretsync\b|cmd/secretsync|deploy/charts/secretsync|SECRETSYNC|vaultsecretsync|VaultSecretSync' docs README.md HANDOFF.md SECRETS_SYNC_ALIGNMENT.md AGENTIC_REINFORCEMENT.md; then
   echo "Documentation contains legacy SecretSync spellings." >&2
   exit 1
 fi

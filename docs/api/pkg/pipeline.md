@@ -84,155 +84,155 @@ Package pipeline provides unified configuration and orchestration for secrets sy
 
 ## Index
 
-- [func AutoResolveConfig\(ctx context.Context, cfg \*Config, awsCtx \*AWSExecutionContext\) error](<#AutoResolveConfig>)
-- [func BundleID\(sources \[\]string\) string](<#BundleID>)
-- [func BundlePath\(mount string, sources \[\]string\) string](<#BundlePath>)
-- [func ExpandDynamicTargets\(ctx context.Context, cfg \*Config, awsCtx \*AWSExecutionContext\) error](<#ExpandDynamicTargets>)
-- [func TargetBundlePath\(mount, targetName string, sources \[\]string\) string](<#TargetBundlePath>)
-- [type AWSConfig](<#AWSConfig>)
-- [type AWSDetection](<#AWSDetection>)
-- [type AWSExecutionContext](<#AWSExecutionContext>)
-  - [func NewAWSExecutionContext\(ctx context.Context, cfg \*AWSConfig\) \(\*AWSExecutionContext, error\)](<#NewAWSExecutionContext>)
-  - [func NewAWSExecutionContextWithRuntimeAuth\(ctx context.Context, cfg \*AWSConfig, auth \*AWSRuntimeAuth\) \(\*AWSExecutionContext, error\)](<#NewAWSExecutionContextWithRuntimeAuth>)
-  - [func \(ec \*AWSExecutionContext\) AssumeRoleConfig\(ctx context.Context, accountID string\) \(aws.Config, error\)](<#AWSExecutionContext.AssumeRoleConfig>)
-  - [func \(ec \*AWSExecutionContext\) CanAccessIdentityCenter\(\) bool](<#AWSExecutionContext.CanAccessIdentityCenter>)
-  - [func \(ec \*AWSExecutionContext\) CanAccessOrganizations\(\) bool](<#AWSExecutionContext.CanAccessOrganizations>)
-  - [func \(ec \*AWSExecutionContext\) GetAccountTags\(ctx context.Context, accountID string\) \(map\[string\]string, error\)](<#AWSExecutionContext.GetAccountTags>)
-  - [func \(ec \*AWSExecutionContext\) GetIdentityCenterClient\(ctx context.Context\) \(\*ssoadmin.Client, error\)](<#AWSExecutionContext.GetIdentityCenterClient>)
-  - [func \(ec \*AWSExecutionContext\) GetRoleARN\(accountID string\) string](<#AWSExecutionContext.GetRoleARN>)
-  - [func \(ec \*AWSExecutionContext\) GetSSMParameter\(ctx context.Context, name string\) \(string, error\)](<#AWSExecutionContext.GetSSMParameter>)
-  - [func \(ec \*AWSExecutionContext\) ListAccountsInOU\(ctx context.Context, ouID string\) \(\[\]AccountInfo, error\)](<#AWSExecutionContext.ListAccountsInOU>)
-  - [func \(ec \*AWSExecutionContext\) ListChildOUs\(ctx context.Context, parentID string\) \(\[\]string, error\)](<#AWSExecutionContext.ListChildOUs>)
-  - [func \(ec \*AWSExecutionContext\) ListOrganizationAccounts\(ctx context.Context\) \(\[\]AccountInfo, error\)](<#AWSExecutionContext.ListOrganizationAccounts>)
-  - [func \(ec \*AWSExecutionContext\) Summary\(\) string](<#AWSExecutionContext.Summary>)
-- [type AWSRuntimeAuth](<#AWSRuntimeAuth>)
-  - [func \(a \*AWSRuntimeAuth\) HasStaticCredentials\(\) bool](<#AWSRuntimeAuth.HasStaticCredentials>)
-- [type AWSSource](<#AWSSource>)
-- [type AccountFactoryConfig](<#AccountFactoryConfig>)
-- [type AccountInfo](<#AccountInfo>)
-  - [func FilterAccountsByFuzzyMatch\(accounts \[\]AccountInfo, matcher \*NameMatcher, patterns \[\]string\) \[\]AccountInfo](<#FilterAccountsByFuzzyMatch>)
-- [type AccountNamePattern](<#AccountNamePattern>)
-- [type AccountsListDiscovery](<#AccountsListDiscovery>)
-- [type AppRoleAuth](<#AppRoleAuth>)
-- [type AuthProviders](<#AuthProviders>)
-  - [func DetectAuth\(cfg \*Config\) AuthProviders](<#DetectAuth>)
-- [type CallerIdentity](<#CallerIdentity>)
-- [type Config](<#Config>)
-  - [func LoadConfig\(path string\) \(\*Config, error\)](<#LoadConfig>)
-  - [func LoadConfigWithoutAutoDetect\(path string\) \(\*Config, error\)](<#LoadConfigWithoutAutoDetect>)
-  - [func \(c \*Config\) ApplyAutoDetection\(detected DetectedClients\)](<#Config.ApplyAutoDetection>)
-  - [func \(c \*Config\) AutoConfigure\(\)](<#Config.AutoConfigure>)
-  - [func \(c \*Config\) AutoDetectAndConfigure\(\) DetectedClients](<#Config.AutoDetectAndConfigure>)
-  - [func \(c \*Config\) GetRoleARN\(accountID string\) string](<#Config.GetRoleARN>)
-  - [func \(c \*Config\) GetSourcePath\(importName string\) string](<#Config.GetSourcePath>)
-  - [func \(c \*Config\) IsInheritedTarget\(targetName string\) bool](<#Config.IsInheritedTarget>)
-  - [func \(c \*Config\) Validate\(\) error](<#Config.Validate>)
-  - [func \(c \*Config\) ValidateTargetInheritance\(\) error](<#Config.ValidateTargetInheritance>)
-  - [func \(c \*Config\) WriteConfig\(path string\) error](<#Config.WriteConfig>)
-- [type ControlTowerConfig](<#ControlTowerConfig>)
-- [type DelegationConfig](<#DelegationConfig>)
-- [type DetectedClients](<#DetectedClients>)
-  - [func AutoDetectClients\(\) DetectedClients](<#AutoDetectClients>)
-- [type DiscoveryConfig](<#DiscoveryConfig>)
-- [type DiscoveryService](<#DiscoveryService>)
-  - [func NewDiscoveryService\(ctx context.Context, awsCtx \*AWSExecutionContext, cfg \*Config\) \*DiscoveryService](<#NewDiscoveryService>)
-  - [func \(d \*DiscoveryService\) DiscoverTargets\(\) \(map\[string\]Target, error\)](<#DiscoveryService.DiscoverTargets>)
-- [type DynamicTarget](<#DynamicTarget>)
-- [type ExecutionContextConfig](<#ExecutionContextConfig>)
-- [type ExecutionContextType](<#ExecutionContextType>)
-- [type ExecutionRoleConfig](<#ExecutionRoleConfig>)
-- [type Graph](<#Graph>)
-  - [func BuildGraph\(cfg \*Config\) \(\*Graph, error\)](<#BuildGraph>)
-  - [func NewGraph\(\) \*Graph](<#NewGraph>)
-  - [func \(g \*Graph\) GroupByLevel\(\) \[\]\[\]string](<#Graph.GroupByLevel>)
-  - [func \(g \*Graph\) IncludeDependencies\(targets \[\]string\) \[\]string](<#Graph.IncludeDependencies>)
-  - [func \(g \*Graph\) PrintGraph\(\) string](<#Graph.PrintGraph>)
-  - [func \(g \*Graph\) TopologicalOrder\(\) \[\]string](<#Graph.TopologicalOrder>)
-- [type IdentityCenterConfig](<#IdentityCenterConfig>)
-- [type IdentityCenterDiscovery](<#IdentityCenterDiscovery>)
-- [type KubernetesAuth](<#KubernetesAuth>)
-- [type LogConfig](<#LogConfig>)
-- [type MatchConfidence](<#MatchConfidence>)
-- [type MergeRequest](<#MergeRequest>)
-- [type MergeSettings](<#MergeSettings>)
-- [type MergeStoreConfig](<#MergeStoreConfig>)
-- [type MergeStoreS3](<#MergeStoreS3>)
-- [type MergeStoreVault](<#MergeStoreVault>)
-- [type NameMatcher](<#NameMatcher>)
-  - [func NewNameMatcher\(cfg \*NameMatchingConfig\) \*NameMatcher](<#NewNameMatcher>)
-  - [func \(m \*NameMatcher\) MatchAccountToTarget\(accountName string, patterns \[\]AccountNamePattern\) \(string, bool\)](<#NameMatcher.MatchAccountToTarget>)
-  - [func \(m \*NameMatcher\) NormalizeAccountName\(name string\) string](<#NameMatcher.NormalizeAccountName>)
-  - [func \(m \*NameMatcher\) ResolveAccountImports\(acct AccountInfo, patterns \[\]AccountNamePattern, defaultImports \[\]string, targetConfigs map\[string\]Target\) \[\]string](<#NameMatcher.ResolveAccountImports>)
-- [type NameMatchingConfig](<#NameMatchingConfig>)
-- [type Node](<#Node>)
-- [type NodeType](<#NodeType>)
-- [type OUConfig](<#OUConfig>)
-- [type Operation](<#Operation>)
-- [type Options](<#Options>)
-  - [func DefaultOptions\(\) Options](<#DefaultOptions>)
-- [type OrganizationInfo](<#OrganizationInfo>)
-- [type OrganizationsConfig](<#OrganizationsConfig>)
-- [type OrganizationsDiscovery](<#OrganizationsDiscovery>)
-  - [func \(o \*OrganizationsDiscovery\) UnmarshalYAML\(value \*yaml.Node\) error](<#OrganizationsDiscovery.UnmarshalYAML>)
-- [type Pipeline](<#Pipeline>)
-  - [func New\(cfg \*Config\) \(\*Pipeline, error\)](<#New>)
-  - [func NewFromFile\(path string\) \(\*Pipeline, error\)](<#NewFromFile>)
-  - [func NewFromFileWithContext\(ctx context.Context, path string\) \(\*Pipeline, error\)](<#NewFromFileWithContext>)
-  - [func NewWithContext\(ctx context.Context, cfg \*Config\) \(\*Pipeline, error\)](<#NewWithContext>)
-  - [func NewWithContextAndRuntimeAuth\(ctx context.Context, cfg \*Config, auth \*RuntimeAuth\) \(\*Pipeline, error\)](<#NewWithContextAndRuntimeAuth>)
-  - [func \(p \*Pipeline\) Config\(\) \*Config](<#Pipeline.Config>)
-  - [func \(p \*Pipeline\) Diff\(\) \*diff.PipelineDiff](<#Pipeline.Diff>)
-  - [func \(p \*Pipeline\) ExitCode\(\) int](<#Pipeline.ExitCode>)
-  - [func \(p \*Pipeline\) FormatDiff\(format diff.OutputFormat\) string](<#Pipeline.FormatDiff>)
-  - [func \(p \*Pipeline\) GetBundlePath\(targetName string\) \(string, error\)](<#Pipeline.GetBundlePath>)
-  - [func \(p \*Pipeline\) Graph\(\) \*Graph](<#Pipeline.Graph>)
-  - [func \(p \*Pipeline\) Results\(\) \[\]Result](<#Pipeline.Results>)
-  - [func \(p \*Pipeline\) Run\(ctx context.Context, opts Options\) \(\[\]Result, error\)](<#Pipeline.Run>)
-- [type PipelineRequest](<#PipelineRequest>)
-  - [func \(r \*PipelineRequest\) GetBundleID\(\) string](<#PipelineRequest.GetBundleID>)
-  - [func \(r \*PipelineRequest\) GetMergePath\(mount string\) string](<#PipelineRequest.GetMergePath>)
-- [type PipelineSettings](<#PipelineSettings>)
-- [type ResolvedResource](<#ResolvedResource>)
-- [type ResourceResolver](<#ResourceResolver>)
-  - [func NewResourceResolver\(ctx context.Context, cfg \*Config\) \*ResourceResolver](<#NewResourceResolver>)
-  - [func \(r \*ResourceResolver\) Initialize\(awsCtx \*AWSExecutionContext\) error](<#ResourceResolver.Initialize>)
-  - [func \(r \*ResourceResolver\) Resolve\(name string\) ResolvedResource](<#ResourceResolver.Resolve>)
-  - [func \(r \*ResourceResolver\) ResolveAll\(names \[\]string\) \[\]ResolvedResource](<#ResourceResolver.ResolveAll>)
-- [type ResourceType](<#ResourceType>)
-- [type Result](<#Result>)
-- [type ResultDetails](<#ResultDetails>)
-- [type RuntimeAuth](<#RuntimeAuth>)
-- [type S3MergeStore](<#S3MergeStore>)
-  - [func NewS3MergeStore\(ctx context.Context, cfg \*MergeStoreS3, region string\) \(\*S3MergeStore, error\)](<#NewS3MergeStore>)
-  - [func NewS3MergeStoreWithRuntimeAuth\(ctx context.Context, cfg \*MergeStoreS3, region string, auth \*AWSRuntimeAuth\) \(\*S3MergeStore, error\)](<#NewS3MergeStoreWithRuntimeAuth>)
-  - [func \(s \*S3MergeStore\) DeleteBundle\(ctx context.Context, targetName, bundleID string\) error](<#S3MergeStore.DeleteBundle>)
-  - [func \(s \*S3MergeStore\) DeleteSecret\(ctx context.Context, targetName, secretName string\) error](<#S3MergeStore.DeleteSecret>)
-  - [func \(s \*S3MergeStore\) GetBundlePath\(targetName, bundleID string\) string](<#S3MergeStore.GetBundlePath>)
-  - [func \(s \*S3MergeStore\) GetLatest\(ctx context.Context, path string\) \(\*SecretVersion, error\)](<#S3MergeStore.GetLatest>)
-  - [func \(s \*S3MergeStore\) GetMergePath\(targetName string\) string](<#S3MergeStore.GetMergePath>)
-  - [func \(s \*S3MergeStore\) GetVersion\(ctx context.Context, path string, version int\) \(\*SecretVersion, error\)](<#S3MergeStore.GetVersion>)
-  - [func \(s \*S3MergeStore\) ListSecrets\(ctx context.Context, targetName string\) \(\[\]string, error\)](<#S3MergeStore.ListSecrets>)
-  - [func \(s \*S3MergeStore\) ListVersions\(ctx context.Context, path string\) \(\[\]SecretVersion, error\)](<#S3MergeStore.ListVersions>)
-  - [func \(s \*S3MergeStore\) ReadMergedBundle\(ctx context.Context, targetName, bundleID string\) \(map\[string\]map\[string\]interface\{\}, error\)](<#S3MergeStore.ReadMergedBundle>)
-  - [func \(s \*S3MergeStore\) ReadSecret\(ctx context.Context, targetName, secretName string\) \(map\[string\]interface\{\}, error\)](<#S3MergeStore.ReadSecret>)
-  - [func \(s \*S3MergeStore\) StoreVersion\(ctx context.Context, secret \*SecretVersion\) error](<#S3MergeStore.StoreVersion>)
-  - [func \(s \*S3MergeStore\) WriteMergedBundle\(ctx context.Context, targetName, bundleID string, secrets map\[string\]interface\{\}\) error](<#S3MergeStore.WriteMergedBundle>)
-  - [func \(s \*S3MergeStore\) WriteSecret\(ctx context.Context, targetName, secretName string, data map\[string\]interface\{\}\) error](<#S3MergeStore.WriteSecret>)
-- [type SecretVersion](<#SecretVersion>)
-- [type Source](<#Source>)
-- [type SyncRequest](<#SyncRequest>)
-- [type SyncSettings](<#SyncSettings>)
-- [type TagFilter](<#TagFilter>)
-- [type Target](<#Target>)
-  - [func \(t \*Target\) UnmarshalYAML\(unmarshal func\(interface\{\}\) error\) error](<#Target.UnmarshalYAML>)
-- [type TokenAuth](<#TokenAuth>)
-- [type VaultAuthConfig](<#VaultAuthConfig>)
-- [type VaultConfig](<#VaultConfig>)
-- [type VaultDetection](<#VaultDetection>)
-- [type VaultRuntimeAuth](<#VaultRuntimeAuth>)
-- [type VaultSource](<#VaultSource>)
-- [type VersionStore](<#VersionStore>)
-- [type VersioningConfig](<#VersioningConfig>)
+- func AutoResolveConfig\(ctx context.Context, cfg \*Config, awsCtx \*AWSExecutionContext\) error
+- func BundleID\(sources \[\]string\) string
+- func BundlePath\(mount string, sources \[\]string\) string
+- func ExpandDynamicTargets\(ctx context.Context, cfg \*Config, awsCtx \*AWSExecutionContext\) error
+- func TargetBundlePath\(mount, targetName string, sources \[\]string\) string
+- type AWSConfig
+- type AWSDetection
+- type AWSExecutionContext
+  - func NewAWSExecutionContext\(ctx context.Context, cfg \*AWSConfig\) \(\*AWSExecutionContext, error\)
+  - func NewAWSExecutionContextWithRuntimeAuth\(ctx context.Context, cfg \*AWSConfig, auth \*AWSRuntimeAuth\) \(\*AWSExecutionContext, error\)
+  - func \(ec \*AWSExecutionContext\) AssumeRoleConfig\(ctx context.Context, accountID string\) \(aws.Config, error\)
+  - func \(ec \*AWSExecutionContext\) CanAccessIdentityCenter\(\) bool
+  - func \(ec \*AWSExecutionContext\) CanAccessOrganizations\(\) bool
+  - func \(ec \*AWSExecutionContext\) GetAccountTags\(ctx context.Context, accountID string\) \(map\[string\]string, error\)
+  - func \(ec \*AWSExecutionContext\) GetIdentityCenterClient\(ctx context.Context\) \(\*ssoadmin.Client, error\)
+  - func \(ec \*AWSExecutionContext\) GetRoleARN\(accountID string\) string
+  - func \(ec \*AWSExecutionContext\) GetSSMParameter\(ctx context.Context, name string\) \(string, error\)
+  - func \(ec \*AWSExecutionContext\) ListAccountsInOU\(ctx context.Context, ouID string\) \(\[\]AccountInfo, error\)
+  - func \(ec \*AWSExecutionContext\) ListChildOUs\(ctx context.Context, parentID string\) \(\[\]string, error\)
+  - func \(ec \*AWSExecutionContext\) ListOrganizationAccounts\(ctx context.Context\) \(\[\]AccountInfo, error\)
+  - func \(ec \*AWSExecutionContext\) Summary\(\) string
+- type AWSRuntimeAuth
+  - func \(a \*AWSRuntimeAuth\) HasStaticCredentials\(\) bool
+- type AWSSource
+- type AccountFactoryConfig
+- type AccountInfo
+  - func FilterAccountsByFuzzyMatch\(accounts \[\]AccountInfo, matcher \*NameMatcher, patterns \[\]string\) \[\]AccountInfo
+- type AccountNamePattern
+- type AccountsListDiscovery
+- type AppRoleAuth
+- type AuthProviders
+  - func DetectAuth\(cfg \*Config\) AuthProviders
+- type CallerIdentity
+- type Config
+  - func LoadConfig\(path string\) \(\*Config, error\)
+  - func LoadConfigWithoutAutoDetect\(path string\) \(\*Config, error\)
+  - func \(c \*Config\) ApplyAutoDetection\(detected DetectedClients\)
+  - func \(c \*Config\) AutoConfigure\(\)
+  - func \(c \*Config\) AutoDetectAndConfigure\(\) DetectedClients
+  - func \(c \*Config\) GetRoleARN\(accountID string\) string
+  - func \(c \*Config\) GetSourcePath\(importName string\) string
+  - func \(c \*Config\) IsInheritedTarget\(targetName string\) bool
+  - func \(c \*Config\) Validate\(\) error
+  - func \(c \*Config\) ValidateTargetInheritance\(\) error
+  - func \(c \*Config\) WriteConfig\(path string\) error
+- type ControlTowerConfig
+- type DelegationConfig
+- type DetectedClients
+  - func AutoDetectClients\(\) DetectedClients
+- type DiscoveryConfig
+- type DiscoveryService
+  - func NewDiscoveryService\(ctx context.Context, awsCtx \*AWSExecutionContext, cfg \*Config\) \*DiscoveryService
+  - func \(d \*DiscoveryService\) DiscoverTargets\(\) \(map\[string\]Target, error\)
+- type DynamicTarget
+- type ExecutionContextConfig
+- type ExecutionContextType
+- type ExecutionRoleConfig
+- type Graph
+  - func BuildGraph\(cfg \*Config\) \(\*Graph, error\)
+  - func NewGraph\(\) \*Graph
+  - func \(g \*Graph\) GroupByLevel\(\) \[\]\[\]string
+  - func \(g \*Graph\) IncludeDependencies\(targets \[\]string\) \[\]string
+  - func \(g \*Graph\) PrintGraph\(\) string
+  - func \(g \*Graph\) TopologicalOrder\(\) \[\]string
+- type IdentityCenterConfig
+- type IdentityCenterDiscovery
+- type KubernetesAuth
+- type LogConfig
+- type MatchConfidence
+- type MergeRequest
+- type MergeSettings
+- type MergeStoreConfig
+- type MergeStoreS3
+- type MergeStoreVault
+- type NameMatcher
+  - func NewNameMatcher\(cfg \*NameMatchingConfig\) \*NameMatcher
+  - func \(m \*NameMatcher\) MatchAccountToTarget\(accountName string, patterns \[\]AccountNamePattern\) \(string, bool\)
+  - func \(m \*NameMatcher\) NormalizeAccountName\(name string\) string
+  - func \(m \*NameMatcher\) ResolveAccountImports\(acct AccountInfo, patterns \[\]AccountNamePattern, defaultImports \[\]string, targetConfigs map\[string\]Target\) \[\]string
+- type NameMatchingConfig
+- type Node
+- type NodeType
+- type OUConfig
+- type Operation
+- type Options
+  - func DefaultOptions\(\) Options
+- type OrganizationInfo
+- type OrganizationsConfig
+- type OrganizationsDiscovery
+  - func \(o \*OrganizationsDiscovery\) UnmarshalYAML\(value \*yaml.Node\) error
+- type Pipeline
+  - func New\(cfg \*Config\) \(\*Pipeline, error\)
+  - func NewFromFile\(path string\) \(\*Pipeline, error\)
+  - func NewFromFileWithContext\(ctx context.Context, path string\) \(\*Pipeline, error\)
+  - func NewWithContext\(ctx context.Context, cfg \*Config\) \(\*Pipeline, error\)
+  - func NewWithContextAndRuntimeAuth\(ctx context.Context, cfg \*Config, auth \*RuntimeAuth\) \(\*Pipeline, error\)
+  - func \(p \*Pipeline\) Config\(\) \*Config
+  - func \(p \*Pipeline\) Diff\(\) \*diff.PipelineDiff
+  - func \(p \*Pipeline\) ExitCode\(\) int
+  - func \(p \*Pipeline\) FormatDiff\(format diff.OutputFormat\) string
+  - func \(p \*Pipeline\) GetBundlePath\(targetName string\) \(string, error\)
+  - func \(p \*Pipeline\) Graph\(\) \*Graph
+  - func \(p \*Pipeline\) Results\(\) \[\]Result
+  - func \(p \*Pipeline\) Run\(ctx context.Context, opts Options\) \(\[\]Result, error\)
+- type PipelineRequest
+  - func \(r \*PipelineRequest\) GetBundleID\(\) string
+  - func \(r \*PipelineRequest\) GetMergePath\(mount string\) string
+- type PipelineSettings
+- type ResolvedResource
+- type ResourceResolver
+  - func NewResourceResolver\(ctx context.Context, cfg \*Config\) \*ResourceResolver
+  - func \(r \*ResourceResolver\) Initialize\(awsCtx \*AWSExecutionContext\) error
+  - func \(r \*ResourceResolver\) Resolve\(name string\) ResolvedResource
+  - func \(r \*ResourceResolver\) ResolveAll\(names \[\]string\) \[\]ResolvedResource
+- type ResourceType
+- type Result
+- type ResultDetails
+- type RuntimeAuth
+- type S3MergeStore
+  - func NewS3MergeStore\(ctx context.Context, cfg \*MergeStoreS3, region string\) \(\*S3MergeStore, error\)
+  - func NewS3MergeStoreWithRuntimeAuth\(ctx context.Context, cfg \*MergeStoreS3, region string, auth \*AWSRuntimeAuth\) \(\*S3MergeStore, error\)
+  - func \(s \*S3MergeStore\) DeleteBundle\(ctx context.Context, targetName, bundleID string\) error
+  - func \(s \*S3MergeStore\) DeleteSecret\(ctx context.Context, targetName, secretName string\) error
+  - func \(s \*S3MergeStore\) GetBundlePath\(targetName, bundleID string\) string
+  - func \(s \*S3MergeStore\) GetLatest\(ctx context.Context, path string\) \(\*SecretVersion, error\)
+  - func \(s \*S3MergeStore\) GetMergePath\(targetName string\) string
+  - func \(s \*S3MergeStore\) GetVersion\(ctx context.Context, path string, version int\) \(\*SecretVersion, error\)
+  - func \(s \*S3MergeStore\) ListSecrets\(ctx context.Context, targetName string\) \(\[\]string, error\)
+  - func \(s \*S3MergeStore\) ListVersions\(ctx context.Context, path string\) \(\[\]SecretVersion, error\)
+  - func \(s \*S3MergeStore\) ReadMergedBundle\(ctx context.Context, targetName, bundleID string\) \(map\[string\]map\[string\]interface\{\}, error\)
+  - func \(s \*S3MergeStore\) ReadSecret\(ctx context.Context, targetName, secretName string\) \(map\[string\]interface\{\}, error\)
+  - func \(s \*S3MergeStore\) StoreVersion\(ctx context.Context, secret \*SecretVersion\) error
+  - func \(s \*S3MergeStore\) WriteMergedBundle\(ctx context.Context, targetName, bundleID string, secrets map\[string\]interface\{\}\) error
+  - func \(s \*S3MergeStore\) WriteSecret\(ctx context.Context, targetName, secretName string, data map\[string\]interface\{\}\) error
+- type SecretVersion
+- type Source
+- type SyncRequest
+- type SyncSettings
+- type TagFilter
+- type Target
+  - func \(t \*Target\) UnmarshalYAML\(unmarshal func\(interface\{\}\) error\) error
+- type TokenAuth
+- type VaultAuthConfig
+- type VaultConfig
+- type VaultDetection
+- type VaultRuntimeAuth
+- type VaultSource
+- type VersionStore
+- type VersioningConfig
 
 
 <a name="AutoResolveConfig"></a>
@@ -1225,7 +1225,7 @@ type OUConfig struct {
 ```
 
 <a name="Operation"></a>
-## type [Operation](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L48>)
+## type [Operation](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L49>)
 
 Operation defines what the pipeline should do
 
@@ -1247,7 +1247,7 @@ const (
 ```
 
 <a name="Options"></a>
-## type [Options](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L78-L86>)
+## type [Options](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L79-L87>)
 
 Options configures pipeline execution
 
@@ -1264,7 +1264,7 @@ type Options struct {
 ```
 
 <a name="DefaultOptions"></a>
-### func [DefaultOptions](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L89>)
+### func [DefaultOptions](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L90>)
 
 ```go
 func DefaultOptions() Options
@@ -1330,7 +1330,7 @@ func (o *OrganizationsDiscovery) UnmarshalYAML(value *yaml.Node) error
 UnmarshalYAML rejects removed single\-OU configuration instead of silently ignoring it.
 
 <a name="Pipeline"></a>
-## type [Pipeline](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L60-L75>)
+## type [Pipeline](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L61-L76>)
 
 Pipeline is the main orchestrator for secrets synchronization
 
@@ -1341,7 +1341,7 @@ type Pipeline struct {
 ```
 
 <a name="New"></a>
-### func [New](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L125>)
+### func [New](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L126>)
 
 ```go
 func New(cfg *Config) (*Pipeline, error)
@@ -1350,7 +1350,7 @@ func New(cfg *Config) (*Pipeline, error)
 New creates a new Pipeline from configuration
 
 <a name="NewFromFile"></a>
-### func [NewFromFile](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L183>)
+### func [NewFromFile](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L205>)
 
 ```go
 func NewFromFile(path string) (*Pipeline, error)
@@ -1359,7 +1359,7 @@ func NewFromFile(path string) (*Pipeline, error)
 NewFromFile creates a Pipeline from a configuration file
 
 <a name="NewFromFileWithContext"></a>
-### func [NewFromFileWithContext](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L192>)
+### func [NewFromFileWithContext](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L214>)
 
 ```go
 func NewFromFileWithContext(ctx context.Context, path string) (*Pipeline, error)
@@ -1368,7 +1368,7 @@ func NewFromFileWithContext(ctx context.Context, path string) (*Pipeline, error)
 NewFromFileWithContext creates a Pipeline from a configuration file with context
 
 <a name="NewWithContext"></a>
-### func [NewWithContext](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L142>)
+### func [NewWithContext](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L143>)
 
 ```go
 func NewWithContext(ctx context.Context, cfg *Config) (*Pipeline, error)
@@ -1377,7 +1377,7 @@ func NewWithContext(ctx context.Context, cfg *Config) (*Pipeline, error)
 NewWithContext creates a new Pipeline with AWS execution context
 
 <a name="NewWithContextAndRuntimeAuth"></a>
-### func [NewWithContextAndRuntimeAuth](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L148>)
+### func [NewWithContextAndRuntimeAuth](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L149>)
 
 ```go
 func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *RuntimeAuth) (*Pipeline, error)
@@ -1386,7 +1386,7 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 NewWithContextAndRuntimeAuth creates a new Pipeline with explicit runtime authentication material supplied by an embedding caller.
 
 <a name="Pipeline.Config"></a>
-### func \(\*Pipeline\) [Config](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L268>)
+### func \(\*Pipeline\) [Config](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L295>)
 
 ```go
 func (p *Pipeline) Config() *Config
@@ -1395,7 +1395,7 @@ func (p *Pipeline) Config() *Config
 Config returns the pipeline configuration
 
 <a name="Pipeline.Diff"></a>
-### func \(\*Pipeline\) [Diff](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L285>)
+### func \(\*Pipeline\) [Diff](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L312>)
 
 ```go
 func (p *Pipeline) Diff() *diff.PipelineDiff
@@ -1431,7 +1431,7 @@ func (p *Pipeline) GetBundlePath(targetName string) (string, error)
 GetBundlePath returns the current bundle path for a target \(for sync phase to use\)
 
 <a name="Pipeline.Graph"></a>
-### func \(\*Pipeline\) [Graph](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L273>)
+### func \(\*Pipeline\) [Graph](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L300>)
 
 ```go
 func (p *Pipeline) Graph() *Graph
@@ -1440,7 +1440,7 @@ func (p *Pipeline) Graph() *Graph
 Graph returns the dependency graph
 
 <a name="Pipeline.Results"></a>
-### func \(\*Pipeline\) [Results](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L278>)
+### func \(\*Pipeline\) [Results](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L305>)
 
 ```go
 func (p *Pipeline) Results() []Result
@@ -1449,7 +1449,7 @@ func (p *Pipeline) Results() []Result
 Results returns the results from the last Run
 
 <a name="Pipeline.Run"></a>
-### func \(\*Pipeline\) [Run](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L202>)
+### func \(\*Pipeline\) [Run](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L224>)
 
 ```go
 func (p *Pipeline) Run(ctx context.Context, opts Options) ([]Result, error)
@@ -1599,7 +1599,7 @@ const (
 ```
 
 <a name="Result"></a>
-## type [Result](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L100-L109>)
+## type [Result](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L101-L110>)
 
 Result represents the outcome of a single target operation
 
@@ -1617,7 +1617,7 @@ type Result struct {
 ```
 
 <a name="ResultDetails"></a>
-## type [ResultDetails](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L112-L122>)
+## type [ResultDetails](<https://github.com/jbcom/secrets-sync/blob/main/pkg/pipeline/pipeline.go#L113-L123>)
 
 ResultDetails contains additional information about the operation
 

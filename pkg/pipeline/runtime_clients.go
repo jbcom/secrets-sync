@@ -56,6 +56,7 @@ func (p *Pipeline) vaultClient(path string) *vault.VaultClient {
 }
 
 func (p *Pipeline) awsClient(roleARN, region, name string) *aws.AwsClient {
+	explicitRegion := region != ""
 	if region == "" {
 		region = p.config.AWS.Region
 	}
@@ -67,7 +68,7 @@ func (p *Pipeline) awsClient(roleARN, region, name string) *aws.AwsClient {
 	}
 
 	if auth := p.runtimeAWSAuth(); auth != nil {
-		if auth.Region != "" {
+		if auth.Region != "" && !explicitRegion {
 			client.Region = auth.Region
 		}
 		if auth.RoleARN != "" && client.RoleArn == "" {

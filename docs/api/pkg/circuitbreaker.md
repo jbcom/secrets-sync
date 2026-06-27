@@ -22,16 +22,16 @@ This package wraps external API calls to Vault, AWS services, and other external
 
 ## Index
 
-- [func ExecuteTyped\[T any\]\(cb \*CircuitBreaker, ctx context.Context, fn func\(context.Context\) \(T, error\)\) \(T, error\)](<#ExecuteTyped>)
-- [func WrapError\(err error, cbName string, state gobreaker.State\) error](<#WrapError>)
-- [type CircuitBreaker](<#CircuitBreaker>)
-  - [func New\(cfg \*Config\) \*CircuitBreaker](<#New>)
-  - [func \(cb \*CircuitBreaker\) Counts\(\) gobreaker.Counts](<#CircuitBreaker.Counts>)
-  - [func \(cb \*CircuitBreaker\) Execute\(ctx context.Context, fn func\(context.Context\) \(any, error\)\) \(any, error\)](<#CircuitBreaker.Execute>)
-  - [func \(cb \*CircuitBreaker\) Name\(\) string](<#CircuitBreaker.Name>)
-  - [func \(cb \*CircuitBreaker\) State\(\) gobreaker.State](<#CircuitBreaker.State>)
-- [type Config](<#Config>)
-  - [func DefaultConfig\(name string\) \*Config](<#DefaultConfig>)
+- func ExecuteTyped\[T any\]\(cb \*CircuitBreaker, ctx context.Context, fn func\(context.Context\) \(T, error\)\) \(T, error\)
+- func WrapError\(err error, cbName string, state gobreaker.State\) error
+- type CircuitBreaker
+  - func New\(cfg \*Config\) \*CircuitBreaker
+  - func \(cb \*CircuitBreaker\) Counts\(\) gobreaker.Counts
+  - func \(cb \*CircuitBreaker\) Execute\(ctx context.Context, fn func\(context.Context\) \(any, error\)\) \(any, error\)
+  - func \(cb \*CircuitBreaker\) Name\(\) string
+  - func \(cb \*CircuitBreaker\) State\(\) gobreaker.State
+- type Config
+  - func DefaultConfig\(name string\) \*Config
 
 
 <a name="ExecuteTyped"></a>

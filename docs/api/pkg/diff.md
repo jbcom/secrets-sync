@@ -15,25 +15,25 @@ Package diff provides change detection and reporting for secrets synchronization
 
 ## Index
 
-- [func FormatDiff\(diff \*PipelineDiff, format OutputFormat\) string](<#FormatDiff>)
-- [func FormatDiffWithOptions\(diff \*PipelineDiff, format OutputFormat, showValues bool\) string](<#FormatDiffWithOptions>)
-- [type ChangeSummary](<#ChangeSummary>)
-  - [func ComputeSummary\(changes \[\]SecretChange\) ChangeSummary](<#ComputeSummary>)
-  - [func \(s ChangeSummary\) HasChanges\(\) bool](<#ChangeSummary.HasChanges>)
-  - [func \(s ChangeSummary\) IsZeroSum\(\) bool](<#ChangeSummary.IsZeroSum>)
-- [type ChangeType](<#ChangeType>)
-- [type DiffResult](<#DiffResult>)
-  - [func NewDiffResult\(diff \*PipelineDiff\) \*DiffResult](<#NewDiffResult>)
-- [type OutputFormat](<#OutputFormat>)
-- [type PipelineDiff](<#PipelineDiff>)
-  - [func \(p \*PipelineDiff\) AddTargetDiff\(td TargetDiff\)](<#PipelineDiff.AddTargetDiff>)
-  - [func \(p \*PipelineDiff\) ExitCode\(\) int](<#PipelineDiff.ExitCode>)
-  - [func \(p \*PipelineDiff\) IsZeroSum\(\) bool](<#PipelineDiff.IsZeroSum>)
-- [type SecretChange](<#SecretChange>)
-  - [func DiffSecrets\(current, desired map\[string\]interface\{\}\) \[\]SecretChange](<#DiffSecrets>)
-  - [func DiffSecretsWithValues\(current, desired map\[string\]interface\{\}, currentVersions, desiredVersions map\[string\]int, showValues bool\) \[\]SecretChange](<#DiffSecretsWithValues>)
-  - [func DiffSecretsWithVersions\(current, desired map\[string\]interface\{\}, currentVersions, desiredVersions map\[string\]int\) \[\]SecretChange](<#DiffSecretsWithVersions>)
-- [type TargetDiff](<#TargetDiff>)
+- func FormatDiff\(diff \*PipelineDiff, format OutputFormat\) string
+- func FormatDiffWithOptions\(diff \*PipelineDiff, format OutputFormat, showValues bool\) string
+- type ChangeSummary
+  - func ComputeSummary\(changes \[\]SecretChange\) ChangeSummary
+  - func \(s ChangeSummary\) HasChanges\(\) bool
+  - func \(s ChangeSummary\) IsZeroSum\(\) bool
+- type ChangeType
+- type DiffResult
+  - func NewDiffResult\(diff \*PipelineDiff\) \*DiffResult
+- type OutputFormat
+- type PipelineDiff
+  - func \(p \*PipelineDiff\) AddTargetDiff\(td TargetDiff\)
+  - func \(p \*PipelineDiff\) ExitCode\(\) int
+  - func \(p \*PipelineDiff\) IsZeroSum\(\) bool
+- type SecretChange
+  - func DiffSecrets\(current, desired map\[string\]interface\{\}\) \[\]SecretChange
+  - func DiffSecretsWithValues\(current, desired map\[string\]interface\{\}, currentVersions, desiredVersions map\[string\]int, showValues bool\) \[\]SecretChange
+  - func DiffSecretsWithVersions\(current, desired map\[string\]interface\{\}, currentVersions, desiredVersions map\[string\]int\) \[\]SecretChange
+- type TargetDiff
 
 
 <a name="FormatDiff"></a>

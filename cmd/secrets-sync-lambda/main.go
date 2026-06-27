@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	awscredentials "github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/jbcom/secrets-sync/pkg/diff"
 	"github.com/jbcom/secrets-sync/pkg/pipeline"
@@ -86,20 +87,23 @@ func handle(ctx context.Context, event request) (response, error) {
 		defer cleanup()
 	}
 	if err != nil {
-		return response{Success: false, ErrorMessage: err.Error()}, err
+		return response{Success: false, ErrorMessage: err.Error()}, nil
 	}
 
 	cfg, err := pipeline.LoadConfig(cfgPath)
 	if err != nil {
-		return response{Success: false, ErrorMessage: err.Error()}, err
+		return response{Success: false, ErrorMessage: err.Error()}, nil
 	}
 
 	p, err := pipeline.NewWithContextAndRuntimeAuth(ctx, cfg, runtimeAuth(event.Session))
 	if err != nil {
-		return response{Success: false, ErrorMessage: err.Error()}, err
+		return response{Success: false, ErrorMessage: err.Error()}, nil
 	}
 
-	opts := pipelineOptions(event.Options)
+	opts, err := pipelineOptions(event.Options)
+	if err != nil {
+		return response{Success: false, ErrorMessage: err.Error()}, nil
+	}
 	results, runErr := p.Run(ctx, opts)
 	duration := time.Since(start)
 
@@ -108,7 +112,7 @@ func handle(ctx context.Context, event request) (response, error) {
 		resp.DiffOutput = diff.FormatDiffWithOptions(p.Diff(), opts.OutputFormat, event.Options.ShowValues)
 	}
 	if runErr != nil {
-		return resp, runErr
+		return resp, nil
 	}
 	return resp, nil
 }
@@ -118,7 +122,7 @@ func resolveConfig(ctx context.Context, event request) (string, func(), error) {
 	case strings.TrimSpace(event.ConfigYAML) != "":
 		return writeTempConfig(event.ConfigYAML)
 	case event.ConfigS3Bucket != "" && event.ConfigS3Key != "":
-		data, err := readS3Config(ctx, event.ConfigS3Bucket, event.ConfigS3Key)
+		data, err := readS3Config(ctx, event.ConfigS3Bucket, event.ConfigS3Key, event.Session)
 		if err != nil {
 			return "", nil, err
 		}
@@ -156,12 +160,31 @@ func writeTempConfig(contents string) (string, func(), error) {
 	return path, cleanup, nil
 }
 
-func readS3Config(ctx context.Context, bucket, key string) ([]byte, error) {
-	awsCfg, err := config.LoadDefaultConfig(ctx)
+func readS3Config(ctx context.Context, bucket, key string, session providerSession) ([]byte, error) {
+	loadOptions := []func(*config.LoadOptions) error{}
+	if session.AWSRegion != "" {
+		loadOptions = append(loadOptions, config.WithRegion(session.AWSRegion))
+	}
+	if !session.DelegateAuth && session.AWSAccessKeyID != "" && session.AWSSecretAccessKey != "" {
+		loadOptions = append(loadOptions, config.WithCredentialsProvider(
+			awscredentials.NewStaticCredentialsProvider(
+				session.AWSAccessKeyID,
+				session.AWSSecretAccessKey,
+				session.AWSSessionToken,
+			),
+		))
+	}
+
+	awsCfg, err := config.LoadDefaultConfig(ctx, loadOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("load AWS config for config_s3: %w", err)
 	}
-	output, err := s3.NewFromConfig(awsCfg).GetObject(ctx, &s3.GetObjectInput{
+	client := s3.NewFromConfig(awsCfg, func(options *s3.Options) {
+		if !session.DelegateAuth && session.AWSEndpointURL != "" {
+			options.BaseEndpoint = aws.String(session.AWSEndpointURL)
+		}
+	})
+	output, err := client.GetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
@@ -178,6 +201,9 @@ func readS3Config(ctx context.Context, bucket, key string) ([]byte, error) {
 
 func runtimeAuth(session providerSession) *pipeline.RuntimeAuth {
 	auth := &pipeline.RuntimeAuth{DelegateAuth: session.DelegateAuth}
+	if auth.DelegateAuth {
+		return auth
+	}
 	if session.VaultAddress != "" || session.VaultNamespace != "" || session.VaultToken != "" {
 		auth.Vault = &pipeline.VaultRuntimeAuth{
 			Address:   session.VaultAddress,
@@ -206,13 +232,17 @@ func runtimeAuth(session providerSession) *pipeline.RuntimeAuth {
 	return nil
 }
 
-func pipelineOptions(options requestOptions) pipeline.Options {
+func pipelineOptions(options requestOptions) (pipeline.Options, error) {
 	op := pipeline.OperationPipeline
 	switch strings.ToLower(options.Operation) {
 	case string(pipeline.OperationMerge):
 		op = pipeline.OperationMerge
 	case string(pipeline.OperationSync):
 		op = pipeline.OperationSync
+	case string(pipeline.OperationPipeline), "":
+		op = pipeline.OperationPipeline
+	default:
+		return pipeline.Options{}, fmt.Errorf("unknown operation: %s", options.Operation)
 	}
 
 	return pipeline.Options{
@@ -223,7 +253,7 @@ func pipelineOptions(options requestOptions) pipeline.Options {
 		Parallelism:     options.Parallelism,
 		ComputeDiff:     options.ComputeDiff || options.DryRun,
 		OutputFormat:    parseOutputFormat(options.OutputFormat),
-	}
+	}, nil
 }
 
 func splitTargets(targets string) []string {

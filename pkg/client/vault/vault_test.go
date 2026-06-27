@@ -163,6 +163,8 @@ func TestVaultClient_RuntimeTokenNotSerialized(t *testing.T) {
 	encoded, err := json.Marshal(client)
 	require.NoError(t, err)
 	assert.NotContains(t, string(encoded), "runtime-token")
+	assert.NotContains(t, string(encoded), `"token"`)
+	assert.NotContains(t, string(encoded), `"Token"`)
 
 	meta := client.Meta()
 	assert.NotContains(t, meta, "Token")

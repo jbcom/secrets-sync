@@ -13,9 +13,9 @@ import "github.com/jbcom/secrets-sync/pkg/driver"
 
 ## Index
 
-- [Variables](<#variables>)
-- [func DriverIsSupported\(driver DriverName\) bool](<#DriverIsSupported>)
-- [type DriverName](<#DriverName>)
+- Variables
+- func DriverIsSupported\(driver DriverName\) bool
+- type DriverName
 
 
 ## Variables

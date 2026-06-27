@@ -276,8 +276,8 @@ func TestPythonDocsUseBindingAndVendorFacadeContract(t *testing.T) {
 	required := []string{
 		"secrets-sync-python-binding",
 		"import secrets_sync",
-		"vendor_fabric.secrets_sync",
-		"vendor-fabric[secrets-sync]",
+		"pip install secrets-sync-python-binding",
+		"Downstream",
 	}
 
 	for _, path := range paths {

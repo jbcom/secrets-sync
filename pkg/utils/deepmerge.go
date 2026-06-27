@@ -12,10 +12,8 @@ import (
 //   - Scalars: OVERRIDE (src replaces dst)
 //   - Type conflicts: OVERRIDE (src replaces dst)
 //
-// This matches the behavior of Python's deepmerge.Merger with:
-//
-//	[(list, ["append"]), (dict, ["merge"]), (set, ["union"])],
-//	["override"], ["override"]
+// This matches Python's deepmerge.Merger strategy:
+// list append, dict/map merge, set union, and override fallbacks.
 //
 // The function modifies dst in place and returns the merged result.
 func DeepMerge(dst, src map[string]interface{}) map[string]interface{} {

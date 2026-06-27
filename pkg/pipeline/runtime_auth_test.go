@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"context"
 	"encoding/json"
 	"testing"
 )
@@ -144,5 +145,46 @@ func TestPipelineRuntimeClientsUseSuppliedSessionMaterial(t *testing.T) {
 	}
 	if awsClient.Endpoint != "http://localhost:4566" {
 		t.Fatalf("AWS client endpoint = %q", awsClient.Endpoint)
+	}
+
+	regionalClient := p.awsClient("", "eu-central-1", "target")
+	if regionalClient.Region != "eu-central-1" {
+		t.Fatalf("explicit target region was clobbered by runtime auth: %q", regionalClient.Region)
+	}
+}
+
+func TestNewWithContextAndRuntimeAuthDoesNotMutateCallerConfig(t *testing.T) {
+	cfg := &Config{
+		Vault: VaultConfig{
+			Address: "https://configured-vault.example.test",
+		},
+		AWS: AWSConfig{Region: "us-east-1"},
+		Targets: map[string]Target{
+			"prod": {},
+		},
+	}
+	auth := &RuntimeAuth{
+		Vault: &VaultRuntimeAuth{
+			Address: "https://runtime-vault.example.test",
+			Token:   "runtime-token",
+		},
+		AWS: &AWSRuntimeAuth{Region: "us-west-2"},
+	}
+
+	p, err := NewWithContextAndRuntimeAuth(context.Background(), cfg, auth)
+	if err != nil {
+		t.Fatalf("NewWithContextAndRuntimeAuth failed: %v", err)
+	}
+	if p.config.Vault.Address != "https://runtime-vault.example.test" {
+		t.Fatalf("pipeline config did not receive runtime Vault address: %q", p.config.Vault.Address)
+	}
+	if cfg.Vault.Address != "https://configured-vault.example.test" {
+		t.Fatalf("caller config was mutated: Vault address = %q", cfg.Vault.Address)
+	}
+	if cfg.Vault.Auth.Token != nil {
+		t.Fatalf("caller config was mutated with runtime token")
+	}
+	if cfg.AWS.Region != "us-east-1" {
+		t.Fatalf("caller config AWS region was mutated: %q", cfg.AWS.Region)
 	}
 }

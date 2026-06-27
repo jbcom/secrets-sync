@@ -28,6 +28,10 @@ func TestDockerfileUsesDistrolessAndShipsController(t *testing.T) {
 	}
 
 	text := string(content)
+	runtimeStage := text
+	if marker := "FROM gcr.io/distroless/static-debian13:nonroot AS runtime"; strings.Contains(text, marker) {
+		runtimeStage = text[strings.Index(text, marker):]
+	}
 	for _, required := range []string{
 		"FROM golang:",
 		"FROM gcr.io/distroless/static-debian13:nonroot AS runtime",
@@ -46,7 +50,7 @@ func TestDockerfileUsesDistrolessAndShipsController(t *testing.T) {
 		"apt-get",
 		" apk ",
 	} {
-		if strings.Contains(text, forbidden) {
+		if strings.Contains(runtimeStage, forbidden) {
 			t.Fatalf("Dockerfile runtime should remain distroless, found %q", forbidden)
 		}
 	}
