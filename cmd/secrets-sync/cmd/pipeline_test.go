@@ -326,9 +326,9 @@ func TestStripDiffValuesRemovesRawSecrets(t *testing.T) {
 				Target: "prod",
 				Changes: []diff.SecretChange{
 					{
-						Path:           "app/db",
-						CurrentValues:  map[string]interface{}{"password": "hunter2"},
-						DesiredValues:  map[string]interface{}{"password": "swordfish"},
+						Path:          "app/db",
+						CurrentValues: map[string]interface{}{"password": "hunter2"},
+						DesiredValues: map[string]interface{}{"password": "swordfish"},
 					},
 				},
 			},

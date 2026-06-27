@@ -24,11 +24,11 @@ func TestPQRoundTrip(t *testing.T) {
 	if bytes.Contains(ct, []byte("password")) {
 		t.Fatal("ciphertext leaks plaintext")
 	}
-	got, err := c.Decrypt(ctx, plain[:0]) // sanity: wrong input should error
-	if err == nil {
+	// Sanity: a non-envelope input must error rather than panic.
+	if _, derr := c.Decrypt(ctx, plain[:0]); derr == nil {
 		t.Fatal("decrypting a non-envelope should error")
 	}
-	got, err = c.Decrypt(ctx, ct)
+	got, err := c.Decrypt(ctx, ct)
 	if err != nil {
 		t.Fatalf("decrypt: %v", err)
 	}
@@ -65,7 +65,7 @@ func TestPQEncryptOnlyFromPublicKey(t *testing.T) {
 		t.Fatalf("encrypt: %v", err)
 	}
 	// The encrypt-only cipher cannot decrypt.
-	if _, err := enc.Decrypt(context.Background(), ct); err == nil {
+	if _, derr := enc.Decrypt(context.Background(), ct); derr == nil {
 		t.Fatal("encrypt-only cipher must not decrypt")
 	}
 	// The full cipher can.

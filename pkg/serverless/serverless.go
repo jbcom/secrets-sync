@@ -246,7 +246,7 @@ func runtimeAuth(session ProviderSession) *pipeline.RuntimeAuth {
 }
 
 func pipelineOptions(options RequestOptions) (pipeline.Options, error) {
-	op := pipeline.OperationPipeline
+	var op pipeline.Operation
 	switch strings.ToLower(options.Operation) {
 	case string(pipeline.OperationMerge):
 		op = pipeline.OperationMerge

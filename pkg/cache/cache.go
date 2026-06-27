@@ -78,7 +78,7 @@ func (c *MemoryCache) Get(_ context.Context, key string) ([]byte, bool, error) {
 		return nil, false, nil
 	}
 	if !e.expires.IsZero() && c.now().After(e.expires) {
-		c.Delete(context.Background(), key)
+		_ = c.Delete(context.Background(), key)
 		return nil, false, nil
 	}
 	// Return a copy so callers can't mutate the cached buffer.
