@@ -9,6 +9,7 @@ import (
 	"github.com/jbcom/secrets-sync/pkg/client/aws"
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	"github.com/jbcom/secrets-sync/pkg/driver"
+	"github.com/jbcom/secrets-sync/pkg/observability"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -22,6 +23,8 @@ import (
 // Flow: MergeStore[bundle_path] → AWS[target_account]
 func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun bool) Result {
 	start := time.Now()
+	ctx, span := observability.StartPhaseSpan(ctx, "sync", targetName)
+	defer span.End()
 	requestID := reqctx.GetRequestID(ctx)
 	l := log.WithFields(log.Fields{
 		"action":     "syncTarget",

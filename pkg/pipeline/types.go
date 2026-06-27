@@ -4,6 +4,7 @@ package pipeline
 import (
 	"fmt"
 
+	"github.com/jbcom/secrets-sync/pkg/observability"
 	"gopkg.in/yaml.v3"
 )
 
@@ -17,6 +18,12 @@ type Config struct {
 	Targets        map[string]Target        `mapstructure:"targets" yaml:"targets"`
 	DynamicTargets map[string]DynamicTarget `mapstructure:"dynamic_targets" yaml:"dynamic_targets"`
 	Pipeline       PipelineSettings         `mapstructure:"pipeline" yaml:"pipeline"`
+	Observability  ObservabilityConfig      `mapstructure:"observability" yaml:"observability,omitempty"`
+}
+
+// ObservabilityConfig configures metrics and distributed tracing.
+type ObservabilityConfig struct {
+	Tracing observability.TracingConfig `mapstructure:"tracing" yaml:"tracing,omitempty"`
 }
 
 // LogConfig controls logging behavior

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
+	"github.com/jbcom/secrets-sync/pkg/observability"
 	"github.com/jbcom/secrets-sync/pkg/utils"
 	log "github.com/sirupsen/logrus"
 )
@@ -21,6 +22,8 @@ import (
 // Existing data at that path is wiped before writing.
 func (p *Pipeline) mergeTarget(ctx context.Context, targetName string, dryRun bool) Result {
 	start := time.Now()
+	ctx, span := observability.StartPhaseSpan(ctx, "merge", targetName)
+	defer span.End()
 	requestID := reqctx.GetRequestID(ctx)
 	l := log.WithFields(log.Fields{
 		"action":     "mergeTarget",

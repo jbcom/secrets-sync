@@ -58,7 +58,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 - [x] M1.5 Wire all four into config structs, fetch/sync, USAGE.md driver docs, examples/, and docs guards. CRD + Helm chart support new target drivers (CRD already x-kubernetes-preserve-unknown-fields:true on targets).
 
 ### M2 v2.5.0 — Observability & Tracing
-- [ ] M2.1 OpenTelemetry tracing: spans across fetch/merge/sync + per-backend API calls; attributes target/source/operation/phase; OTLP/Jaeger/Zipkin exporters; configurable sampling. Config block `observability.tracing`.
+- [x] M2.1 OpenTelemetry tracing: spans across fetch/merge/sync + per-backend API calls; attributes target/source/operation/phase; OTLP/Jaeger/Zipkin exporters; configurable sampling. Config block `observability.tracing`. (Jaeger via native OTLP.)
 - [ ] M2.2 Enhanced metrics: user-defined custom metrics via config; dependency-probe health endpoints.
 - [ ] M2.3 Ship Prometheus alerting rules + Grafana dashboard templates under deploy/.
 - [ ] M2.4 Performance: discovery result caching (Organizations/Identity Center); configurable AWS retry/backoff; bulk batch ops; concurrent source reads with configurable limits.

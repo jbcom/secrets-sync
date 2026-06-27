@@ -135,6 +135,27 @@ bearer token, custom headers, or mTLS client certificates.
 A full multi-provider example lives at
 [`examples/multi-provider-targets.yaml`](../examples/multi-provider-targets.yaml).
 
+## Distributed tracing
+
+Enable OpenTelemetry tracing with an `observability.tracing` block. Spans cover
+each merge/sync phase per target and each backend fetch, with attributes for
+phase, target, operation, and driver. Jaeger is reached via its native OTLP
+endpoint.
+
+```yaml
+observability:
+  tracing:
+    enabled: true
+    exporter: otlp-grpc        # otlp-grpc | otlp-http | zipkin | stdout
+    endpoint: localhost:4317   # honors OTEL_EXPORTER_* env vars when empty
+    insecure: true
+    sample_ratio: 1.0          # 0 = never, 1 = always (parent-based)
+    service_name: secrets-sync
+```
+
+When `enabled` is false (the default), tracing installs a no-op provider and
+adds no overhead.
+
 ## Validate
 
 ```bash

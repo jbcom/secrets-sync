@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/jbcom/secrets-sync/pkg/driver"
+	"github.com/jbcom/secrets-sync/pkg/observability"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -14,6 +15,9 @@ import (
 // new providers route through; the Vault- and AWS-specific helpers below remain
 // for the paths that still need provider-specific construction/auth.
 func (p *Pipeline) fetchSourceSecrets(ctx context.Context, src driver.SourceBackend, path string) (map[string]interface{}, error) {
+	ctx, span := observability.StartBackendSpan(ctx, string(src.Driver()), "fetch")
+	defer span.End()
+
 	if err := src.Init(ctx); err != nil {
 		return nil, err
 	}

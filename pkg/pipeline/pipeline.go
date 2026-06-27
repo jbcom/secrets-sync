@@ -42,6 +42,7 @@ import (
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	"github.com/jbcom/secrets-sync/pkg/diff"
 	"github.com/jbcom/secrets-sync/pkg/driver"
+	"github.com/jbcom/secrets-sync/pkg/observability"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -69,6 +70,7 @@ type Pipeline struct {
 	s3Store     *S3MergeStore
 	runtimeAuth *RuntimeAuth
 	backends    *driver.Registry
+	tracing     *observability.TracerProvider
 
 	results   []Result
 	resultsMu sync.Mutex
@@ -186,7 +188,25 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 		}
 	}
 
+	// Initialize distributed tracing if configured. A disabled config installs
+	// a no-op provider, so the rest of the pipeline traces unconditionally.
+	tp, err := observability.InitTracing(ctx, runtimeCfg.Observability.Tracing)
+	if err != nil {
+		log.WithError(err).Warn("Failed to initialize tracing")
+	} else {
+		p.tracing = tp
+	}
+
 	return p, nil
+}
+
+// Shutdown flushes and releases pipeline-owned resources (currently the tracer
+// provider). It is safe to call even when tracing was never configured.
+func (p *Pipeline) Shutdown(ctx context.Context) error {
+	if p == nil || p.tracing == nil {
+		return nil
+	}
+	return p.tracing.Shutdown(ctx)
 }
 
 func cloneConfig(cfg *Config) (*Config, error) {
