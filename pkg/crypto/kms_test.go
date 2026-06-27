@@ -83,3 +83,18 @@ func TestKMSCipherRejectsStaticEnvelope(t *testing.T) {
 		t.Fatal("KMS decrypt of a static-key envelope must fail")
 	}
 }
+
+func TestStaticCipherRejectsKMSEnvelope(t *testing.T) {
+	// The reverse: a KMS envelope (non-empty wrapped key) must be rejected by
+	// the static cipher with a clear error, not an opaque GCM failure.
+	kmsC, _ := NewKMSCipher(&fakeKMS{}, "alias/test")
+	ct, err := kmsC.Encrypt(context.Background(), []byte("y"))
+	if err != nil {
+		t.Fatalf("kms encrypt: %v", err)
+	}
+	static, _ := NewStaticKeyCipher(make([]byte, 32))
+	_, err = static.Decrypt(context.Background(), ct)
+	if err == nil {
+		t.Fatal("static decrypt of a KMS envelope must fail")
+	}
+}

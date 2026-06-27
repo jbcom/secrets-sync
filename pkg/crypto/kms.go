@@ -32,17 +32,31 @@ func NewKMSCipher(api kmsAPI, keyID string) (*KMSCipher, error) {
 	return &KMSCipher{api: api, keyID: keyID}, nil
 }
 
+// encryptionContext binds ciphertext to this key so KMS rejects a decrypt with a
+// mismatched context. For symmetric keys KMS otherwise ignores KeyId, so this is
+// what actually enforces cross-key binding.
+func (c *KMSCipher) encryptionContext() map[string]string {
+	return map[string]string{"service": "secrets-sync", "key-id": c.keyID}
+}
+
 // Encrypt wraps a fresh data key via KMS and seals the payload with it.
 func (c *KMSCipher) Encrypt(ctx context.Context, plaintext []byte) ([]byte, error) {
 	out, err := c.api.GenerateDataKey(ctx, &kms.GenerateDataKeyInput{
-		KeyId:   aws.String(c.keyID),
-		KeySpec: kmstypes.DataKeySpecAes256,
+		KeyId:             aws.String(c.keyID),
+		KeySpec:           kmstypes.DataKeySpecAes256,
+		EncryptionContext: c.encryptionContext(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("crypto: kms generate data key: %w", err)
 	}
-	defer zero(out.Plaintext)
-	return seal(out.Plaintext, out.CiphertextBlob, plaintext)
+	// Zero the plaintext data key explicitly after seal returns, rather than via
+	// defer, so the lifetime of the key material is obvious and minimal.
+	sealed, sealErr := seal(out.Plaintext, out.CiphertextBlob, plaintext)
+	zero(out.Plaintext)
+	if sealErr != nil {
+		return nil, sealErr
+	}
+	return sealed, nil
 }
 
 // Decrypt unwraps the embedded data key via KMS and opens the payload.
@@ -55,20 +69,14 @@ func (c *KMSCipher) Decrypt(ctx context.Context, ciphertext []byte) ([]byte, err
 		return nil, fmt.Errorf("crypto: envelope has no wrapped key (was it encrypted with a static key?)")
 	}
 	out, err := c.api.Decrypt(ctx, &kms.DecryptInput{
-		CiphertextBlob: wrapped,
-		KeyId:          aws.String(c.keyID),
+		CiphertextBlob:    wrapped,
+		KeyId:             aws.String(c.keyID),
+		EncryptionContext: c.encryptionContext(),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("crypto: kms decrypt data key: %w", err)
 	}
-	defer zero(out.Plaintext)
-	return openWithKey(out.Plaintext, rest)
-}
-
-// zero overwrites a byte slice to limit how long plaintext key material lingers
-// in memory.
-func zero(b []byte) {
-	for i := range b {
-		b[i] = 0
-	}
+	opened, openErr := openWithKey(out.Plaintext, rest)
+	zero(out.Plaintext)
+	return opened, openErr
 }
