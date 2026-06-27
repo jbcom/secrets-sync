@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
   "bootstrap-sha": "5216e0136e357d6dac81ad80f9cf22dbff718049",
+  "include-component-in-tag": false,
   "packages": {
     ".": {
       "package-name": "secrets-sync",
