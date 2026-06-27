@@ -53,7 +53,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 ### M1 v2.4.0 — Additional Secret Stores
 - [x] M1.1 Kubernetes Secrets target backend (pkg/client/k8s): namespace-scoped writes, Opaque/TLS/dockerconfigjson types, RBAC. Register driver `kubernetes`.
 - [x] M1.2 Generic HTTP store (pkg/client/httpstore): source+target via webhook; auth bearer/mTLS/custom headers; circuit-breaker + retry integration. Driver `http`.
-- [ ] M1.3 Azure Key Vault backend (pkg/client/azure): read/write source+target; Azure AD auth (service principal, managed identity, workload identity federation); cross-tenant via RBAC. Driver `azure`.
+- [x] M1.3 Azure Key Vault backend (pkg/client/azure): read/write source+target; Azure AD auth (service principal, managed identity, workload identity federation); cross-tenant via RBAC. Driver `azure`.
 - [ ] M1.4 GCP Secret Manager backend (pkg/client/gcp): read/write source+target; service account + workload identity auth; project isolation. Driver `gcp`.
 - [ ] M1.5 Wire all four into config structs, fetch/sync, USAGE.md driver docs, examples/, and docs guards. CRD + Helm chart support new target drivers.
 
