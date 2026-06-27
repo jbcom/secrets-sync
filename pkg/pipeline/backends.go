@@ -2,6 +2,7 @@ package pipeline
 
 import (
 	"github.com/jbcom/secrets-sync/pkg/client/aws"
+	"github.com/jbcom/secrets-sync/pkg/client/httpstore"
 	"github.com/jbcom/secrets-sync/pkg/client/k8s"
 	"github.com/jbcom/secrets-sync/pkg/client/vault"
 	"github.com/jbcom/secrets-sync/pkg/driver"
@@ -42,6 +43,10 @@ func newBackendRegistry() *driver.Registry {
 
 	r.RegisterTarget(driver.DriverNameKubernetes, func(spec driver.BackendSpec) (driver.TargetBackend, error) {
 		return k8s.New(spec)
+	})
+
+	r.RegisterTarget(driver.DriverNameHTTP, func(spec driver.BackendSpec) (driver.TargetBackend, error) {
+		return httpstore.New(spec)
 	})
 
 	return r
