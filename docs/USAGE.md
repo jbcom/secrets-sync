@@ -178,6 +178,23 @@ pipeline:
 
 Rollback writes are themselves audited (actor `rollback`).
 
+## Cross-region replication
+
+Replicate every merged bundle to additional regions for durability and
+read-locality. Writes go to the primary first, then to each replica; reads come
+from the primary and fall back to replicas on a regional outage.
+
+```yaml
+merge_store:
+  s3:
+    bucket: secrets-sync-merge-store
+    replica_regions: [us-west-2, eu-central-1]
+    require_all_replicas: false   # true = a replica write failure fails the sync
+```
+
+By default replication is best-effort (primary success is sufficient); set
+`require_all_replicas` for strict multi-region durability.
+
 ## Multi-instance coordination
 
 For multi-replica controller deployments, two primitives prevent duplicate work:

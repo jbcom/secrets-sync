@@ -70,6 +70,7 @@ type Pipeline struct {
 
 	awsCtx      *AWSExecutionContext
 	s3Store     *S3MergeStore
+	replicated  *ReplicatingBundleStore
 	runtimeAuth *RuntimeAuth
 	backends    *driver.Registry
 	tracing     *observability.TracerProvider
@@ -196,6 +197,10 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 			log.WithError(err).Warn("Failed to initialize S3 merge store")
 		} else {
 			p.s3Store = s3Store
+			// Build cross-region replicas if configured.
+			if replicated := p.buildReplicatedStore(ctx, runtimeCfg.MergeStore.S3, s3Store); replicated != nil {
+				p.replicated = replicated
+			}
 		}
 	}
 

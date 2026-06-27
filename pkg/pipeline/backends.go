@@ -15,6 +15,9 @@ import (
 // Cross-cutting wrappers (client-side encryption, regional replication) compose
 // around this interface rather than the concrete S3 store.
 func (p *Pipeline) bundleStore() driver.BundleStore {
+	if p.replicated != nil {
+		return p.replicated
+	}
 	if p.s3Store == nil {
 		return nil
 	}

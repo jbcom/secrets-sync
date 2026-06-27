@@ -218,6 +218,15 @@ type MergeStoreS3 struct {
 	// (zero-knowledge mode) — distinct from KMSKeyID's server-side SSE-KMS.
 	Encryption *EncryptionConfig `mapstructure:"encryption" yaml:"encryption,omitempty"`
 
+	// ReplicaRegions replicates every merged bundle to the same bucket name in
+	// each listed region for cross-region durability and read-locality. A
+	// regionally-named bucket per region is assumed (bucket + "-" + region) when
+	// ReplicaBucketPattern is empty.
+	ReplicaRegions []string `mapstructure:"replica_regions" yaml:"replica_regions,omitempty"`
+	// RequireAllReplicas fails a write if any replica write fails (default:
+	// best-effort, primary success is enough).
+	RequireAllReplicas bool `mapstructure:"require_all_replicas" yaml:"require_all_replicas,omitempty"`
+
 	// Version management
 	Versioning *VersioningConfig `mapstructure:"versioning" yaml:"versioning"`
 }

@@ -75,7 +75,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 - [x] M4.3 Multi-instance coordination: leader election (RunAsLeader) for multi-replica controller; distributed locking via S3 conditional writes (If-None-Match:*); stable-hash work partitioning.
 
 ### M5 v3.0+ — Future Considerations
-- [ ] M5.1 Regional merge stores with cross-region replication (edge distribution).
+- [x] M5.1 Regional merge stores with cross-region replication (ReplicatingBundleStore: write fan-out primary+replicas, read primary→replica fallback; replica_regions/require_all_replicas config).
 - [ ] M5.2 Advanced security: post-quantum algorithms for encryption-at-rest; zero-trust controller↔provider; cross-org federated identity.
 - [ ] M5.3 Scale: Redis/Memcached caching layer; event-driven async via message queue; Azure Functions serverless target.
 
