@@ -4,6 +4,7 @@ gopy_version := "v0.4.10"
 x_tools_version := "v0.47.0"
 gomarkdoc_version := "v1.1.0"
 macosx_deployment_target := "11.0"
+auditwheel_version := "6.7.0"
 
 default:
     @just --list
@@ -185,8 +186,35 @@ python-build python_version="3.13":
     just python-bindings "{{ python_version }}"
     echo "Building Python wheel for Python {{ python_version }}..."
     (cd "${output}" && "${python_run[@]}" python -m build)
+    just python-repair-wheels "{{ python_version }}"
     "${python_run[@]}" python tools/check_python_dist.py --dist-dir "${output}/dist" --name "${python_dist}" --version "${binding_version}"
     PYTHON_VERSION="{{ python_version }}" PYTHON_DIST_DIR="${output}/dist" bash scripts/check-python-binding.sh
+
+# Repair Linux gopy wheels to PyPI-accepted manylinux tags.
+python-repair-wheels python_version="3.13":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [[ "$(uname -s)" != "Linux" ]]; then
+      exit 0
+    fi
+
+    dist_dir="python/build/secrets_sync/dist"
+    shopt -s nullglob
+    wheels=("${dist_dir}"/*linux_*.whl)
+    if [[ "${#wheels[@]}" -eq 0 ]]; then
+      exit 0
+    fi
+
+    repaired_dir="${dist_dir}/repaired"
+    rm -rf "${repaired_dir}"
+    mkdir -p "${repaired_dir}"
+
+    uv run --no-project --python "{{ python_version }}" --with "auditwheel=={{ auditwheel_version }}" -- \
+      auditwheel repair -w "${repaired_dir}" "${wheels[@]}"
+
+    rm -f "${wheels[@]}"
+    find "${repaired_dir}" -maxdepth 1 -type f -name '*.whl' -exec mv {} "${dist_dir}/" \;
+    rmdir "${repaired_dir}"
 
 # Build and smoke-test the Python binding for the supported matrix.
 python-matrix:
