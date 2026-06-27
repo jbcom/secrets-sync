@@ -154,12 +154,13 @@ func (p *Pipeline) mergeTarget(ctx context.Context, targetName string, dryRun bo
 		}
 	}
 
-	// Write to merge store
+	// Write to merge store. The Vault path is path-based and legacy; the bundle
+	// store path goes through the driver.BundleStore interface.
 	var writeErr error
 	if p.config.MergeStore.Vault != nil {
 		writeErr = p.writeMergedBundleToVault(ctx, bundlePath, mergedSecrets)
-	} else if p.s3Store != nil {
-		writeErr = p.s3Store.WriteMergedBundle(ctx, targetName, bundleID, mergedSecrets)
+	} else if bs := p.bundleStore(); bs != nil {
+		writeErr = bs.WriteMergedBundle(ctx, targetName, bundleID, mergedSecrets)
 	}
 
 	if writeErr != nil {

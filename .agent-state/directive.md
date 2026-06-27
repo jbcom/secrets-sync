@@ -47,8 +47,8 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 - [x] M0.2 Add a backend registry/factory: `DriverName → constructor`, keyed off config. Replace `DriverIsSupported` static list with registry membership.
 - [x] M0.3 Make `Source` config driver-generic: add provider fields alongside Vault/AWS without breaking existing YAML; route `fetch.go` through the registry instead of hardcoded vault/aws branches.
 - [x] M0.4 Make `Target` config driver-generic: `Target` gains an optional backend selector (default aws for back-compat); refactor `syncTarget` (sync.go) to resolve a target backend via registry instead of constructing `aws.AwsClient` directly.
-- [ ] M0.5 Make `MergeStore` registry-driven (Vault/S3 today) so new merge backends slot in.
-- [ ] M0.6 Migrate AWS + Vault clients onto the formal interfaces; assert interface satisfaction at compile time (`var _ driver.SourceBackend = ...`). Keep all existing tests green.
+- [x] M0.5 Make `MergeStore` registry-driven (Vault/S3 today) so new merge backends slot in. Introduced `driver.BundleStore` matching actual bundle usage; S3 routed through it via `bundleStore()`; Vault merge path kept concrete/legacy (no roadmap item adds a new bundle backend).
+- [x] M0.6 Migrate AWS + Vault clients onto the formal interfaces; assert interface satisfaction at compile time. Done incrementally via compile-time assertions across M0.1–M0.5 (AwsClient/VaultClient → Source/Target; S3MergeStore → MergeStore+BundleStore). All existing tests green.
 
 ### M1 v2.4.0 — Additional Secret Stores
 - [ ] M1.1 Kubernetes Secrets target backend (pkg/client/k8s): namespace-scoped writes, Opaque/TLS/dockerconfigjson types, RBAC. Register driver `kubernetes`.

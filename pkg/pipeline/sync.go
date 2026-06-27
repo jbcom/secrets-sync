@@ -220,7 +220,7 @@ func (p *Pipeline) readBundleSecrets(ctx context.Context, targetName, bundlePath
 			}
 			secretsData[relPath] = data
 		}
-	} else if p.s3Store != nil {
+	} else if bs := p.bundleStore(); bs != nil {
 		target, ok := p.config.Targets[targetName]
 		if !ok {
 			return nil, fmt.Errorf("target not found: %s", targetName)
@@ -233,9 +233,9 @@ func (p *Pipeline) readBundleSecrets(ctx context.Context, targetName, bundlePath
 		}
 		bundleID := BundleID(sourcePaths)
 
-		data, err := p.s3Store.ReadMergedBundle(ctx, targetName, bundleID)
+		data, err := bs.ReadMergedBundle(ctx, targetName, bundleID)
 		if err != nil {
-			return nil, fmt.Errorf("failed to read bundle from S3: %w", err)
+			return nil, fmt.Errorf("failed to read bundle from bundle store: %w", err)
 		}
 		secretsData = data
 	}

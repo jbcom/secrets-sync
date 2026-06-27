@@ -48,9 +48,22 @@ type TargetBackend interface {
 	DeleteSecret(ctx context.Context, path string) error
 }
 
-// MergeStore is the intermediate storage written during the merge phase and
-// read during the sync phase. It is keyed by target name and secret name
-// rather than a flat path, reflecting the bundle-per-target layout.
+// BundleStore is the intermediate storage the merge phase writes a whole merged
+// bundle to and the sync phase reads it back from. It is keyed by target name
+// and a deterministic bundle ID (derived from the source sequence). This is the
+// abstraction the pipeline's merge/sync orchestration depends on; wrappers
+// (client-side encryption, regional replication) compose around it.
+type BundleStore interface {
+	// WriteMergedBundle persists the full merged secret set for a target.
+	WriteMergedBundle(ctx context.Context, targetName, bundleID string, secrets map[string]interface{}) error
+	// ReadMergedBundle reads back the merged secret set for a target. The outer
+	// map is keyed by relative secret path; the inner map is the secret's data.
+	ReadMergedBundle(ctx context.Context, targetName, bundleID string) (map[string]map[string]interface{}, error)
+}
+
+// MergeStore is the per-secret view of intermediate storage used by read-back
+// and diff paths. It is keyed by target name and secret name rather than a flat
+// path, reflecting the bundle-per-target layout.
 type MergeStore interface {
 	// WriteSecret persists a merged secret for a target.
 	WriteSecret(ctx context.Context, targetName, secretName string, data map[string]interface{}) error

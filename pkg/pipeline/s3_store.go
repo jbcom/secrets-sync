@@ -18,9 +18,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Compile-time assertion that S3MergeStore satisfies the formal MergeStore
-// contract. The Vault-backed merge path uses VaultClient directly.
-var _ driver.MergeStore = (*S3MergeStore)(nil)
+// Compile-time assertions that S3MergeStore satisfies the formal merge-store
+// contracts: the per-secret MergeStore view and the bundle-level BundleStore
+// view the merge/sync orchestration depends on.
+var (
+	_ driver.MergeStore  = (*S3MergeStore)(nil)
+	_ driver.BundleStore = (*S3MergeStore)(nil)
+)
 
 // SecretVersion represents a versioned secret with metadata
 type SecretVersion struct {

@@ -6,6 +6,17 @@ import (
 	"github.com/jbcom/secrets-sync/pkg/driver"
 )
 
+// bundleStore returns the configured bundle-level merge store as a
+// driver.BundleStore, or nil when the Vault (path-based) merge path is in use.
+// Cross-cutting wrappers (client-side encryption, regional replication) compose
+// around this interface rather than the concrete S3 store.
+func (p *Pipeline) bundleStore() driver.BundleStore {
+	if p.s3Store == nil {
+		return nil
+	}
+	return p.s3Store
+}
+
 // newBackendRegistry returns a registry pre-populated with the built-in AWS and
 // Vault backends. Each Pipeline owns its own registry instance so registration
 // is deterministic and free of global state — additional providers are
