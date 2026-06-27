@@ -49,21 +49,34 @@ def _patch_setup_py(path: Path, expected_name: str, expected_version: str) -> bo
 
 def _patch_pyproject(path: Path, expected_name: str, expected_version: str) -> bool:
     text = path.read_text(encoding="utf-8")
-    patched = False
+    project_header = re.search(r"^\s*\[project\]\s*(?:#.*)?$", text, re.MULTILINE)
+    if project_header is None:
+        return False
+
+    section_start = project_header.end()
+    next_table = re.search(r"^\s*\[", text[section_start:], re.MULTILINE)
+    section_end = (
+        section_start + next_table.start() if next_table is not None else len(text)
+    )
+    section = text[section_start:section_end]
+    patched_keys: set[str] = set()
     for key, value in (("name", expected_name), ("version", expected_version)):
         pattern = re.compile(
-            rf"(^\s*{key}\s*=\s*)(['\"])([^'\"]+)(['\"])", re.MULTILINE
+            rf"(^\s*{re.escape(key)}\s*=\s*)(['\"])([^'\"]+)(['\"])",
+            re.MULTILINE,
         )
-        if pattern.search(text) is None:
-            continue
-        text = pattern.sub(
-            lambda match: f"{match.group(1)}{match.group(2)}{value}{match.group(4)}",
-            text,
+        section, count = pattern.subn(
+            lambda match, replacement=value: (
+                f"{match.group(1)}{match.group(2)}{replacement}{match.group(4)}"
+            ),
+            section,
             count=1,
         )
-        patched = True
-    if not patched:
+        if count:
+            patched_keys.add(key)
+    if patched_keys != {"name", "version"}:
         return False
+    text = text[:section_start] + section + text[section_end:]
     path.write_text(text, encoding="utf-8")
     return True
 

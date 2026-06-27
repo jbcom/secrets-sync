@@ -19,21 +19,27 @@ ci python_version="3.13":
 vuln:
     #!/usr/bin/env bash
     set -euo pipefail
-    mapfile -t packages < <(scripts/go-packages.sh)
+    packages_raw="$(scripts/go-packages.sh)"
+    [[ -n "${packages_raw}" ]] || { echo "no Go packages discovered" >&2; exit 1; }
+    mapfile -t packages <<<"${packages_raw}"
     GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 "${packages[@]}"
 
 # Run Go tests. Extra arguments are passed to go test.
 test-go *args:
     #!/usr/bin/env bash
     set -euo pipefail
-    mapfile -t packages < <(scripts/go-packages.sh)
+    packages_raw="$(scripts/go-packages.sh)"
+    [[ -n "${packages_raw}" ]] || { echo "no Go packages discovered" >&2; exit 1; }
+    mapfile -t packages <<<"${packages_raw}"
     GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go test "${packages[@]}" {{ args }}
 
 # Run Go tests with the race detector and coverage.
 test-unit:
     #!/usr/bin/env bash
     set -euo pipefail
-    mapfile -t packages < <(scripts/go-packages.sh)
+    packages_raw="$(scripts/go-packages.sh)"
+    [[ -n "${packages_raw}" ]] || { echo "no Go packages discovered" >&2; exit 1; }
+    mapfile -t packages <<<"${packages_raw}"
     GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go test -race -coverprofile=coverage.out "${packages[@]}"
 
 # Build all Go release binaries used by local workflows.
@@ -88,16 +94,7 @@ python-bindings python_version="3.13": python-tools
     python_dist="secrets-sync-python-binding"
     output="python/build/${python_pkg}"
     python_run=(uv run --no-project --python "{{ python_version }}" --with build --with pybindgen --with setuptools --with wheel --)
-    binding_version="${PYTHON_BINDING_VERSION:-${VERSION:-}}"
-    if [[ -z "${binding_version}" ]]; then
-      if binding_version="$(git describe --tags --exact-match 2>/dev/null)"; then
-        :
-      else
-        binding_version="0.0.0.dev0"
-      fi
-    fi
-    binding_version="${binding_version#secrets-sync-v}"
-    binding_version="${binding_version#v}"
+    binding_version="$(scripts/python-binding-version.sh)"
 
     if [[ "$(uname -s)" == "Darwin" ]]; then
       export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-{{ macosx_deployment_target }}}"
@@ -179,16 +176,7 @@ python-build python_version="3.13":
     python_dist="secrets-sync-python-binding"
     output="python/build/${python_pkg}"
     python_run=(uv run --no-project --python "{{ python_version }}" --with build --with pybindgen --with setuptools --with wheel --)
-    binding_version="${PYTHON_BINDING_VERSION:-${VERSION:-}}"
-    if [[ -z "${binding_version}" ]]; then
-      if binding_version="$(git describe --tags --exact-match 2>/dev/null)"; then
-        :
-      else
-        binding_version="0.0.0.dev0"
-      fi
-    fi
-    binding_version="${binding_version#secrets-sync-v}"
-    binding_version="${binding_version#v}"
+    binding_version="$(scripts/python-binding-version.sh)"
 
     if [[ "$(uname -s)" == "Darwin" ]]; then
       export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-{{ macosx_deployment_target }}}"
@@ -213,9 +201,7 @@ python-matrix:
 python-check-dist python_version="3.13":
     #!/usr/bin/env bash
     set -euo pipefail
-    binding_version="${PYTHON_BINDING_VERSION:-${VERSION:-0.0.0.dev0}}"
-    binding_version="${binding_version#secrets-sync-v}"
-    binding_version="${binding_version#v}"
+    binding_version="$(scripts/python-binding-version.sh)"
     uv run --no-project --python "{{ python_version }}" --with build --with pybindgen --with setuptools --with wheel -- \
       python tools/check_python_dist.py --dist-dir python/build/secrets_sync/dist --name secrets-sync-python-binding --version "${binding_version}"
 
@@ -245,7 +231,9 @@ quality:
 fmt:
     #!/usr/bin/env bash
     set -euo pipefail
-    mapfile -t packages < <(scripts/go-packages.sh)
+    packages_raw="$(scripts/go-packages.sh)"
+    [[ -n "${packages_raw}" ]] || { echo "no Go packages discovered" >&2; exit 1; }
+    mapfile -t packages <<<"${packages_raw}"
     GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go fmt "${packages[@]}"
 
 # Run dependency cleanup.

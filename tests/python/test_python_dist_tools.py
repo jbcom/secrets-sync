@@ -101,6 +101,18 @@ def test_check_python_dist_requires_expected_name_and_version(tmp_path: Path) ->
         "--dist-dir",
         str(dist_dir),
         "--name",
+        "wrong-name",
+        "--version",
+        VERSION,
+    )
+    assert result.returncode == 1
+    assert "expected Name 'wrong-name'" in result.stderr
+
+    result = run_tool(
+        "tools/check_python_dist.py",
+        "--dist-dir",
+        str(dist_dir),
+        "--name",
         PYTHON_DIST,
         "--version",
         "9.9.9",

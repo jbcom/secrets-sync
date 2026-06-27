@@ -194,6 +194,7 @@ jobs:
             Justfile
             scripts/check-python-binding.sh
             scripts/install-gopy.sh
+            scripts/python-binding-version.sh
             tools/check_python_dist.py
             tools/patch_python_dist.py
             python/secrets_sync/**/*.go
