@@ -26,7 +26,7 @@ func (p *Pipeline) mergeTarget(ctx context.Context, targetName string, dryRun bo
 	start := time.Now()
 	ctx, span := observability.StartPhaseSpan(ctx, "merge", targetName)
 	defer span.End()
-	requestID := reqctx.GetRequestID(ctx)
+	requestID := reqctx.SafeRequestID(ctx)
 	l := log.WithFields(log.Fields{
 		"action":     "mergeTarget",
 		"target":     targetName,

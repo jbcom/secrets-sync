@@ -74,9 +74,12 @@ func mergeValues(dst, src interface{}) interface{} {
 	}
 }
 
-// appendSlices appends src slice to dst slice (list append strategy)
+// appendSlices appends src slice to dst slice (list append strategy). The
+// result slice is grown by append rather than pre-sized from len(dst)+len(src)
+// to avoid a (practically impossible, but statically flagged) integer overflow
+// in the capacity computation.
 func appendSlices(dst, src []interface{}) []interface{} {
-	result := make([]interface{}, 0, len(dst)+len(src))
+	var result []interface{}
 
 	// Copy dst items
 	for _, v := range dst {

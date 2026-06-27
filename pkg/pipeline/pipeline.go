@@ -278,7 +278,7 @@ func (p *Pipeline) Run(ctx context.Context, opts Options) ([]Result, error) {
 
 	l := log.WithFields(log.Fields{
 		"action":     "Pipeline.Run",
-		"request_id": reqCtx.RequestID,
+		"request_id": reqctx.SafeRequestID(ctx),
 		"operation":  opts.Operation,
 		"dry_run":    opts.DryRun,
 	})

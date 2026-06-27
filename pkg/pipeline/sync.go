@@ -27,7 +27,7 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 	start := time.Now()
 	ctx, span := observability.StartPhaseSpan(ctx, "sync", targetName)
 	defer span.End()
-	requestID := reqctx.GetRequestID(ctx)
+	requestID := reqctx.SafeRequestID(ctx)
 	l := log.WithFields(log.Fields{
 		"action":     "syncTarget",
 		"target":     targetName,

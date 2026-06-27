@@ -2,6 +2,7 @@ package context
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -49,6 +50,25 @@ func GetRequestID(ctx context.Context) string {
 		return ""
 	}
 	return reqCtx.RequestID
+}
+
+// SafeRequestID returns the request ID with any control characters (CR, LF,
+// other non-printable bytes) stripped, so it is safe to embed in a log line.
+// Request IDs are normally generated UUIDs, but a caller embedding the pipeline
+// (e.g. the serverless entrypoints) could supply an arbitrary one, so it is
+// sanitized at the logging boundary to prevent log injection.
+func SafeRequestID(ctx context.Context) string {
+	return sanitizeForLog(GetRequestID(ctx))
+}
+
+// sanitizeForLog removes control characters from a string destined for a log.
+func sanitizeForLog(s string) string {
+	return strings.Map(func(r rune) rune {
+		if r < 0x20 || r == 0x7f {
+			return -1
+		}
+		return r
+	}, s)
 }
 
 // GetElapsedTime calculates elapsed time from request start

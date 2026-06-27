@@ -16,7 +16,7 @@ const maxPipelineParallelism = 256
 // runMerge executes only the merge phase
 func (p *Pipeline) runMerge(ctx context.Context, targets []string, opts Options) ([]Result, error) {
 	startTime := time.Now()
-	requestID := reqctx.GetRequestID(ctx)
+	requestID := reqctx.SafeRequestID(ctx)
 	defer func() {
 		observability.RecordDuration(observability.PipelineExecutionDuration, startTime, "merge", string(opts.Operation))
 	}()
@@ -38,7 +38,7 @@ func (p *Pipeline) runMerge(ctx context.Context, targets []string, opts Options)
 // runSync executes only the sync phase
 func (p *Pipeline) runSync(ctx context.Context, targets []string, opts Options) ([]Result, error) {
 	startTime := time.Now()
-	requestID := reqctx.GetRequestID(ctx)
+	requestID := reqctx.SafeRequestID(ctx)
 	defer func() {
 		observability.RecordDuration(observability.PipelineExecutionDuration, startTime, "sync", string(opts.Operation))
 	}()
@@ -59,7 +59,7 @@ func (p *Pipeline) runSync(ctx context.Context, targets []string, opts Options) 
 
 // runPipeline executes both merge and sync phases
 func (p *Pipeline) runPipeline(ctx context.Context, targets []string, opts Options) ([]Result, error) {
-	requestID := reqctx.GetRequestID(ctx)
+	requestID := reqctx.SafeRequestID(ctx)
 	l := log.WithFields(log.Fields{
 		"action":     "Pipeline.runPipeline",
 		"targets":    targets,
