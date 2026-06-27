@@ -121,7 +121,7 @@ func (c *Client) WriteSecret(ctx context.Context, _ metav1.ObjectMeta, path stri
 		return nil, fmt.Errorf("azure: backend not initialized")
 	}
 	value := string(secret)
-	_, err := circuitbreaker.ExecuteTyped(c.breaker, ctx, func(ctx context.Context) (any, error) {
+	_, err := circuitbreaker.ExecuteTyped(c.breaker, ctx, func(ctx context.Context) (azsecrets.SetSecretResponse, error) {
 		return c.api.SetSecret(ctx, secretName(path), azsecrets.SetSecretParameters{Value: &value}, nil)
 	})
 	if err != nil {
@@ -135,7 +135,7 @@ func (c *Client) DeleteSecret(ctx context.Context, path string) error {
 	if c.api == nil {
 		return fmt.Errorf("azure: backend not initialized")
 	}
-	_, err := circuitbreaker.ExecuteTyped(c.breaker, ctx, func(ctx context.Context) (any, error) {
+	_, err := circuitbreaker.ExecuteTyped(c.breaker, ctx, func(ctx context.Context) (azsecrets.DeleteSecretResponse, error) {
 		return c.api.DeleteSecret(ctx, secretName(path), nil)
 	})
 	if err != nil {

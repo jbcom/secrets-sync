@@ -3,6 +3,7 @@ package pipeline
 import (
 	"github.com/jbcom/secrets-sync/pkg/client/aws"
 	"github.com/jbcom/secrets-sync/pkg/client/azure"
+	"github.com/jbcom/secrets-sync/pkg/client/gcp"
 	"github.com/jbcom/secrets-sync/pkg/client/httpstore"
 	"github.com/jbcom/secrets-sync/pkg/client/k8s"
 	"github.com/jbcom/secrets-sync/pkg/client/vault"
@@ -52,6 +53,10 @@ func newBackendRegistry() *driver.Registry {
 
 	r.RegisterTarget(driver.DriverNameAzure, func(spec driver.BackendSpec) (driver.TargetBackend, error) {
 		return azure.New(spec)
+	})
+
+	r.RegisterTarget(driver.DriverNameGCP, func(spec driver.BackendSpec) (driver.TargetBackend, error) {
+		return gcp.New(spec)
 	})
 
 	return r
