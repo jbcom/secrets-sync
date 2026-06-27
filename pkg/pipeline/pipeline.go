@@ -43,6 +43,7 @@ import (
 	"github.com/jbcom/secrets-sync/pkg/diff"
 	"github.com/jbcom/secrets-sync/pkg/driver"
 	"github.com/jbcom/secrets-sync/pkg/observability"
+	"github.com/jbcom/secrets-sync/pkg/policy"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
@@ -71,6 +72,7 @@ type Pipeline struct {
 	runtimeAuth *RuntimeAuth
 	backends    *driver.Registry
 	tracing     *observability.TracerProvider
+	policy      *policy.Engine
 
 	results   []Result
 	resultsMu sync.Mutex
@@ -137,10 +139,16 @@ func New(cfg *Config) (*Pipeline, error) {
 		return nil, fmt.Errorf("failed to build dependency graph: %w", err)
 	}
 
+	policyEngine, err := policy.Compile(cfg.Policy)
+	if err != nil {
+		return nil, fmt.Errorf("invalid sync policy: %w", err)
+	}
+
 	return &Pipeline{
 		config:   cfg,
 		graph:    graph,
 		backends: newBackendRegistry(),
+		policy:   policyEngine,
 	}, nil
 }
 

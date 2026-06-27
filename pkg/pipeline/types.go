@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jbcom/secrets-sync/pkg/observability"
+	"github.com/jbcom/secrets-sync/pkg/policy"
 	"gopkg.in/yaml.v3"
 )
 
@@ -19,6 +20,7 @@ type Config struct {
 	DynamicTargets map[string]DynamicTarget `mapstructure:"dynamic_targets" yaml:"dynamic_targets"`
 	Pipeline       PipelineSettings         `mapstructure:"pipeline" yaml:"pipeline"`
 	Observability  ObservabilityConfig      `mapstructure:"observability" yaml:"observability,omitempty"`
+	Policy         policy.Config            `mapstructure:"policy" yaml:"policy,omitempty"`
 }
 
 // ObservabilityConfig configures metrics and distributed tracing.

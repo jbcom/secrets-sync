@@ -44,6 +44,19 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 		}
 	}
 
+	// Enforce sync policy before doing any work. A deny for any import→target
+	// pair blocks the whole target sync with a clear, actionable error.
+	if denied := p.policyDenied(targetName, target); denied != nil {
+		l.WithError(denied).Warn("Sync blocked by policy")
+		return Result{
+			Target:   targetName,
+			Phase:    "sync",
+			Success:  false,
+			Error:    denied,
+			Duration: time.Since(start),
+		}
+	}
+
 	// Get the deterministic bundle path (same calculation as merge phase)
 	bundlePath, err := p.GetBundlePath(targetName)
 	if err != nil {
@@ -263,6 +276,31 @@ func (p *Pipeline) getAWSClientForTarget(ctx context.Context, target Target) (*a
 	}
 
 	return client, nil
+}
+
+// policyDenied evaluates the sync policy for every import→target pair and
+// returns a descriptive error if any is denied, or nil when all are allowed.
+// When no policy is configured the engine defaults to allow, so this is a
+// no-op for users who haven't opted in.
+func (p *Pipeline) policyDenied(targetName string, target Target) error {
+	if p.policy == nil {
+		return nil
+	}
+	imports := target.Imports
+	if len(imports) == 0 {
+		// A target with no explicit imports is still subject to a wildcard rule
+		// matched against an empty source name.
+		if d := p.policy.Evaluate("", targetName); !d.Allowed {
+			return fmt.Errorf("sync to target %q denied by policy rule %q", targetName, d.Rule)
+		}
+		return nil
+	}
+	for _, source := range imports {
+		if d := p.policy.Evaluate(source, targetName); !d.Allowed {
+			return fmt.Errorf("sync of source %q to target %q denied by policy rule %q", source, targetName, d.Rule)
+		}
+	}
+	return nil
 }
 
 // getTargetBackend resolves the sync destination for a target. When no explicit

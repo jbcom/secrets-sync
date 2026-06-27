@@ -64,7 +64,7 @@ while queue has [ ] items: implement → verify (`just test-unit`/`just build`) 
 - [x] M2.4 Performance: discovery result caching (Organizations/Identity Center — ouCache/ouChildCache already present); configurable AWS retry/backoff (max_retries/retry_mode); concurrent source reads with configurable limit (merge.parallel) preserving deep-merge priority order.
 
 ### M3 v2.6.0 — Enterprise Governance
-- [ ] M3.1 Policy as Code: declarative allow/deny sync policies per target/source in config; validated during `validate`; pre-sync enforcement with dry-run preview.
+- [x] M3.1 Policy as Code: declarative allow/deny sync policies per target/source in config; validated during `validate`; pre-sync enforcement with dry-run preview.
 - [ ] M3.2 Audit logging: structured log for every read/write/delete; tamper-evident hash chaining; destinations file/CloudWatch/S3.
 - [ ] M3.3 Client-side encryption for S3 merge store: KMS-managed or user-supplied keys; zero-knowledge mode (encrypt before reaching merge store).
 - [ ] M3.4 Rollback automation: auto-rollback on sync failure; version-aware rollback via S3 version store; configurable windows + safety checks.

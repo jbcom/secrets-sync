@@ -135,6 +135,32 @@ bearer token, custom headers, or mTLS client certificates.
 A full multi-provider example lives at
 [`examples/multi-provider-targets.yaml`](../examples/multi-provider-targets.yaml).
 
+## Sync policies (policy as code)
+
+Gate which sources may sync to which targets with declarative allow/deny rules.
+Policies are validated during `secrets-sync validate` (invalid regexes or
+actions fail there) and enforced before the sync phase writes anything — a
+denied target is reported in `--dry-run` too.
+
+```yaml
+policy:
+  default_action: allow   # allow (opt-in) | deny (allowlist)
+  rules:
+    - name: keep-prod-secrets-out-of-dev
+      source: "^prod-"
+      target: "^dev-"
+      action: deny
+    - name: only-shared-to-sandbox
+      source: "^shared$"
+      target: "^sandbox"
+      action: allow
+```
+
+`source` and `target` are regular expressions matched against the source and
+target names; an empty pattern matches anything. Rules are evaluated in order
+and the first match wins; if none match, `default_action` applies. An empty
+policy permits everything.
+
 ## Distributed tracing
 
 Enable OpenTelemetry tracing with an `observability.tracing` block. Spans cover

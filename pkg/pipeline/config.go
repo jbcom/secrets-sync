@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/jbcom/secrets-sync/pkg/driver"
+	"github.com/jbcom/secrets-sync/pkg/policy"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"gopkg.in/yaml.v3"
@@ -208,6 +209,12 @@ func (c *Config) Validate() error {
 
 	// Validate inheritance if targets reference each other
 	if err := c.ValidateTargetInheritance(); err != nil {
+		return err
+	}
+
+	// Compile sync policies so invalid regexes/actions fail at validate time
+	// rather than mid-sync.
+	if _, err := policy.Compile(c.Policy); err != nil {
 		return err
 	}
 

@@ -5,7 +5,32 @@ import (
 	"testing"
 
 	"github.com/jbcom/secrets-sync/pkg/driver"
+	"github.com/jbcom/secrets-sync/pkg/policy"
 )
+
+func TestPolicyDenied(t *testing.T) {
+	eng, err := policy.Compile(policy.Config{
+		DefaultAction: policy.Allow,
+		Rules:         []policy.Rule{{Name: "no-secrets-to-dev", Source: "^secrets$", Target: "^dev", Action: policy.Deny}},
+	})
+	if err != nil {
+		t.Fatalf("compile: %v", err)
+	}
+	p := &Pipeline{policy: eng}
+
+	// Denied: secrets→dev.
+	if err := p.policyDenied("dev-a", Target{Imports: []string{"secrets"}}); err == nil {
+		t.Fatal("expected policy denial for secrets→dev")
+	}
+	// Allowed: secrets→prod (default allow).
+	if err := p.policyDenied("prod-a", Target{Imports: []string{"secrets"}}); err != nil {
+		t.Fatalf("secrets→prod should be allowed: %v", err)
+	}
+	// Nil engine is a no-op.
+	if err := (&Pipeline{}).policyDenied("dev-a", Target{Imports: []string{"secrets"}}); err != nil {
+		t.Fatalf("nil policy engine must allow: %v", err)
+	}
+}
 
 // TestGetTargetBackend_RoutesNonDefaultDriver verifies that a target with an
 // explicit non-AWS backend is constructed through the registry rather than the
