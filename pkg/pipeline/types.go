@@ -213,8 +213,23 @@ type MergeStoreS3 struct {
 	Prefix   string `mapstructure:"prefix" yaml:"prefix"`
 	KMSKeyID string `mapstructure:"kms_key_id" yaml:"kms_key_id"`
 
+	// Encryption configures optional client-side envelope encryption of bundles
+	// (zero-knowledge mode) — distinct from KMSKeyID's server-side SSE-KMS.
+	Encryption *EncryptionConfig `mapstructure:"encryption" yaml:"encryption,omitempty"`
+
 	// Version management
 	Versioning *VersioningConfig `mapstructure:"versioning" yaml:"versioning"`
+}
+
+// EncryptionConfig configures client-side merge-store encryption. Exactly one
+// of KMSKeyID or KeyEnv must be set when Enabled.
+type EncryptionConfig struct {
+	Enabled bool `mapstructure:"enabled" yaml:"enabled"`
+	// KMSKeyID enables KMS envelope encryption with the given key.
+	KMSKeyID string `mapstructure:"kms_key_id" yaml:"kms_key_id,omitempty"`
+	// KeyEnv names an environment variable holding a base64-encoded 32-byte
+	// AES-256 key for user-supplied (static) key encryption.
+	KeyEnv string `mapstructure:"key_env" yaml:"key_env,omitempty"`
 }
 
 // VersioningConfig configures secret versioning

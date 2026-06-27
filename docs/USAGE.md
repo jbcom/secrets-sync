@@ -180,6 +180,28 @@ audit:
 The S3 sink writes one immutable object per entry keyed by zero-padded sequence;
 the file sink appends JSONL. With no destination set, auditing is disabled.
 
+## Client-side merge-store encryption
+
+Encrypt merged bundles **before** they reach S3 (zero-knowledge mode), so the
+storage backend only ever holds ciphertext. This is independent of the
+server-side `kms_key_id` (SSE-KMS) option. Encryption uses AES-256-GCM envelope
+encryption with either a KMS-managed key or a user-supplied key.
+
+```yaml
+merge_store:
+  s3:
+    bucket: secrets-sync-merge-store
+    encryption:
+      enabled: true
+      kms_key_id: alias/secrets-sync   # KMS envelope encryption
+      # --- or, user-supplied static key ---
+      # key_env: SECRETS_SYNC_AES_KEY   # base64-encoded 32-byte AES-256 key
+```
+
+With KMS, a fresh data key is generated per write and stored KMS-wrapped
+alongside the ciphertext; the plaintext key never persists. With `key_env`, the
+same base64 32-byte key must be supplied to read bundles back.
+
 ## Distributed tracing
 
 Enable OpenTelemetry tracing with an `observability.tracing` block. Spans cover
