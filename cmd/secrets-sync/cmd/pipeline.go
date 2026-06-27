@@ -29,6 +29,7 @@ var (
 	exitCodeMode    bool
 	continueOnError bool
 	parallelism     int
+	showValues      bool
 )
 
 var (
@@ -100,6 +101,7 @@ func init() {
 	pipelineCmd.Flags().StringVarP(&outputFormat, "output", "o", "human", "output format: human, json, github, compact, side-by-side")
 	pipelineCmd.Flags().BoolVar(&computeDiff, "diff", false, "compute and show diff even when not in dry-run mode")
 	pipelineCmd.Flags().BoolVar(&exitCodeMode, "exit-code", false, "use exit codes: 0=no changes, 1=changes, 2=errors (useful for CI/CD)")
+	pipelineCmd.Flags().BoolVar(&showValues, "show-values", false, "show actual secret values in diff output (masked by default)")
 }
 
 func runPipeline(cmd *cobra.Command, args []string) error {
@@ -183,7 +185,15 @@ func runPipeline(cmd *cobra.Command, args []string) error {
 	pipelineDiff := p.Diff()
 	diffOutput := ""
 	if pipelineDiff != nil {
-		diffOutput = p.FormatDiff(format)
+		diffOutput = diff.FormatDiffWithOptions(pipelineDiff, format, showValues)
+	}
+	// When values are masked, strip structured diff fields that hold raw secret
+	// values so they don't leak through JSON serialization.
+	if !showValues {
+		stripDiffValues(pipelineDiff)
+		for i := range results {
+			stripResultDiffValues(&results[i])
+		}
 	}
 	if format == diff.OutputFormatGitHub {
 		if outputErr := writeGitHubDiffOutputs(os.Getenv("GITHUB_OUTPUT"), pipelineDiff); outputErr != nil {
@@ -477,4 +487,29 @@ func redactPipelineDiagnostic(value string) string {
 		}
 		return parts[1] + parts[2] + "[REDACTED]"
 	})
+}
+
+// stripDiffValues removes raw secret values from a PipelineDiff so they don't
+// leak through JSON serialization when --show-values is false.
+func stripDiffValues(d *diff.PipelineDiff) {
+	if d == nil {
+		return
+	}
+	for i := range d.Targets {
+		for j := range d.Targets[i].Changes {
+			d.Targets[i].Changes[j].CurrentValues = nil
+			d.Targets[i].Changes[j].DesiredValues = nil
+		}
+	}
+}
+
+// stripResultDiffValues removes raw secret values from a per-target Result diff.
+func stripResultDiffValues(r *pipeline.Result) {
+	if r == nil || r.Diff == nil {
+		return
+	}
+	for j := range r.Diff.Changes {
+		r.Diff.Changes[j].CurrentValues = nil
+		r.Diff.Changes[j].DesiredValues = nil
+	}
 }

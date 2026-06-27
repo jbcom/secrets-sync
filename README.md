@@ -362,7 +362,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: secrets-sync
-              image: ghcr.io/jbcom/secrets-sync:v2.2.0
+              image: ghcr.io/jbcom/secrets-sync:v2.3.1
               args: ["pipeline", "--config", "/config/config.yaml", "--diff", "--output", "json"]
 ```
 
@@ -371,9 +371,9 @@ spec:
 ```bash
 # Run with config file
 docker run -v $(pwd)/config.yaml:/config.yaml \
-  ghcr.io/jbcom/secrets-sync:v2.2.0 pipeline --config /config.yaml
+  ghcr.io/jbcom/secrets-sync:v2.3.1 pipeline --config /config.yaml
 
-# Release image: ghcr.io/jbcom/secrets-sync:v2.2.0
+# Release image: ghcr.io/jbcom/secrets-sync:v2.3.1
 ```
 
 The published image is a Google Distroless static runtime containing both

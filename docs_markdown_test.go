@@ -331,3 +331,25 @@ func TestOwnershipMapDocumentsSplitBoundaries(t *testing.T) {
 		}
 	}
 }
+
+func TestFAQDoesNotDocumentNonExistentCLISubcommands(t *testing.T) {
+	content, err := os.ReadFile("docs/FAQ.md")
+	if err != nil {
+		t.Fatalf("read docs/FAQ.md: %v", err)
+	}
+	text := string(content)
+	for _, phrase := range []string{
+		"secrets-sync versions",
+		"secrets-sync sync --version",
+		"--secret-path",
+		"s3_bucket:",
+		"retention_days:",
+		"cache_ttl:",
+		"max_retries:",
+		"retry_delay:",
+	} {
+		if strings.Contains(text, phrase) {
+			t.Fatalf("docs/FAQ.md should not document non-existent CLI/config surface %q", phrase)
+		}
+	}
+}

@@ -305,3 +305,68 @@ func TestWriteGitHubDiffOutputsNoopsWithoutOutputFile(t *testing.T) {
 		t.Fatalf("writeGitHubDiffOutputs() with nil diff failed: %v", err)
 	}
 }
+
+func TestPipelineCommandRegistersShowValuesFlag(t *testing.T) {
+	flag := pipelineCmd.Flags().Lookup("show-values")
+	if flag == nil {
+		t.Fatal("pipeline command should register --show-values flag")
+	}
+	if flag.DefValue != "false" {
+		t.Fatalf("show-values default = %q, want \"false\"", flag.DefValue)
+	}
+	if !strings.Contains(flag.Usage, "values") {
+		t.Fatalf("show-values usage should mention values: %q", flag.Usage)
+	}
+}
+
+func TestStripDiffValuesRemovesRawSecrets(t *testing.T) {
+	pd := &diff.PipelineDiff{
+		Targets: []diff.TargetDiff{
+			{
+				Target: "prod",
+				Changes: []diff.SecretChange{
+					{
+						Path:           "app/db",
+						CurrentValues:  map[string]interface{}{"password": "hunter2"},
+						DesiredValues:  map[string]interface{}{"password": "swordfish"},
+					},
+				},
+			},
+		},
+	}
+	stripDiffValues(pd)
+	c := pd.Targets[0].Changes[0]
+	if c.CurrentValues != nil {
+		t.Fatalf("CurrentValues = %v, want nil", c.CurrentValues)
+	}
+	if c.DesiredValues != nil {
+		t.Fatalf("DesiredValues = %v, want nil", c.DesiredValues)
+	}
+}
+
+func TestStripResultDiffValuesRemovesRawSecrets(t *testing.T) {
+	r := &pipeline.Result{
+		Target: "prod",
+		Diff: &diff.TargetDiff{
+			Changes: []diff.SecretChange{
+				{
+					CurrentValues: map[string]interface{}{"key": "secret"},
+					DesiredValues: map[string]interface{}{"key": "new-secret"},
+				},
+			},
+		},
+	}
+	stripResultDiffValues(r)
+	c := r.Diff.Changes[0]
+	if c.CurrentValues != nil {
+		t.Fatalf("CurrentValues = %v, want nil", c.CurrentValues)
+	}
+	if c.DesiredValues != nil {
+		t.Fatalf("DesiredValues = %v, want nil", c.DesiredValues)
+	}
+}
+
+func TestStripDiffValuesNoopsOnNil(t *testing.T) {
+	stripDiffValues(nil)
+	stripResultDiffValues(nil)
+}

@@ -43,7 +43,7 @@ Multiple installation options:
 go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 
 # Docker
-docker pull ghcr.io/jbcom/secrets-sync:v2.2.0
+docker pull ghcr.io/jbcom/secrets-sync:v2.3.1
 
 # Build from source
 git clone https://github.com/jbcom/secrets-sync.git
@@ -183,21 +183,25 @@ Major features:
 
 ### How does secret versioning work?
 
-SecretSync tracks every secret change with metadata:
+SecretSync tracks every secret change in the S3 merge store with metadata.
+Version history is accessible through the Go API and the Python binding
+(`S3MergeStore.ListVersions`, `S3MergeStore.GetVersion`), not via a dedicated
+CLI subcommand.
 
-```bash
-# View version history
-secrets-sync versions --secret-path "app/database/password"
-
-# Rollback to specific version
-secrets-sync sync --version 5 --target production
-
-# Configure retention
-versioning:
-  enabled: true
-  s3_bucket: "my-secrets-sync-versions"
-  retention_days: 90
+```yaml
+# Configure versioning in the S3 merge store
+merge_store:
+  s3:
+    bucket: "my-secrets-sync-merge-store"
+    prefix: "merged/"
+    versioning:
+      enabled: true
+      retain_versions: 100
 ```
+
+When enabled, each write stores a new `SecretVersion` entry (with a timestamp
+and bundle ID) alongside the latest snapshot. Use `retain_versions` to cap how
+many historical versions are kept per secret path.
 
 ### What is the merge store?
 
@@ -393,28 +397,28 @@ Common causes and solutions:
 
 ### Performance is slow
 
-1. **Enable caching**:
-   ```yaml
-   discovery:
-     aws_organizations:
-       cache_ttl: "1h"  # Cache discovery results
-   ```
+1. **Use the merge store** to reduce repeated Vault traversal for complex
+   inheritance scenarios:
 
-2. **Reduce parallelism**:
    ```yaml
-   # If hitting rate limits
-   aws:
-     max_retries: 5
-     retry_delay: "1s"
-   ```
-
-3. **Use merge store**:
-   ```yaml
-   # Reduces Vault calls for complex inheritance
    merge_store:
      s3:
        bucket: "my-merge-store"
    ```
+
+2. **Tune parallelism** to control concurrency. Lower it if you hit provider
+   rate limits:
+
+   ```yaml
+   pipeline:
+     merge:
+       parallel: 2
+     sync:
+       parallel: 2
+   ```
+
+3. **Narrow discovery scope** — restrict OU recursion, tag filters, or
+   `exclude_statuses` so the discovery service fetches fewer accounts.
 
 ## Security
 

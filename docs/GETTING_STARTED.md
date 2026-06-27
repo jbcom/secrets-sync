@@ -20,8 +20,8 @@ go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 ```
 
 ```bash
-docker pull ghcr.io/jbcom/secrets-sync:v2.2.0
-alias secrets-sync='docker run --rm -v "$PWD":/workspace -w /workspace ghcr.io/jbcom/secrets-sync:v2.2.0'
+docker pull ghcr.io/jbcom/secrets-sync:v2.3.1
+alias secrets-sync='docker run --rm -v "$PWD":/workspace -w /workspace ghcr.io/jbcom/secrets-sync:v2.3.1'
 ```
 
 ```bash
