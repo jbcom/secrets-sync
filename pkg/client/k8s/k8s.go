@@ -8,6 +8,8 @@ package k8s
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -20,6 +22,9 @@ import (
 	clientkubernetes "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
+
+// maxSecretNameLen is the Kubernetes object-name limit (DNS-1123 subdomain).
+const maxSecretNameLen = 253
 
 // Compile-time assertions: the Kubernetes backend is a full sync target.
 var (
@@ -111,12 +116,38 @@ func (c *Client) GetPath() string { return c.Namespace }
 // Close is a no-op; the typed client holds no long-lived resources.
 func (c *Client) Close() error { return nil }
 
-// secretName sanitizes a path into a DNS-1123 compliant Secret name by
-// lowercasing and replacing path separators and underscores with hyphens.
+// secretName maps an arbitrary source path to a DNS-1123-compliant, collision-
+// resistant, length-bounded Kubernetes Secret name.
+//
+// Sanitization (lowercasing, replacing separators with hyphens) is inherently
+// lossy: "app/db", "app_db", and "app.db" all reduce to "app-db". To keep the
+// mapping injective, whenever the sanitized form differs from the original path
+// — or the name would exceed the length limit, or sanitize to empty — a short
+// hash of the *original* path is appended. Distinct paths therefore never
+// collide onto the same Secret, eliminating silent cross-path overwrite.
 func secretName(path string) string {
-	name := strings.ToLower(path)
-	name = strings.NewReplacer("/", "-", "_", "-", ".", "-", " ", "-").Replace(name)
-	return strings.Trim(name, "-")
+	sanitized := strings.ToLower(path)
+	sanitized = strings.NewReplacer("/", "-", "_", "-", ".", "-", " ", "-").Replace(sanitized)
+	sanitized = strings.Trim(sanitized, "-")
+
+	sum := sha256.Sum256([]byte(path))
+	suffix := "-" + hex.EncodeToString(sum[:])[:10]
+
+	// A clean, in-bounds, non-empty 1:1 name needs no disambiguation.
+	if sanitized == path && sanitized != "" && len(sanitized) <= maxSecretNameLen {
+		return sanitized
+	}
+
+	if sanitized == "" {
+		return "secret" + suffix
+	}
+
+	// Reserve room for the hash suffix within the length budget.
+	maxBase := maxSecretNameLen - len(suffix)
+	if len(sanitized) > maxBase {
+		sanitized = strings.TrimRight(sanitized[:maxBase], "-")
+	}
+	return sanitized + suffix
 }
 
 // ListSecrets lists managed Secret names in the namespace.
@@ -138,6 +169,11 @@ func (c *Client) ListSecrets(ctx context.Context, _ string) ([]string, error) {
 // GetSecret reads a Secret and returns its data marshaled as a JSON object of
 // string→string (base64-decoded values), matching the rest of the pipeline's
 // JSON secret representation.
+//
+// Note: Kubernetes Secret data is always bytes, so non-string values written by
+// WriteSecret (e.g. a numeric port JSON-encoded to "5432") read back as their
+// string form. Type information is not preserved across a write→read round trip
+// through this backend; treat it as a string-valued store on read-back.
 func (c *Client) GetSecret(ctx context.Context, path string) ([]byte, error) {
 	if c.api == nil {
 		return nil, fmt.Errorf("k8s backend not initialized")
@@ -185,8 +221,18 @@ func (c *Client) WriteSecret(ctx context.Context, meta metav1.ObjectMeta, path s
 
 	existing, err := c.api.Get(ctx, name, metav1.GetOptions{})
 	if apierrors.IsNotFound(err) {
-		if _, err := c.api.Create(ctx, desired, metav1.CreateOptions{}); err != nil {
-			return nil, fmt.Errorf("create secret %q: %w", name, err)
+		if _, cerr := c.api.Create(ctx, desired, metav1.CreateOptions{}); cerr != nil {
+			// A concurrent sync run may have created it between our Get and
+			// Create (e.g. overlapping Lambda invocations). Fall through to an
+			// update rather than hard-failing the whole target.
+			if apierrors.IsAlreadyExists(cerr) {
+				existing, err = c.api.Get(ctx, name, metav1.GetOptions{})
+				if err != nil {
+					return nil, fmt.Errorf("get secret %q after AlreadyExists: %w", name, err)
+				}
+				return c.updateSecret(ctx, existing, data, labels)
+			}
+			return nil, fmt.Errorf("create secret %q: %w", name, cerr)
 		}
 		return nil, nil
 	}
@@ -194,8 +240,20 @@ func (c *Client) WriteSecret(ctx context.Context, meta metav1.ObjectMeta, path s
 		return nil, fmt.Errorf("get secret %q: %w", name, err)
 	}
 
+	return c.updateSecret(ctx, existing, data, labels)
+}
+
+// updateSecret applies new data/labels to an existing Secret. Secret.type is
+// immutable in Kubernetes, so a type change is reported as a clear, actionable
+// error rather than a cryptic server-side 422.
+func (c *Client) updateSecret(ctx context.Context, existing *corev1.Secret, data map[string][]byte, labels map[string]string) ([]byte, error) {
+	if existing.Type != "" && existing.Type != c.SecretType {
+		return nil, fmt.Errorf(
+			"secret %q already exists with type %q which is immutable; cannot change to %q — delete the secret to recreate it",
+			existing.Name, existing.Type, c.SecretType)
+	}
+
 	existing.Data = data
-	existing.Type = c.SecretType
 	if existing.Labels == nil {
 		existing.Labels = map[string]string{}
 	}
@@ -203,7 +261,7 @@ func (c *Client) WriteSecret(ctx context.Context, meta metav1.ObjectMeta, path s
 		existing.Labels[k] = v
 	}
 	if _, err := c.api.Update(ctx, existing, metav1.UpdateOptions{}); err != nil {
-		return nil, fmt.Errorf("update secret %q: %w", name, err)
+		return nil, fmt.Errorf("update secret %q: %w", existing.Name, err)
 	}
 	return nil, nil
 }
