@@ -106,5 +106,7 @@ jobs:
             docs/conf.py
             scripts/generate-api-docs.sh
             scripts/validate-docs.sh
+            tools/*.py
+            tests/python/**/*.py
       - run: uv tool install tox --with tox-uv
       - run: just quality

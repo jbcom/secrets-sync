@@ -16,7 +16,8 @@ import (
 	"github.com/jbcom/secrets-sync/pkg/pipeline"
 )
 
-// Version of the Python binding source contract.
+// Version of the Python binding API contract. Wheel release versions are
+// patched from the release tag during packaging.
 const Version = "0.1.0"
 
 // Operation constants for Python clients.

@@ -17,15 +17,24 @@ ci python_version="3.13":
 
 # Run Go vulnerability scanning.
 vuln:
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mapfile -t packages < <(scripts/go-packages.sh)
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 "${packages[@]}"
 
 # Run Go tests. Extra arguments are passed to go test.
 test-go *args:
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go test ./... {{ args }}
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mapfile -t packages < <(scripts/go-packages.sh)
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go test "${packages[@]}" {{ args }}
 
 # Run Go tests with the race detector and coverage.
 test-unit:
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go test -race -coverprofile=coverage.out ./...
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mapfile -t packages < <(scripts/go-packages.sh)
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go test -race -coverprofile=coverage.out "${packages[@]}"
 
 # Build all Go release binaries used by local workflows.
 build-all: build controller-build lambda-build
@@ -79,6 +88,16 @@ python-bindings python_version="3.13": python-tools
     python_dist="secrets-sync-python-binding"
     output="python/build/${python_pkg}"
     python_run=(uv run --no-project --python "{{ python_version }}" --with build --with pybindgen --with setuptools --with wheel --)
+    binding_version="${PYTHON_BINDING_VERSION:-${VERSION:-}}"
+    if [[ -z "${binding_version}" ]]; then
+      if binding_version="$(git describe --tags --exact-match 2>/dev/null)"; then
+        :
+      else
+        binding_version="0.0.0.dev0"
+      fi
+    fi
+    binding_version="${binding_version#secrets-sync-v}"
+    binding_version="${binding_version#v}"
 
     if [[ "$(uname -s)" == "Darwin" ]]; then
       export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-{{ macosx_deployment_target }}}"
@@ -149,7 +168,7 @@ python-bindings python_version="3.13": python-tools
       -desc="Enterprise-grade secret synchronization pipeline with Python bindings" \
       "github.com/jbcom/secrets-sync/python/${python_pkg}"
 
-    "${python_run[@]}" python tools/patch_python_dist.py --package-dir "${output}" --name "${python_dist}"
+    "${python_run[@]}" python tools/patch_python_dist.py --package-dir "${output}" --name "${python_dist}" --version "${binding_version}"
     echo "Python bindings generated in ${output}"
 
 # Build and smoke-test the gopy wheel for one Python version.
@@ -160,6 +179,16 @@ python-build python_version="3.13":
     python_dist="secrets-sync-python-binding"
     output="python/build/${python_pkg}"
     python_run=(uv run --no-project --python "{{ python_version }}" --with build --with pybindgen --with setuptools --with wheel --)
+    binding_version="${PYTHON_BINDING_VERSION:-${VERSION:-}}"
+    if [[ -z "${binding_version}" ]]; then
+      if binding_version="$(git describe --tags --exact-match 2>/dev/null)"; then
+        :
+      else
+        binding_version="0.0.0.dev0"
+      fi
+    fi
+    binding_version="${binding_version#secrets-sync-v}"
+    binding_version="${binding_version#v}"
 
     if [[ "$(uname -s)" == "Darwin" ]]; then
       export MACOSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET:-{{ macosx_deployment_target }}}"
@@ -168,7 +197,7 @@ python-build python_version="3.13":
     just python-bindings "{{ python_version }}"
     echo "Building Python wheel for Python {{ python_version }}..."
     (cd "${output}" && "${python_run[@]}" python -m build)
-    "${python_run[@]}" python tools/check_python_dist.py --dist-dir "${output}/dist" --name "${python_dist}"
+    "${python_run[@]}" python tools/check_python_dist.py --dist-dir "${output}/dist" --name "${python_dist}" --version "${binding_version}"
     PYTHON_VERSION="{{ python_version }}" PYTHON_DIST_DIR="${output}/dist" bash scripts/check-python-binding.sh
 
 # Build and smoke-test the Python binding for the supported matrix.
@@ -182,8 +211,13 @@ python-matrix:
 
 # Verify the latest generated Python wheel metadata.
 python-check-dist python_version="3.13":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    binding_version="${PYTHON_BINDING_VERSION:-${VERSION:-0.0.0.dev0}}"
+    binding_version="${binding_version#secrets-sync-v}"
+    binding_version="${binding_version#v}"
     uv run --no-project --python "{{ python_version }}" --with build --with pybindgen --with setuptools --with wheel -- \
-      python tools/check_python_dist.py --dist-dir python/build/secrets_sync/dist --name secrets-sync-python-binding
+      python tools/check_python_dist.py --dist-dir python/build/secrets_sync/dist --name secrets-sync-python-binding --version "${binding_version}"
 
 # Install the generated wheel into the active Python environment.
 python-install python_version="3.13":
@@ -205,11 +239,14 @@ docs: docs-api
 
 # Run lint and docs checks.
 quality:
-    tox -e lint,docs
+    tox -e lint,pytools,docs
 
 # Run Go formatting.
 fmt:
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go fmt ./...
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mapfile -t packages < <(scripts/go-packages.sh)
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go fmt "${packages[@]}"
 
 # Run dependency cleanup.
 tidy:

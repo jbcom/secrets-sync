@@ -1,4 +1,4 @@
-"""Patch gopy-generated packaging metadata to the public distribution name."""
+"""Patch gopy-generated packaging metadata to public distribution metadata."""
 
 from __future__ import annotations
 
@@ -14,10 +14,17 @@ SETUP_NAME_PATTERNS = (
     re.compile(r"(['\"]name['\"]\s*:\s*)(['\"])([^'\"]+)(['\"])"),
 )
 
+SETUP_VERSION_PATTERNS = (
+    re.compile(r"(version\s*=\s*)(['\"])([^'\"]+)(['\"])"),
+    re.compile(r"(['\"]version['\"]\s*:\s*)(['\"])([^'\"]+)(['\"])"),
+)
 
-def _patch_setup_py(path: Path, expected_name: str) -> bool:
+
+def _patch_patterns(
+    path: Path, patterns: tuple[re.Pattern[str], ...], value: str
+) -> bool:
     text = path.read_text(encoding="utf-8")
-    for pattern in SETUP_NAME_PATTERNS:
+    for pattern in patterns:
         match = pattern.search(text)
         if match is None:
             continue
@@ -25,7 +32,7 @@ def _patch_setup_py(path: Path, expected_name: str) -> bool:
             text[: match.start()]
             + match.group(1)
             + match.group(2)
-            + expected_name
+            + value
             + match.group(4)
             + text[match.end() :]
         )
@@ -34,13 +41,28 @@ def _patch_setup_py(path: Path, expected_name: str) -> bool:
     return False
 
 
-def _patch_pyproject(path: Path, expected_name: str) -> bool:
+def _patch_setup_py(path: Path, expected_name: str, expected_version: str) -> bool:
+    patched = _patch_patterns(path, SETUP_NAME_PATTERNS, expected_name)
+    patched = _patch_patterns(path, SETUP_VERSION_PATTERNS, expected_version) or patched
+    return patched
+
+
+def _patch_pyproject(path: Path, expected_name: str, expected_version: str) -> bool:
     text = path.read_text(encoding="utf-8")
-    pattern = re.compile(r"(^name\s*=\s*)(['\"])([^'\"]+)(['\"])", re.MULTILINE)
-    if pattern.search(text) is None:
+    patched = False
+    for key, value in (("name", expected_name), ("version", expected_version)):
+        pattern = re.compile(rf"(^{key}\s*=\s*)(['\"])([^'\"]+)(['\"])", re.MULTILINE)
+        if pattern.search(text) is None:
+            continue
+        text = pattern.sub(
+            lambda match: f"{match.group(1)}{match.group(2)}{value}{match.group(4)}",
+            text,
+            count=1,
+        )
+        patched = True
+    if not patched:
         return False
-    updated = pattern.sub(rf"\1\2{expected_name}\4", text, count=1)
-    path.write_text(updated, encoding="utf-8")
+    path.write_text(text, encoding="utf-8")
     return True
 
 
@@ -64,6 +86,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--package-dir", required=True, type=Path)
     parser.add_argument("--name", required=True)
+    parser.add_argument("--version", required=True)
     args = parser.parse_args()
 
     _patch_package_init(args.package_dir)
@@ -71,11 +94,11 @@ def main() -> int:
     patched = False
     setup_py = args.package_dir / "setup.py"
     if setup_py.exists():
-        patched = _patch_setup_py(setup_py, args.name) or patched
+        patched = _patch_setup_py(setup_py, args.name, args.version) or patched
 
     pyproject = args.package_dir / "pyproject.toml"
     if pyproject.exists():
-        patched = _patch_pyproject(pyproject, args.name) or patched
+        patched = _patch_pyproject(pyproject, args.name, args.version) or patched
 
     if patched:
         return 0

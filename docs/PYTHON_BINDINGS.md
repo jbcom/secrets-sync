@@ -100,7 +100,9 @@ just python-build
 
 `just python-build` generates the binding, patches the generated package
 metadata to `secrets-sync-python-binding`, builds a wheel, and verifies the
-wheel metadata before release. On macOS, the Justfile defaults
+wheel metadata before release. Release builds set the generated wheel version
+from the release tag through `VERSION`; local builds without an exact tag use a
+valid development fallback. On macOS, the Justfile defaults
 `MACOSX_DEPLOYMENT_TARGET` to `11.0` so local cgo builds do not inherit the
 host OS as the minimum supported wheel target; set that environment variable
 explicitly when a newer deployment target is intentional.

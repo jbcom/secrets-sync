@@ -66,14 +66,14 @@ const (
 )
 ```
 
-<a name="Version"></a>Version of the Python binding source contract.
+<a name="Version"></a>Version of the Python binding API contract. Wheel release versions are patched from the release tag during packaging.
 
 ```go
 const Version = "0.1.0"
 ```
 
 <a name="ConfigInfo"></a>
-## type [ConfigInfo](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L325-L335>)
+## type [ConfigInfo](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L326-L336>)
 
 ConfigInfo returns information about a configuration file.
 
@@ -92,7 +92,7 @@ type ConfigInfo struct {
 ```
 
 <a name="GetConfigInfo"></a>
-### func [GetConfigInfo](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L338>)
+### func [GetConfigInfo](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L339>)
 
 ```go
 func GetConfigInfo(configPath string) *ConfigInfo
@@ -101,7 +101,7 @@ func GetConfigInfo(configPath string) *ConfigInfo
 GetConfigInfo returns detailed information about a configuration.
 
 <a name="PipelineConfig"></a>
-## type [PipelineConfig](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L39-L41>)
+## type [PipelineConfig](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L40-L42>)
 
 PipelineConfig represents a pipeline configuration in a Python\-friendly format.
 
@@ -112,7 +112,7 @@ type PipelineConfig struct {
 ```
 
 <a name="NewPipelineConfig"></a>
-### func [NewPipelineConfig](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L120>)
+### func [NewPipelineConfig](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L121>)
 
 ```go
 func NewPipelineConfig(path string) *PipelineConfig
@@ -121,7 +121,7 @@ func NewPipelineConfig(path string) *PipelineConfig
 NewPipelineConfig creates a new pipeline configuration from a file path.
 
 <a name="ProviderSession"></a>
-## type [ProviderSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L58-L69>)
+## type [ProviderSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L59-L70>)
 
 ProviderSession carries authenticated provider material from an upstream Python package into the Go runtime. Set DelegateAuth to true when the caller wants secrets\-sync to use its normal environment/config authentication path.
 
@@ -141,7 +141,7 @@ type ProviderSession struct {
 ```
 
 <a name="NewProviderSession"></a>
-### func [NewProviderSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L115>)
+### func [NewProviderSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L116>)
 
 ```go
 func NewProviderSession() *ProviderSession
@@ -150,7 +150,7 @@ func NewProviderSession() *ProviderSession
 NewProviderSession creates an empty provider session.
 
 <a name="StringListResult"></a>
-## type [StringListResult](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L94-L98>)
+## type [StringListResult](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L95-L99>)
 
 StringListResult represents a named list returned through gopy.
 
@@ -163,7 +163,7 @@ type StringListResult struct {
 ```
 
 <a name="GetSources"></a>
-### func [GetSources](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L310>)
+### func [GetSources](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L311>)
 
 ```go
 func GetSources(configPath string) *StringListResult
@@ -172,7 +172,7 @@ func GetSources(configPath string) *StringListResult
 GetSources returns the source names from a configuration, sorted alphabetically.
 
 <a name="GetTargets"></a>
-### func [GetTargets](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L295>)
+### func [GetTargets](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L296>)
 
 ```go
 func GetTargets(configPath string) *StringListResult
@@ -181,7 +181,7 @@ func GetTargets(configPath string) *StringListResult
 GetTargets returns the target names from a configuration, sorted alphabetically.
 
 <a name="SyncOptions"></a>
-## type [SyncOptions](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L44-L53>)
+## type [SyncOptions](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L45-L54>)
 
 SyncOptions configures pipeline execution.
 
@@ -199,7 +199,7 @@ type SyncOptions struct {
 ```
 
 <a name="DefaultSyncOptions"></a>
-### func [DefaultSyncOptions](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L101>)
+### func [DefaultSyncOptions](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L102>)
 
 ```go
 func DefaultSyncOptions() *SyncOptions
@@ -208,7 +208,7 @@ func DefaultSyncOptions() *SyncOptions
 DefaultSyncOptions returns sensible default options.
 
 <a name="SyncResult"></a>
-## type [SyncResult](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L72-L84>)
+## type [SyncResult](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L73-L85>)
 
 SyncResult represents the outcome of a sync operation.
 
@@ -229,7 +229,7 @@ type SyncResult struct {
 ```
 
 <a name="DryRun"></a>
-### func [DryRun](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L254>)
+### func [DryRun](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L255>)
 
 ```go
 func DryRun(configPath string) *SyncResult
@@ -238,7 +238,7 @@ func DryRun(configPath string) *SyncResult
 DryRun performs a dry run of the pipeline and returns the diff.
 
 <a name="DryRunWithSession"></a>
-### func [DryRunWithSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L259>)
+### func [DryRunWithSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L260>)
 
 ```go
 func DryRunWithSession(configPath string, session *ProviderSession) *SyncResult
@@ -247,7 +247,7 @@ func DryRunWithSession(configPath string, session *ProviderSession) *SyncResult
 DryRunWithSession performs a dry run with caller\-supplied provider session material.
 
 <a name="Merge"></a>
-### func [Merge](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L267>)
+### func [Merge](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L268>)
 
 ```go
 func Merge(configPath string, dryRun bool) *SyncResult
@@ -256,7 +256,7 @@ func Merge(configPath string, dryRun bool) *SyncResult
 Merge runs only the merge phase of the pipeline.
 
 <a name="MergeWithSession"></a>
-### func [MergeWithSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L272>)
+### func [MergeWithSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L273>)
 
 ```go
 func MergeWithSession(configPath string, dryRun bool, session *ProviderSession) *SyncResult
@@ -265,7 +265,7 @@ func MergeWithSession(configPath string, dryRun bool, session *ProviderSession) 
 MergeWithSession runs only the merge phase with caller\-supplied provider session material.
 
 <a name="RunPipeline"></a>
-### func [RunPipeline](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L161>)
+### func [RunPipeline](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L162>)
 
 ```go
 func RunPipeline(configPath string, opts *SyncOptions) *SyncResult
@@ -274,7 +274,7 @@ func RunPipeline(configPath string, opts *SyncOptions) *SyncResult
 RunPipeline executes the secrets synchronization pipeline.
 
 <a name="RunPipelineWithSession"></a>
-### func [RunPipelineWithSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L167>)
+### func [RunPipelineWithSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L168>)
 
 ```go
 func RunPipelineWithSession(configPath string, opts *SyncOptions, session *ProviderSession) *SyncResult
@@ -283,7 +283,7 @@ func RunPipelineWithSession(configPath string, opts *SyncOptions, session *Provi
 RunPipelineWithSession executes the pipeline with caller\-supplied provider session material.
 
 <a name="Sync"></a>
-### func [Sync](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L281>)
+### func [Sync](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L282>)
 
 ```go
 func Sync(configPath string, dryRun bool) *SyncResult
@@ -292,7 +292,7 @@ func Sync(configPath string, dryRun bool) *SyncResult
 Sync runs only the sync phase of the pipeline.
 
 <a name="SyncWithSession"></a>
-### func [SyncWithSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L286>)
+### func [SyncWithSession](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L287>)
 
 ```go
 func SyncWithSession(configPath string, dryRun bool, session *ProviderSession) *SyncResult
@@ -301,7 +301,7 @@ func SyncWithSession(configPath string, dryRun bool, session *ProviderSession) *
 SyncWithSession runs only the sync phase with caller\-supplied provider session material.
 
 <a name="ValidationResult"></a>
-## type [ValidationResult](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L87-L91>)
+## type [ValidationResult](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L88-L92>)
 
 ValidationResult represents configuration validation status.
 
@@ -314,7 +314,7 @@ type ValidationResult struct {
 ```
 
 <a name="ValidateConfig"></a>
-### func [ValidateConfig](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L145>)
+### func [ValidateConfig](<https://github.com/jbcom/secrets-sync/blob/main/python/secrets_sync/secrets_sync.go#L146>)
 
 ```go
 func ValidateConfig(configPath string) *ValidationResult
