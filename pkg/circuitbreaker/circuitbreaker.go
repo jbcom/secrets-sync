@@ -176,7 +176,15 @@ func ExecuteTyped[T any](cb *CircuitBreaker, ctx context.Context, fn func(contex
 		var zero T
 		return zero, err
 	}
-	return result.(T), nil
+	// Use a comma-ok assertion: a function returning a typed-nil interface
+	// boxed as any(nil) would panic on a bare result.(T) when T is itself an
+	// interface type. Returning a clear error is safer than panicking.
+	v, ok := result.(T)
+	if !ok {
+		var zero T
+		return zero, fmt.Errorf("circuitbreaker: unexpected result type %T", result)
+	}
+	return v, nil
 }
 
 // WrapError wraps an error with circuit breaker information

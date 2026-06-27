@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets"
@@ -70,7 +71,7 @@ func TestWriteGetRoundTrip(t *testing.T) {
 	if _, err := c.WriteSecret(ctx, metav1.ObjectMeta{}, "app/db", []byte(`{"u":"p"}`)); err != nil {
 		t.Fatalf("write: %v", err)
 	}
-	if fake.store["app-db"] != `{"u":"p"}` {
+	if fake.store[secretName("app/db")] != `{"u":"p"}` {
 		t.Fatalf("name sanitization or store wrong: %v", fake.store)
 	}
 	got, err := c.GetSecret(ctx, "app/db")
@@ -97,18 +98,35 @@ func TestListAndDelete(t *testing.T) {
 	}
 }
 
-func TestSecretNameSanitization(t *testing.T) {
-	cases := map[string]string{
-		"app/db":     "app-db",
-		"App_Config": "App-Config",
-		"a.b.c":      "a-b-c",
-		"/x/":        "x",
-		"":           "secret",
-		"---":        "secret",
+func TestSecretNameCleanPassthrough(t *testing.T) {
+	for _, in := range []string{"app-db", "AppConfig", "a1b2c3"} {
+		if got := secretName(in); got != in {
+			t.Fatalf("clean name %q should pass through, got %q", in, got)
+		}
 	}
-	for in, want := range cases {
-		if got := secretName(in); got != want {
-			t.Fatalf("secretName(%q)=%q, want %q", in, got, want)
+}
+
+func TestSecretNameCollisionResistance(t *testing.T) {
+	names := map[string]bool{}
+	for _, in := range []string{"prod/db", "prod_db", "prod.db"} {
+		n := secretName(in)
+		if n == "prod-db" {
+			t.Fatalf("lossy input %q must be disambiguated, got bare %q", in, n)
+		}
+		if names[n] {
+			t.Fatalf("collision: %q produced an already-seen name %q", in, n)
+		}
+		names[n] = true
+	}
+}
+
+func TestSecretNameLengthBoundedAndNonEmpty(t *testing.T) {
+	if got := secretName(strings.Repeat("a", 400)); len(got) > maxAzureNameLen {
+		t.Fatalf("name exceeds %d: len=%d", maxAzureNameLen, len(got))
+	}
+	for _, in := range []string{"", "/", "---"} {
+		if secretName(in) == "" {
+			t.Fatalf("secretName(%q) returned empty", in)
 		}
 	}
 }

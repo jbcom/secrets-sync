@@ -8,6 +8,8 @@ package gcp
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"strings"
 
@@ -156,8 +158,14 @@ func (c *Client) DeleteSecret(ctx context.Context, path string) error {
 	return nil
 }
 
-// secretID maps a path to a Secret Manager secret ID: up to 255 chars of
-// [A-Za-z0-9_-]. Other characters become hyphens.
+// maxGCPIDLen is Secret Manager's secret-ID length limit.
+const maxGCPIDLen = 255
+
+// secretID maps a path to a collision-resistant, length-bounded Secret Manager
+// secret ID: [A-Za-z0-9_-]. Sanitization is lossy (a "/" and a "." both map to
+// "-"), so any altered, over-length, or empty-after-sanitize input gets a
+// sha256-derived suffix of the original path to keep the mapping injective and
+// prevent silent cross-path overwrite.
 func secretID(path string) string {
 	out := make([]rune, 0, len(path))
 	for _, r := range path {
@@ -168,14 +176,22 @@ func secretID(path string) string {
 			out = append(out, '-')
 		}
 	}
-	id := strings.Trim(string(out), "-")
-	if id == "" {
-		return "secret"
+	sanitized := strings.Trim(string(out), "-")
+
+	sum := sha256.Sum256([]byte(path))
+	suffix := "-" + hex.EncodeToString(sum[:])[:10]
+
+	if sanitized == path && sanitized != "" && len(sanitized) <= maxGCPIDLen {
+		return sanitized
 	}
-	if len(id) > 255 {
-		id = id[:255]
+	if sanitized == "" {
+		return "secret" + suffix
 	}
-	return id
+	maxBase := maxGCPIDLen - len(suffix)
+	if len(sanitized) > maxBase {
+		sanitized = strings.TrimRight(sanitized[:maxBase], "-")
+	}
+	return sanitized + suffix
 }
 
 // smAdapter wraps the real Secret Manager client behind secretsAPI, building the
@@ -223,8 +239,12 @@ func (a *smAdapter) Access(ctx context.Context, project, id string) ([]byte, err
 	if err != nil {
 		return nil, err
 	}
+	// A nil payload means the version has no data (e.g. an orphaned container
+	// whose AddVersion never landed). Surface it as an error rather than
+	// returning "{}", which the sync phase would otherwise write to the target
+	// as a real empty-object value — silent data corruption.
 	if resp.GetPayload() == nil {
-		return []byte("{}"), nil
+		return nil, fmt.Errorf("secret version has no payload")
 	}
 	return resp.GetPayload().GetData(), nil
 }

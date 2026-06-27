@@ -2,6 +2,7 @@ package gcp
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/jbcom/secrets-sync/pkg/driver"
@@ -80,7 +81,7 @@ func TestWriteCreatesContainerThenVersion(t *testing.T) {
 	if fake.creates != 1 || fake.versions != 1 {
 		t.Fatalf("expected 1 create + 1 version, got creates=%d versions=%d", fake.creates, fake.versions)
 	}
-	if string(fake.store["app-db"]) != `{"u":"p"}` {
+	if string(fake.store[secretID("app/db")]) != `{"u":"p"}` {
 		t.Fatalf("name sanitization or store wrong: %v", fake.store)
 	}
 
@@ -122,18 +123,37 @@ func TestListAndDelete(t *testing.T) {
 	}
 }
 
-func TestSecretIDSanitization(t *testing.T) {
-	cases := map[string]string{
-		"app/db":      "app-db",
-		"App_Config":  "App_Config",
-		"a.b.c":       "a-b-c",
-		"/x/":         "x",
-		"":            "secret",
-		"with space!": "with-space",
+func TestSecretIDCleanPassthrough(t *testing.T) {
+	// Underscores and hyphens are valid in Secret Manager IDs, so these pass
+	// through unchanged.
+	for _, in := range []string{"app-db", "App_Config", "a1_b2-c3"} {
+		if got := secretID(in); got != in {
+			t.Fatalf("clean id %q should pass through, got %q", in, got)
+		}
 	}
-	for in, want := range cases {
-		if got := secretID(in); got != want {
-			t.Fatalf("secretID(%q)=%q, want %q", in, got, want)
+}
+
+func TestSecretIDCollisionResistance(t *testing.T) {
+	names := map[string]bool{}
+	for _, in := range []string{"a/b", "a.b", "a b"} {
+		n := secretID(in)
+		if n == "a-b" {
+			t.Fatalf("lossy input %q must be disambiguated, got bare %q", in, n)
+		}
+		if names[n] {
+			t.Fatalf("collision: %q produced an already-seen id %q", in, n)
+		}
+		names[n] = true
+	}
+}
+
+func TestSecretIDLengthBoundedAndNonEmpty(t *testing.T) {
+	if got := secretID(strings.Repeat("a", 400)); len(got) > maxGCPIDLen {
+		t.Fatalf("id exceeds %d: len=%d", maxGCPIDLen, len(got))
+	}
+	for _, in := range []string{"", "/", "---"} {
+		if secretID(in) == "" {
+			t.Fatalf("secretID(%q) returned empty", in)
 		}
 	}
 }

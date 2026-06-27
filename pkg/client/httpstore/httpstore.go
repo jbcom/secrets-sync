@@ -114,6 +114,12 @@ func (c *Client) Init(_ context.Context) error {
 		return nil
 	}
 
+	// Skipping server verification while also presenting client certs or a CA
+	// is almost always a misconfiguration: mTLS implies mutual verification.
+	if c.InsecureSkipVerify && (c.ClientCert != "" || c.CACert != "") {
+		return fmt.Errorf("httpstore: insecure_skip_verify cannot be combined with mTLS client_cert/ca_cert")
+	}
+
 	transport := &http.Transport{}
 	tlsCfg := &tls.Config{InsecureSkipVerify: c.InsecureSkipVerify} //nolint:gosec // opt-in dev flag
 	if c.ClientCert != "" && c.ClientKey != "" {

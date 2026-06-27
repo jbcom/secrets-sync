@@ -9,7 +9,10 @@ package azure
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/security/keyvault/azsecrets"
@@ -107,8 +110,11 @@ func (c *Client) GetSecret(ctx context.Context, path string) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("azure: get secret %q: %w", path, err)
 		}
+		// A nil value means no secret material. Surface it as an error rather
+		// than returning "{}", which the sync phase would write to the target as
+		// a real empty-object value — silent data corruption.
 		if resp.Value == nil {
-			return []byte("{}"), nil
+			return nil, fmt.Errorf("azure: secret %q has no value", path)
 		}
 		return []byte(*resp.Value), nil
 	})
@@ -179,8 +185,15 @@ func (a *azsecretsAdapter) ListSecretNames(ctx context.Context) ([]string, error
 	return names, nil
 }
 
-// secretName maps a path to an Azure Key Vault secret name. Key Vault names are
-// restricted to alphanumerics and hyphens; "/", "_", and "." become "-".
+// maxAzureNameLen is Azure Key Vault's secret-name length limit.
+const maxAzureNameLen = 127
+
+// secretName maps a path to a DNS-compatible, collision-resistant, length-
+// bounded Azure Key Vault secret name. Key Vault names allow only alphanumerics
+// and hyphens, which makes naive sanitization lossy ("prod/x", "prod.x", and
+// "prod_x" all reduce to "prod-x" and would silently overwrite each other). To
+// keep the mapping injective, any altered, over-length, or empty-after-sanitize
+// input gets a sha256-derived suffix of the original path.
 func secretName(path string) string {
 	out := make([]rune, 0, len(path))
 	for _, r := range path {
@@ -191,15 +204,20 @@ func secretName(path string) string {
 			out = append(out, '-')
 		}
 	}
-	name := string(out)
-	for len(name) > 0 && name[0] == '-' {
-		name = name[1:]
+	sanitized := strings.Trim(string(out), "-")
+
+	sum := sha256.Sum256([]byte(path))
+	suffix := "-" + hex.EncodeToString(sum[:])[:10]
+
+	if sanitized == path && sanitized != "" && len(sanitized) <= maxAzureNameLen {
+		return sanitized
 	}
-	for len(name) > 0 && name[len(name)-1] == '-' {
-		name = name[:len(name)-1]
+	if sanitized == "" {
+		return "secret" + suffix
 	}
-	if name == "" {
-		return "secret"
+	maxBase := maxAzureNameLen - len(suffix)
+	if len(sanitized) > maxBase {
+		sanitized = strings.TrimRight(sanitized[:maxBase], "-")
 	}
-	return name
+	return sanitized + suffix
 }

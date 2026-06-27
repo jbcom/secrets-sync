@@ -150,3 +150,10 @@ func TestRedactStripsQuery(t *testing.T) {
 		t.Fatalf("redact: %q", got)
 	}
 }
+
+func TestInitRejectsInsecureWithMTLS(t *testing.T) {
+	c := &Client{BaseURL: "https://x", InsecureSkipVerify: true, ClientCert: "/tmp/cert.pem", ClientKey: "/tmp/key.pem"}
+	if err := c.Init(context.Background()); err == nil {
+		t.Fatal("expected error combining insecure_skip_verify with mTLS certs")
+	}
+}
