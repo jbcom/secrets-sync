@@ -42,16 +42,18 @@ def _patch_patterns(
 
 
 def _patch_setup_py(path: Path, expected_name: str, expected_version: str) -> bool:
-    patched = _patch_patterns(path, SETUP_NAME_PATTERNS, expected_name)
-    patched = _patch_patterns(path, SETUP_VERSION_PATTERNS, expected_version) or patched
-    return patched
+    patched_name = _patch_patterns(path, SETUP_NAME_PATTERNS, expected_name)
+    patched_version = _patch_patterns(path, SETUP_VERSION_PATTERNS, expected_version)
+    return patched_name or patched_version
 
 
 def _patch_pyproject(path: Path, expected_name: str, expected_version: str) -> bool:
     text = path.read_text(encoding="utf-8")
     patched = False
     for key, value in (("name", expected_name), ("version", expected_version)):
-        pattern = re.compile(rf"(^{key}\s*=\s*)(['\"])([^'\"]+)(['\"])", re.MULTILINE)
+        pattern = re.compile(
+            rf"(^\s*{key}\s*=\s*)(['\"])([^'\"]+)(['\"])", re.MULTILINE
+        )
         if pattern.search(text) is None:
             continue
         text = pattern.sub(

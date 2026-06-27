@@ -49,7 +49,12 @@ def main() -> int:
 
     failures: list[str] = []
     for wheel in wheels:
-        actual_name, actual_version = _wheel_metadata(wheel)
+        try:
+            actual_name, actual_version = _wheel_metadata(wheel)
+        except ValueError as exc:
+            failures.append(f"{wheel.name}: failed to parse metadata: {exc}")
+            continue
+
         if actual_name != args.name:
             failures.append(
                 f"{wheel.name}: expected Name {args.name!r}, got {actual_name!r}"

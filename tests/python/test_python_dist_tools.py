@@ -55,7 +55,7 @@ def test_patch_python_dist_updates_pyproject_metadata(tmp_path: Path) -> None:
     package_dir.mkdir()
     pyproject = package_dir / "pyproject.toml"
     pyproject.write_text(
-        '[project]\nname = "secrets_sync"\nversion = "0.1.0"\n',
+        '[project]\n  name = "secrets_sync"\n  version = "0.1.0"\n',
         encoding="utf-8",
     )
 
@@ -71,7 +71,7 @@ def test_patch_python_dist_updates_pyproject_metadata(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert pyproject.read_text(encoding="utf-8") == (
-        f'[project]\nname = "{PYTHON_DIST}"\nversion = "{VERSION}"\n'
+        f'[project]\n  name = "{PYTHON_DIST}"\n  version = "{VERSION}"\n'
     )
 
 
@@ -107,3 +107,27 @@ def test_check_python_dist_requires_expected_name_and_version(tmp_path: Path) ->
     )
     assert result.returncode == 1
     assert "expected Version '9.9.9'" in result.stderr
+
+
+def test_check_python_dist_reports_malformed_wheel_without_traceback(
+    tmp_path: Path,
+) -> None:
+    dist_dir = tmp_path / "dist"
+    dist_dir.mkdir()
+    wheel = dist_dir / f"{PYTHON_DIST}-{VERSION}-py3-none-any.whl"
+    with zipfile.ZipFile(wheel, "w") as archive:
+        archive.writestr("secrets_sync/__init__.py", "")
+
+    result = run_tool(
+        "tools/check_python_dist.py",
+        "--dist-dir",
+        str(dist_dir),
+        "--name",
+        PYTHON_DIST,
+        "--version",
+        VERSION,
+    )
+
+    assert result.returncode == 1
+    assert "failed to parse metadata" in result.stderr
+    assert "Traceback" not in result.stderr
