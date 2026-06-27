@@ -57,6 +57,14 @@ jobs:
         with:
           version: "0.11.19"
           enable-cache: true
+          cache-suffix: python-${{ matrix.python-version }}
+          cache-dependency-glob: |
+            Justfile
+            scripts/check-python-binding.sh
+            scripts/install-gopy.sh
+            tools/check_python_dist.py
+            tools/patch_python_dist.py
+            python/secrets_sync/**/*.go
       - run: just python-build ${{ matrix.python-version }}
 
   container:
@@ -91,5 +99,12 @@ jobs:
         with:
           version: "0.11.19"
           enable-cache: true
+          cache-suffix: quality
+          cache-dependency-glob: |
+            Justfile
+            tox.ini
+            docs/conf.py
+            scripts/generate-api-docs.sh
+            scripts/validate-docs.sh
       - run: uv tool install tox --with tox-uv
       - run: just quality
