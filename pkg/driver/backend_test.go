@@ -2,6 +2,7 @@ package driver
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -46,11 +47,56 @@ func (f *fakeBackend) DeleteSecret(_ context.Context, path string) error {
 	return nil
 }
 
+// fakeMergeStore is a minimal in-memory MergeStore for contract verification.
+type fakeMergeStore struct {
+	data map[string]map[string]map[string]interface{} // target -> secret -> data
+}
+
+func newFakeMergeStore() *fakeMergeStore {
+	return &fakeMergeStore{data: map[string]map[string]map[string]interface{}{}}
+}
+
+func (m *fakeMergeStore) WriteSecret(_ context.Context, target, secret string, data map[string]interface{}) error {
+	if m.data[target] == nil {
+		m.data[target] = map[string]map[string]interface{}{}
+	}
+	m.data[target][secret] = data
+	return nil
+}
+
+func (m *fakeMergeStore) ReadSecret(_ context.Context, target, secret string) (map[string]interface{}, error) {
+	t, ok := m.data[target]
+	if !ok {
+		return nil, fmt.Errorf("target %q not found", target)
+	}
+	d, ok := t[secret]
+	if !ok {
+		return nil, fmt.Errorf("secret %q not found", secret)
+	}
+	return d, nil
+}
+
+func (m *fakeMergeStore) ListSecrets(_ context.Context, target string) ([]string, error) {
+	out := make([]string, 0, len(m.data[target]))
+	for k := range m.data[target] {
+		out = append(out, k)
+	}
+	return out, nil
+}
+
+func (m *fakeMergeStore) DeleteSecret(_ context.Context, target, secret string) error {
+	if t := m.data[target]; t != nil {
+		delete(t, secret)
+	}
+	return nil
+}
+
 // Compile-time guarantees about the interface hierarchy.
 var (
 	_ Backend       = (*fakeBackend)(nil)
 	_ SourceBackend = (*fakeBackend)(nil)
 	_ TargetBackend = (*fakeBackend)(nil)
+	_ MergeStore    = (*fakeMergeStore)(nil)
 )
 
 func TestTargetBackendIsAlsoSource(t *testing.T) {
@@ -87,5 +133,32 @@ func TestBackendRoundTrip(t *testing.T) {
 	}
 	if err := b.DeleteSecret(ctx, "app/db"); err != nil {
 		t.Fatalf("delete: %v", err)
+	}
+}
+
+func TestMergeStoreRoundTrip(t *testing.T) {
+	ctx := context.Background()
+	var ms MergeStore = newFakeMergeStore()
+
+	if err := ms.WriteSecret(ctx, "prod", "app/db", map[string]interface{}{"u": "p"}); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	got, err := ms.ReadSecret(ctx, "prod", "app/db")
+	if err != nil || got["u"] != "p" {
+		t.Fatalf("read: got=%v err=%v", got, err)
+	}
+	names, err := ms.ListSecrets(ctx, "prod")
+	if err != nil || len(names) != 1 {
+		t.Fatalf("list: names=%v err=%v", names, err)
+	}
+	// Reads scoped per-target: unknown target/secret must error, not return nil.
+	if _, err := ms.ReadSecret(ctx, "staging", "app/db"); err == nil {
+		t.Fatal("expected error reading from unknown target")
+	}
+	if err := ms.DeleteSecret(ctx, "prod", "app/db"); err != nil {
+		t.Fatalf("delete: %v", err)
+	}
+	if _, err := ms.ReadSecret(ctx, "prod", "app/db"); err == nil {
+		t.Fatal("expected error reading deleted secret")
 	}
 }
