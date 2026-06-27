@@ -26,9 +26,37 @@ builds:
       - -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Version={{.Version}}
       - -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Commit={{.Commit}}
       - -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Date={{.Date}}
+  - id: secrets-sync-lambda
+    main: ./cmd/secrets-sync-lambda
+    binary: bootstrap
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+  - id: secrets-sync-controller
+    main: ./cmd/secrets-sync-controller
+    binary: secrets-sync-controller
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
 
 archives:
-  - id: default
+  - id: cli
+    ids:
+      - secrets-sync
     formats:
       - tar.gz
     format_overrides:
@@ -45,6 +73,39 @@ archives:
       - LICENSE*
       - README*
       - CHANGELOG*
+  - id: lambda
+    ids:
+      - secrets-sync-lambda
+    formats:
+      - zip
+    name_template: >-
+      {{ .ProjectName }}-lambda_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+    files:
+      - LICENSE*
+      - deploy/lambda/template.yaml
+  - id: controller
+    ids:
+      - secrets-sync-controller
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    name_template: >-
+      {{ .ProjectName }}-controller_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else }}{{ .Arch }}{{ end }}
+    files:
+      - LICENSE*
+      - deploy/crds/*.yaml
+      - deploy/controller/*.yaml
 
 checksum:
   name_template: "checksums.txt"

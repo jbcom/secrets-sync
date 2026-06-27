@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: secrets-sync
+  labels:
+    app.kubernetes.io/name: secrets-sync
+    app.kubernetes.io/component: controller

@@ -20,14 +20,15 @@ go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 ```
 
 ```bash
-docker pull jbcom/secrets-sync:v1
-alias secrets-sync='docker run --rm -v "$PWD":/workspace -w /workspace jbcom/secrets-sync:v1'
+docker pull ghcr.io/jbcom/secrets-sync:v2.2.0
+alias secrets-sync='docker run --rm -v "$PWD":/workspace -w /workspace ghcr.io/jbcom/secrets-sync:v2.2.0'
 ```
 
 ```bash
 git clone https://github.com/jbcom/secrets-sync.git
 cd secrets-sync
-make build
+brew install just # macOS; use apt/dnf/pacman equivalent on Linux
+just build
 ./bin/secrets-sync version
 ```
 

@@ -12,11 +12,12 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	awscredentials "github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	log "github.com/sirupsen/logrus"
 )
 
-// SecretVersion represents a versioned secret with metadata (v1.2.0 - Requirement 24)
+// SecretVersion represents a versioned secret with metadata
 type SecretVersion struct {
 	Path      string                 `json:"path"`
 	Version   int                    `json:"version"`
@@ -25,7 +26,7 @@ type SecretVersion struct {
 	Hash      string                 `json:"hash,omitempty"`
 }
 
-// VersionStore interface for version management (v1.2.0 - Requirement 24)
+// VersionStore interface for version management
 type VersionStore interface {
 	GetVersion(ctx context.Context, path string, version int) (*SecretVersion, error)
 	ListVersions(ctx context.Context, path string) ([]SecretVersion, error)
@@ -42,7 +43,7 @@ type S3MergeStore struct {
 	KMSKeyID string
 	Region   string
 
-	// Version management (v1.2.0 - Requirement 24)
+	// Version management
 	VersioningEnabled bool
 	RetainVersions    int
 
@@ -51,6 +52,12 @@ type S3MergeStore struct {
 
 // NewS3MergeStore creates a new S3-based merge store
 func NewS3MergeStore(ctx context.Context, cfg *MergeStoreS3, region string) (*S3MergeStore, error) {
+	return NewS3MergeStoreWithRuntimeAuth(ctx, cfg, region, nil)
+}
+
+// NewS3MergeStoreWithRuntimeAuth creates a new S3-based merge store using
+// caller-supplied AWS session material when provided.
+func NewS3MergeStoreWithRuntimeAuth(ctx context.Context, cfg *MergeStoreS3, region string, auth *AWSRuntimeAuth) (*S3MergeStore, error) {
 	l := log.WithFields(log.Fields{
 		"action": "NewS3MergeStore",
 		"bucket": cfg.Bucket,
@@ -58,9 +65,32 @@ func NewS3MergeStore(ctx context.Context, cfg *MergeStoreS3, region string) (*S3
 	})
 	l.Debug("Creating S3 merge store")
 
-	awsCfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(region))
+	if auth != nil && auth.Region != "" {
+		region = auth.Region
+	}
+	loadOptions := []func(*config.LoadOptions) error{
+		config.WithRegion(region),
+	}
+	if auth.HasStaticCredentials() {
+		loadOptions = append(loadOptions, config.WithCredentialsProvider(
+			awscredentials.NewStaticCredentialsProvider(
+				auth.AccessKeyID,
+				auth.SecretAccessKey,
+				auth.SessionToken,
+			),
+		))
+	}
+
+	awsCfg, err := config.LoadDefaultConfig(ctx, loadOptions...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load AWS config: %w", err)
+	}
+
+	clientOptions := []func(*s3.Options){}
+	if auth != nil && auth.EndpointURL != "" {
+		clientOptions = append(clientOptions, func(o *s3.Options) {
+			o.BaseEndpoint = aws.String(auth.EndpointURL)
+		})
 	}
 
 	store := &S3MergeStore{
@@ -68,10 +98,10 @@ func NewS3MergeStore(ctx context.Context, cfg *MergeStoreS3, region string) (*S3
 		Prefix:   cfg.Prefix,
 		KMSKeyID: cfg.KMSKeyID,
 		Region:   region,
-		client:   s3.NewFromConfig(awsCfg),
+		client:   s3.NewFromConfig(awsCfg, clientOptions...),
 	}
 
-	// Configure versioning if enabled (v1.2.0 - Requirement 24)
+	// Configure versioning if enabled
 	if cfg.Versioning != nil {
 		store.VersioningEnabled = cfg.Versioning.Enabled
 		store.RetainVersions = cfg.Versioning.RetainVersions
@@ -374,7 +404,7 @@ func (s *S3MergeStore) DeleteBundle(ctx context.Context, targetName, bundleID st
 	return nil
 }
 
-// Version management methods (v1.2.0 - Requirement 24)
+// Version management methods
 
 // versionKeyPath returns the S3 key for a specific version of a secret
 func (s *S3MergeStore) versionKeyPath(targetName, secretName string, version int) string {

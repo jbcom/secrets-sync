@@ -1,9 +1,9 @@
 # Deployment
 
 SecretSync deploys as a `secrets-sync pipeline` runner. The current production
-surface is the CLI, the Docker image, the GitHub Action, or a Kubernetes
-workload that invokes the same pipeline command with a mounted configuration
-file.
+surface is the CLI, the GHCR Docker image, the GitHub Action, the Lambda
+runtime, or a Kubernetes workload that invokes the same pipeline command with a
+mounted configuration file.
 
 ## Deployment Contract
 
@@ -96,11 +96,13 @@ docker run --rm \
   -e VAULT_ADDR=https://vault.example.com \
   -e VAULT_ROLE_ID="$VAULT_ROLE_ID" \
   -e VAULT_SECRET_ID="$VAULT_SECRET_ID" \
-  jbcom/secrets-sync:v1 \
+  ghcr.io/jbcom/secrets-sync:v2.2.0 \
   pipeline --config /config.yaml --dry-run --diff --output json
 ```
 
-Use the same image for scheduled container platforms. The image entry point is
+Use the same image for scheduled container platforms. The image is a Google
+Distroless static runtime with no shell or package manager. It contains both
+`secrets-sync` and `secrets-sync-controller`; the default entry point is
 `secrets-sync`, and the default command is `pipeline`.
 
 ## GitHub Actions
@@ -136,9 +138,9 @@ reference.
 
 ## Kubernetes CronJob
 
-For Kubernetes, run SecretSync as a scheduled job unless your environment has a
-separate controller managing execution. Mount the pipeline configuration from a
-ConfigMap or Secret and provide credentials through your cluster identity model.
+For Kubernetes, run SecretSync as a scheduled job when one fixed pipeline
+configuration is enough. Mount the pipeline configuration from a ConfigMap or
+Secret and provide credentials through your cluster identity model.
 
 ```yaml
 apiVersion: batch/v1
@@ -155,7 +157,7 @@ spec:
           serviceAccountName: secrets-sync
           containers:
             - name: secrets-sync
-              image: jbcom/secrets-sync:v1
+              image: ghcr.io/jbcom/secrets-sync:v2.2.0
               args:
                 - pipeline
                 - --config
@@ -177,6 +179,56 @@ For Kubernetes-authenticated Vault access, configure the `vault.auth.kubernetes`
 section in the pipeline file and bind the service account to the expected Vault
 role. For AWS, prefer IRSA, EKS Pod Identity, or another workload identity
 mechanism over static access keys.
+
+### Kubernetes Controller
+
+`deploy/crds/secrets-sync.jbcom.dev_credentialsynchronizations.yaml` defines the
+`secrets-sync.jbcom.dev/v1alpha1` `CredentialSynchronization` API for
+declarative scheduled synchronization. The controller in
+`cmd/secrets-sync-controller` watches those resources and reconciles each one
+into a managed `CronJob` that invokes `secrets-sync pipeline`.
+
+```bash
+kubectl apply -f deploy/crds/secrets-sync.jbcom.dev_credentialsynchronizations.yaml
+kubectl apply -k deploy/controller
+kubectl apply -f deploy/crds/examples/kubernetes-credential-synchronization.yaml
+```
+
+The direct manifests install a `secrets-sync` namespace, controller service
+account, RBAC, and Deployment using `ghcr.io/jbcom/secrets-sync:v2.2.0`. Keep
+that value pinned to an immutable release tag or digest in production.
+
+The Helm chart supports both deployment paths. Enable `pipeline.enabled` for a
+single direct CronJob, or enable `controller.enabled` to install the controller
+Deployment and RBAC:
+
+```bash
+helm upgrade --install secrets-sync deploy/charts/secrets-sync \
+  --namespace secrets-sync \
+  --create-namespace \
+  --set controller.enabled=true
+```
+
+## AWS Lambda
+
+Release assets include Lambda archives built from the Go entrypoint at
+`cmd/secrets-sync-lambda`. The Lambda handler accepts one of:
+
+- `config_yaml` for inline configuration.
+- `config_s3_bucket` and `config_s3_key` for S3-hosted configuration.
+- `config_path` or `SECRETS_SYNC_CONFIG` for packaged configuration.
+
+Build locally with:
+
+```bash
+just lambda-build
+```
+
+Deploy the SAM/CloudFormation template in `deploy/lambda/template.yaml` after
+uploading the release archive or local `dist/lambda/bootstrap` package to your
+deployment bucket. The Lambda response is structured JSON with the same counts,
+target status, duration, and optional diff output exposed by the CLI/binding
+surfaces.
 
 ## Metrics And Logs
 

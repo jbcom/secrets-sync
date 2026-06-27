@@ -45,7 +45,7 @@ type IdentityCenterClient struct {
 	// Options: "json", "yaml", "list"
 	OutputFormat string `yaml:"outputFormat,omitempty" json:"outputFormat,omitempty"`
 
-	// Enhanced discovery (v1.2.0)
+	// Enhanced discovery
 	DiscoverPermissionSets bool `yaml:"discoverPermissionSets,omitempty" json:"discoverPermissionSets,omitempty"`
 	CacheAssignments       bool `yaml:"cacheAssignments,omitempty" json:"cacheAssignments,omitempty"`
 
@@ -59,7 +59,7 @@ type IdentityCenterClient struct {
 	identityStoreClient *identitystore.Client `yaml:"-" json:"-"`
 	ssoAdminClient      *ssoadmin.Client      `yaml:"-" json:"-"`
 
-	// Caching (v1.2.0)
+	// Caching
 	assignmentCache    map[string][]AccountAssignment `yaml:"-" json:"-"`
 	permissionSetCache map[string]PermissionSet       `yaml:"-" json:"-"`
 }
@@ -85,7 +85,7 @@ type DiscoveredAccount struct {
 	Tags             map[string]string `json:"tags,omitempty"`
 }
 
-// PermissionSet represents an Identity Center permission set (v1.2.0)
+// PermissionSet represents an Identity Center permission set
 type PermissionSet struct {
 	ARN         string `json:"arn"`
 	Name        string `json:"name"`
@@ -93,7 +93,7 @@ type PermissionSet struct {
 	CreatedDate string `json:"createdDate"`
 }
 
-// AccountAssignment represents an account assignment in Identity Center (v1.2.0)
+// AccountAssignment represents an account assignment in Identity Center
 type AccountAssignment struct {
 	AccountID        string `json:"accountId"`
 	PermissionSetARN string `json:"permissionSetArn"`
@@ -502,7 +502,7 @@ func (c *IdentityCenterClient) SetDefaults(cfg any) error {
 	return nil
 }
 
-// listPermissionSets discovers all permission sets in the Identity Center instance (v1.2.0)
+// listPermissionSets discovers all permission sets in the Identity Center instance
 func (c *IdentityCenterClient) listPermissionSets(ctx context.Context) ([]PermissionSet, error) {
 	var permissionSets []PermissionSet
 
@@ -556,7 +556,7 @@ func (c *IdentityCenterClient) listPermissionSets(ctx context.Context) ([]Permis
 	return permissionSets, nil
 }
 
-// listAccountAssignments discovers all account assignments for permission sets (v1.2.0)
+// listAccountAssignments discovers all account assignments for permission sets
 func (c *IdentityCenterClient) listAccountAssignments(ctx context.Context) ([]AccountAssignment, error) {
 	var assignments []AccountAssignment
 
@@ -625,7 +625,7 @@ func (c *IdentityCenterClient) listAccountAssignmentsForPermissionSet(ctx contex
 	return assignments, nil
 }
 
-// GetPermissionSetByName finds a permission set by name (v1.2.0)
+// GetPermissionSetByName finds a permission set by name
 func (c *IdentityCenterClient) GetPermissionSetByName(name string) *PermissionSet {
 	for _, ps := range c.PermissionSets {
 		if ps.Name == name {
@@ -635,7 +635,7 @@ func (c *IdentityCenterClient) GetPermissionSetByName(name string) *PermissionSe
 	return nil
 }
 
-// GetAccountAssignmentsForAccount returns all assignments for a specific account (v1.2.0)
+// GetAccountAssignmentsForAccount returns all assignments for a specific account
 func (c *IdentityCenterClient) GetAccountAssignmentsForAccount(accountID string) []AccountAssignment {
 	var assignments []AccountAssignment
 	for _, assignment := range c.AccountAssignments {

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/jbcom/secrets-sync/pkg/client/aws"
-	"github.com/jbcom/secrets-sync/pkg/client/vault"
 	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -192,10 +191,7 @@ func (p *Pipeline) readBundleSecrets(ctx context.Context, targetName, bundlePath
 	secretsData := make(map[string]map[string]interface{})
 
 	if p.config.MergeStore.Vault != nil {
-		mergeClient := &vault.VaultClient{
-			Address:   p.config.Vault.Address,
-			Namespace: p.config.Vault.Namespace,
-		}
+		mergeClient := p.vaultClient("")
 		if err := mergeClient.Init(ctx); err != nil {
 			return nil, fmt.Errorf("failed to init merge vault client: %w", err)
 		}
@@ -252,15 +248,9 @@ func (p *Pipeline) getAWSClientForTarget(ctx context.Context, target Target) (*a
 		region = p.config.AWS.Region
 	}
 
-	client := &aws.AwsClient{
-		Region: region,
-	}
-
 	// If we have an AWS execution context with role assumption
 	roleArn := p.getRoleARNForTarget(target)
-	if roleArn != "" {
-		client.RoleArn = roleArn
-	}
+	client := p.awsClient(roleArn, region, "sync-target")
 
 	if err := client.Init(ctx); err != nil {
 		return nil, err

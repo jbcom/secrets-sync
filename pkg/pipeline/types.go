@@ -184,11 +184,11 @@ type MergeStoreS3 struct {
 	Prefix   string `mapstructure:"prefix" yaml:"prefix"`
 	KMSKeyID string `mapstructure:"kms_key_id" yaml:"kms_key_id"`
 
-	// Version management (v1.2.0 - Requirement 24)
+	// Version management
 	Versioning *VersioningConfig `mapstructure:"versioning" yaml:"versioning"`
 }
 
-// VersioningConfig configures secret versioning (v1.2.0 - Requirement 24)
+// VersioningConfig configures secret versioning
 type VersioningConfig struct {
 	Enabled        bool `mapstructure:"enabled" yaml:"enabled"`
 	RetainVersions int  `mapstructure:"retain_versions" yaml:"retain_versions"`

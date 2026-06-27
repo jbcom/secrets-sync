@@ -1,0 +1,105 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: secrets-sync Lambda runner
+
+Parameters:
+  FunctionName:
+    Type: String
+    Default: secrets-sync
+  ConfigBucket:
+    Type: String
+    Description: S3 bucket containing the secrets-sync pipeline config.
+  ConfigKey:
+    Type: String
+    Default: config.yaml
+    Description: S3 object key for the secrets-sync pipeline config.
+  ScheduleExpression:
+    Type: String
+    Default: rate(30 minutes)
+    Description: EventBridge schedule for running secrets-sync.
+  TimeoutSeconds:
+    Type: Number
+    Default: 900
+  MemorySize:
+    Type: Number
+    Default: 512
+  ManagedSecretPrefix:
+    Type: String
+    Default: secrets-sync/
+    Description: Secrets Manager name prefix this Lambda may create or mutate.
+  AssumableRoleNamePattern:
+    Type: String
+    Default: secrets-sync-*
+    Description: IAM role name pattern this Lambda may assume for target account writes.
+
+Resources:
+  SecretsSyncFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Ref FunctionName
+      Runtime: provided.al2023
+      Architectures:
+        - arm64
+      Handler: bootstrap
+      CodeUri: ../../dist/lambda/
+      MemorySize: !Ref MemorySize
+      Timeout: !Ref TimeoutSeconds
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Sub arn:${AWS::Partition}:s3:::${ConfigBucket}/${ConfigKey}
+            - Effect: Allow
+              Action:
+                - secretsmanager:ListSecrets
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - secretsmanager:CreateSecret
+                - secretsmanager:DeleteSecret
+                - secretsmanager:DescribeSecret
+                - secretsmanager:GetSecretValue
+                - secretsmanager:PutSecretValue
+                - secretsmanager:TagResource
+                - secretsmanager:UpdateSecret
+              Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${ManagedSecretPrefix}*
+            - Effect: Allow
+              Action:
+                - organizations:DescribeOrganization
+                - organizations:ListAccounts
+                - organizations:ListAccountsForParent
+                - organizations:ListChildren
+                - organizations:ListParents
+                - organizations:ListRoots
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - sts:AssumeRole
+              Resource: !Sub arn:${AWS::Partition}:iam::*:role/${AssumableRoleNamePattern}
+            - Effect: Allow
+              Action:
+                - sts:GetCallerIdentity
+              Resource: "*"
+      Events:
+        ScheduledRun:
+          Type: ScheduleV2
+          Properties:
+            ScheduleExpression: !Ref ScheduleExpression
+            Input: !Sub |
+              {
+                "config_s3_bucket": "${ConfigBucket}",
+                "config_s3_key": "${ConfigKey}",
+                "options": {
+                  "operation": "pipeline",
+                  "dry_run": false,
+                  "continue_on_error": true,
+                  "compute_diff": true,
+                  "output_format": "json"
+                }
+              }
+
+Outputs:
+  FunctionArn:
+    Description: ARN of the secrets-sync Lambda function.
+    Value: !GetAtt SecretsSyncFunction.Arn

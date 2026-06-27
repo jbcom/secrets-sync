@@ -53,19 +53,19 @@ func TestVaultMetrics(t *testing.T) {
 	}
 
 	// Test secrets listed counter
-	VaultSecretsListed.WithLabelValues("kv/test").Add(10)
+	VaultSecretsListed.WithLabelValues("kv").Add(10)
 	if count := testutil.CollectAndCount(VaultSecretsListed); count == 0 {
 		t.Error("VaultSecretsListed metric not recorded")
 	}
 
 	// Test traversal depth
-	VaultTraversalDepth.WithLabelValues("kv/test").Observe(5)
+	VaultTraversalDepth.WithLabelValues("kv").Observe(5)
 	if count := testutil.CollectAndCount(VaultTraversalDepth); count == 0 {
 		t.Error("VaultTraversalDepth metric not recorded")
 	}
 
 	// Test queue size gauge
-	VaultQueueSize.WithLabelValues("kv/test").Set(15)
+	VaultQueueSize.WithLabelValues("kv").Set(15)
 	if count := testutil.CollectAndCount(VaultQueueSize); count == 0 {
 		t.Error("VaultQueueSize metric not recorded")
 	}

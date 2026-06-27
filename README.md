@@ -8,7 +8,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![GitHub release](https://img.shields.io/github/release/jbcom/secrets-sync.svg)](https://github.com/jbcom/secrets-sync/releases)
 [![Go Report Card](https://goreportcard.com/badge/github.com/jbcom/secrets-sync)](https://goreportcard.com/report/github.com/jbcom/secrets-sync)
-[![Python Integration](https://img.shields.io/badge/python-vendor--fabric-blue.svg)](./docs/PYTHON_BINDINGS.md)
+[![Python Binding](https://img.shields.io/badge/python-secrets__sync-blue.svg)](./docs/PYTHON_BINDINGS.md)
 
 [Quick Start](#quick-start) • [Repo Docs](./docs/) • [Python Integration](#python-integration) • [Examples](./examples/) • [GitHub Action](./docs/GITHUB_ACTIONS.md)
 
@@ -18,14 +18,15 @@
 
 SecretSync provides **fully automated, enterprise-grade secret synchronization** across multiple cloud providers and secret stores. Built for scale with a **two-phase pipeline architecture** (merge → sync), it supports inheritance, dynamic target discovery, and CI/CD-friendly diff reporting.
 
-## 🏢 Independent Go Repository, Python-Native Vendor Fabric
+## 🏢 Independent Go Runtime, Python Facade Above It
 
 SecretSync is an independent [jbcom/secrets-sync](https://github.com/jbcom/secrets-sync) repository and MIT-licensed release artifact for secret synchronization workflows.
 
-**🐍 Python Integration**: Python-native SecretSync capabilities live in
-[vendor-fabric](https://github.com/jbcom/vendor-fabric). Use
-`vendor_fabric.secrets_sync` when Python code should compose secret sync with
-Extended Data primitives, vendor connectors, and agent workflows.
+**🐍 Python Integration**: this repository owns the gopy binding source and
+publishes the `secrets-sync-python-binding` distribution, imported as
+`secrets_sync`. Downstream packages such as vendor-fabric can wrap it with
+credential handoff, provider coordination, redaction, and Extended Data
+composition.
 
 **🚀 Perfect for:** Multi-account AWS environments, Kubernetes deployments, CI/CD pipelines, and enterprise secret management at scale.
 
@@ -81,7 +82,8 @@ SecretSync originated as a fork of [robertlestak/vault-secret-sync](https://gith
 - Dynamic target discovery (AWS Organizations, Identity Center)
 - Comprehensive diff/dry-run system with CI/CD integration
 - DeepMerge semantics for secret aggregation
-- Kubernetes CronJob and Helm pipeline-runner deployment
+- Kubernetes CronJob, `CredentialSynchronization` controller, and Helm
+  deployment paths
 
 ## Supported Secret Stores
 
@@ -123,28 +125,53 @@ See [Two-Phase Architecture](./docs/TWO_PHASE_ARCHITECTURE.md) for detailed docu
 go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
 
 # Or build from a local checkout
+brew install just # macOS; use apt/dnf/pacman equivalent on Linux
 git clone https://github.com/jbcom/secrets-sync.git
 cd secrets-sync
-make build
+just build
 ```
 
 ## Python Integration
 
-The recommended Python surface is `vendor_fabric.secrets_sync`:
+SecretSync owns the gopy binding contract for Python consumers.
+
+- PyPI distribution: `secrets-sync-python-binding`
+- Python import/module: `secrets_sync`
+- Binding source: `python/secrets_sync/secrets_sync.go`
+
+The repo-owned application surface is the `secrets_sync` binding:
 
 ```bash
-pip install "vendor-fabric[secrets-sync]"
+pip install secrets-sync-python-binding
 ```
 
-This repository no longer publishes a Python package or generated bindings.
-Python users get a direct Python implementation in `vendor-fabric`; shell, CI,
-and scheduled workloads continue to use the Go CLI and GitHub Action here.
+Downstream facades should consume this binding rather than reimplementing the
+merge/sync engine. They can either delegate authentication to `secrets-sync` or
+own the provider handshake and pass
+authenticated session material through `ProviderSession`.
+
+Direct binding consumers can install the generated wheel:
+
+```bash
+pip install secrets-sync-python-binding
+```
+
+```python
+import secrets_sync
+
+opts = secrets_sync.DefaultSyncOptions()
+validation = secrets_sync.ValidateConfig("pipeline.yaml")
+if not validation.Valid:
+    raise RuntimeError(validation.ErrorMessage)
+
+result = secrets_sync.RunPipeline("pipeline.yaml", opts)
+```
 
 ### AI Agent Integration
 
-SecretSync agent tools are owned by `vendor-fabric`. Install
-`vendor-fabric[ai,secrets-sync]` when a CrewAI, LangChain, LangGraph, or
-Strands workflow needs to validate configs, run dry-runs, or execute pipelines.
+Agent framework wrappers belong in `agentic-fabric`. That layer should consume
+vendor-fabric capabilities rather than adding LangChain, CrewAI, LangGraph,
+Strands, or MCP adapters here.
 
 ### Basic Usage
 
@@ -316,8 +343,10 @@ See [GitHub Actions documentation](./docs/GITHUB_ACTIONS.md) for complete usage 
 
 ## Kubernetes
 
-Run SecretSync as a scheduled pipeline runner. See
-[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for a complete CronJob example.
+Run SecretSync as a scheduled pipeline runner or install the
+`CredentialSynchronization` controller. See
+[docs/DEPLOYMENT.md](./docs/DEPLOYMENT.md) for complete CronJob and controller
+examples.
 
 ```yaml
 apiVersion: batch/v1
@@ -333,7 +362,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: secrets-sync
-              image: jbcom/secrets-sync:v1
+              image: ghcr.io/jbcom/secrets-sync:v2.2.0
               args: ["pipeline", "--config", "/config/config.yaml", "--diff", "--output", "json"]
 ```
 
@@ -342,10 +371,29 @@ spec:
 ```bash
 # Run with config file
 docker run -v $(pwd)/config.yaml:/config.yaml \
-  jbcom/secrets-sync:v1 pipeline --config /config.yaml
+  ghcr.io/jbcom/secrets-sync:v2.2.0 pipeline --config /config.yaml
 
-# Multi-arch images available: linux/amd64, linux/arm64
+# Release image: ghcr.io/jbcom/secrets-sync:v2.2.0
 ```
+
+The published image is a Google Distroless static runtime containing both
+`secrets-sync` and `secrets-sync-controller`.
+
+## Lambda And Kubernetes API
+
+The compiled Go runtime also ships as:
+
+- A Lambda archive built from `cmd/secrets-sync-lambda`, published by GoReleaser.
+- A Kubernetes CRD schema at
+  `deploy/crds/secrets-sync.jbcom.dev_credentialsynchronizations.yaml`.
+- A Kubernetes controller at `cmd/secrets-sync-controller` with direct manifests
+  under `deploy/controller`.
+- A Helm chart at `deploy/charts/secrets-sync` for direct CronJob or controller
+  installs.
+
+The CRD kind is `CredentialSynchronization`. The controller reconciles those
+resources into managed CronJobs that run the same `secrets-sync pipeline`
+command used by the CLI, Action, Lambda, and Docker surfaces.
 
 ## Observability
 
@@ -423,7 +471,7 @@ go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
 go test ./...
 
 # Integration tests (requires Docker)
-make test-integration-docker
+just test-integration-docker
 
 # Lint
 golangci-lint run
@@ -436,7 +484,7 @@ SecretSync includes comprehensive integration tests that validate the complete p
 **Quick Start:**
 ```bash
 # Run complete integration test suite
-make test-integration-docker
+just test-integration-docker
 ```
 
 This command:
@@ -448,7 +496,7 @@ This command:
 **Manual Testing:**
 ```bash
 # Start test environment
-make test-env-up
+just test-env-up
 
 # Export environment variables (shown in output)
 export VAULT_ADDR=http://localhost:8200
@@ -461,7 +509,7 @@ export AWS_SECRET_ACCESS_KEY=test
 go test -v -tags=integration ./tests/integration/...
 
 # Cleanup
-make test-env-down
+just test-env-down
 ```
 
 For detailed documentation, see [tests/integration/README.md](./tests/integration/README.md).

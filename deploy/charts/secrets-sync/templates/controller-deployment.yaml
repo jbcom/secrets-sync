@@ -1,0 +1,68 @@
+{{- if .Values.controller.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-controller" (include "secrets-sync.fullname" .) | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- include "secrets-sync.labels" . | nindent 4 }}
+    {{- include "secrets-sync.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "secrets-sync.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: controller
+  template:
+    metadata:
+      labels:
+        {{- include "secrets-sync.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: controller
+        {{- with .Values.controller.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      {{- with .Values.controller.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      serviceAccountName: {{ include "secrets-sync.controllerServiceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: controller
+          image: "{{ .Values.controller.image.repository | default .Values.image.repository }}:{{ .Values.controller.image.tag | default .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.controller.image.pullPolicy | default .Values.image.pullPolicy }}
+          command:
+            - secrets-sync-controller
+          args:
+            - --log-level
+            - {{ .Values.logLevel | quote }}
+            - --log-format
+            - {{ .Values.logFormat | quote }}
+            - --resync={{ .Values.controller.resync }}
+            {{- if .Values.controller.watchNamespace }}
+            - --namespace
+            - {{ .Values.controller.watchNamespace | quote }}
+            {{- end }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.controller.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

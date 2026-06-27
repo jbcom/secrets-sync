@@ -61,7 +61,7 @@ The `docker-compose.test.yml` file in the project root defines a complete integr
 
 ```bash
 # Run complete test suite with docker-compose
-make test-integration-docker
+just test-integration-docker
 ```
 
 This command:
@@ -75,7 +75,7 @@ This command:
 
 ```bash
 # Start the test environment
-make test-env-up
+just test-env-up
 
 # Export environment variables (shown in output)
 export VAULT_ADDR=http://localhost:8200
@@ -89,7 +89,7 @@ export AWS_REGION=us-east-1
 go test -v -tags=integration ./tests/integration/...
 
 # Cleanup
-make test-env-down
+just test-env-down
 ```
 
 ### CI/CD Testing
@@ -98,7 +98,7 @@ The GitHub Actions CI workflow uses the docker-compose stack for integration tes
 
 ```yaml
 - name: Run integration tests
-  run: make test-integration-docker
+  run: just test-integration-docker
 ```
 
 ## Test Coverage
@@ -247,7 +247,7 @@ go test -v -tags=integration ./tests/integration/...
 1. **Add test fixtures** to `testdata/secrets_seed.json`
 2. **Update seed scripts** if needed (scripts/seed-*.sh)
 3. **Write test function** in appropriate *_test.go file
-4. **Run locally** with `make test-integration-docker`
+4. **Run locally** with `just test-integration-docker`
 5. **Verify CI passes** in PR
 
 ## Performance

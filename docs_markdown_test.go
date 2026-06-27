@@ -107,16 +107,17 @@ func TestArchitectureAuditCurrentShapeReferencesExistingPaths(t *testing.T) {
 	}
 
 	currentShape := text[start:end]
-	for _, forbidden := range []string{
-		"api/v1alpha1",
-		"Kubernetes API types",
-	} {
-		if strings.Contains(currentShape, forbidden) {
-			t.Fatalf("architecture audit should not document removed current path %q", forbidden)
-		}
-	}
 	if !strings.Contains(currentShape, "deploy/charts/secrets-sync") {
 		t.Fatal("architecture audit should document the Helm runner chart path")
+	}
+	for _, required := range []string{
+		"deploy/crds",
+		"cmd/secrets-sync-lambda",
+		"python/secrets_sync",
+	} {
+		if !strings.Contains(currentShape, required) {
+			t.Fatalf("architecture audit should document current path %q", required)
+		}
 	}
 
 	for _, match := range regexp.MustCompile("`([^`]+)`").FindAllStringSubmatch(currentShape, -1) {
@@ -255,7 +256,7 @@ func TestGettingStartedUsesCurrentPipelineConfigShape(t *testing.T) {
 	}
 }
 
-func TestPythonDocsUseVendorFabricContract(t *testing.T) {
+func TestPythonDocsUseBindingAndVendorFacadeContract(t *testing.T) {
 	paths := []string{"README.md", "docs/PYTHON_BINDINGS.md"}
 	forbidden := []string{
 		"bindings aren't installed",
@@ -269,11 +270,14 @@ func TestPythonDocsUseVendorFabricContract(t *testing.T) {
 		"secrets_sync_native",
 		"agentic-crew[secrets-sync]",
 		"pip install secrets-sync-bridge",
+		"Python users get a direct Python implementation in `vendor-fabric`",
+		"This repository no longer publishes a Python package or generated bindings",
 	}
 	required := []string{
-		"vendor_fabric.secrets_sync",
-		"vendor-fabric[secrets-sync]",
-		"secrets-sync pipeline --config pipeline.yaml --output json",
+		"secrets-sync-python-binding",
+		"import secrets_sync",
+		"pip install secrets-sync-python-binding",
+		"Downstream",
 	}
 
 	for _, path := range paths {
@@ -305,10 +309,12 @@ func TestOwnershipMapDocumentsSplitBoundaries(t *testing.T) {
 
 	for _, required := range []string{
 		"cmd/secrets-sync",
+		"python/secrets_sync",
+		"secrets-sync-python-binding",
 		"jbcom/extended-data",
 		"jbcom/vendor-fabric",
+		"jbcom/agentic-fabric",
 		"vendor-fabric[secrets-sync]",
-		"vendor-fabric[ai,secrets-sync]",
 	} {
 		if !strings.Contains(text, required) {
 			t.Fatalf("docs/OWNERSHIP.md should document boundary %q", required)

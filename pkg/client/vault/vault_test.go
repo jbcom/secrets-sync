@@ -153,6 +153,24 @@ func TestVaultClient_Meta(t *testing.T) {
 	assert.Equal(t, "kubernetes", meta["authMethod"])
 }
 
+func TestVaultClient_RuntimeTokenNotSerialized(t *testing.T) {
+	client := &VaultClient{
+		Address: "http://localhost:8200",
+		Path:    "secret/data/test",
+		Token:   "runtime-token",
+	}
+
+	encoded, err := json.Marshal(client)
+	require.NoError(t, err)
+	assert.NotContains(t, string(encoded), "runtime-token")
+	assert.NotContains(t, string(encoded), `"token"`)
+	assert.NotContains(t, string(encoded), `"Token"`)
+
+	meta := client.Meta()
+	assert.NotContains(t, meta, "Token")
+	assert.NotContains(t, meta, "token")
+}
+
 func TestVaultClient_DeepCopy(t *testing.T) {
 	original := &VaultClient{
 		Address:    "http://localhost:8200",

@@ -2,14 +2,42 @@
 
 from __future__ import annotations
 
+import os
+import subprocess
+
+from pathlib import Path
+
 
 project = "SecretSync"
 author = "Jon Bogaty"
 copyright = "2025-2026, Jon Bogaty"  # noqa: A001
+html_title = project
+html_baseurl = "https://jbcom.github.io/secrets-sync/"
+
+
+def _release() -> str:
+    if env := os.environ.get("DOCS_VERSION"):
+        return env
+    repo_root = Path(__file__).resolve().parent.parent
+    try:
+        result = subprocess.run(
+            ["git", "describe", "--tags", "--always", "--dirty"],
+            cwd=repo_root,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        return "dev"
+    return result.stdout.strip() or "dev"
+
+
+release = version = _release()
 
 extensions = [
     "myst_parser",
     "sphinx_copybutton",
+    "sphinx.ext.githubpages",
     "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
 ]
@@ -22,7 +50,6 @@ source_suffix = {
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 html_theme = "furo"
-html_title = "SecretSync"
 html_static_path = ["_static"]
 html_css_files = ["secrets-sync.css"]
 html_theme_options = {

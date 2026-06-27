@@ -22,10 +22,10 @@ go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 ./...
 go test ./...
 
 # Race-enabled unit tests with coverage output
-make test
+just test-unit
 
 # Integration tests (starts local test services via docker-compose)
-make test-integration-docker
+just test-integration-docker
 ```
 
 ## Code Style
@@ -44,7 +44,7 @@ golangci-lint run
 
 ```bash
 # Build the CLI
-make build
+just build
 ```
 
 ## Pull Request Process

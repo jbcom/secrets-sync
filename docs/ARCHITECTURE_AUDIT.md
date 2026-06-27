@@ -14,8 +14,17 @@ SecretSync is a standalone Go module with:
 - Diffing and exit-code behavior in `pkg/diff`.
 - Circuit breaker, request context, and observability support in `pkg`.
 - Docker action metadata in `action.yml`.
-- Helm runner chart under `deploy/charts/secrets-sync`, rendering a CronJob and
-  config mount for the same CLI pipeline contract.
+- Helm chart under `deploy/charts/secrets-sync`, rendering either a direct
+  CronJob runner or the controller Deployment/RBAC for the same CLI pipeline
+  contract.
+- Kubernetes CRD schema under `deploy/crds`, defining the declarative
+  `CredentialSynchronization` API contract.
+- Kubernetes controller under `cmd/secrets-sync-controller` and
+  `pkg/kubernetes`, reconciling `CredentialSynchronization` resources into
+  managed CronJobs.
+- Lambda entrypoint under `cmd/secrets-sync-lambda` with a deployment template
+  under `deploy/lambda`.
+- Python gopy binding source under `python/secrets_sync`.
 
 The main runtime path is the two-phase pipeline:
 
@@ -35,13 +44,15 @@ The main runtime path is the two-phase pipeline:
 | Target inheritance | Implemented with cycle detection and merge-store source paths. | `pkg/pipeline/inheritance.go`, `pkg/pipeline/graph.go` |
 | Diff exit codes | Implemented and tested: no changes, changes, and error states map to stable exit codes. | `pkg/diff`, `pkg/pipeline/diff_integration_test.go` |
 | Stable pipeline result output | Implemented for machine-readable action and CLI use. | `cmd/secrets-sync/cmd`, `pkg/pipeline` |
+| Runtime authentication handoff | Implemented through runtime-only Vault/AWS session material and gopy `ProviderSession`. | `pkg/pipeline/runtime_auth.go`, `python/secrets_sync/secrets_sync.go` |
+| Kubernetes controller | Implemented as a compiled Go controller that reconciles `CredentialSynchronization` resources into managed CronJobs. | `cmd/secrets-sync-controller`, `pkg/kubernetes`, `deploy/controller` |
 
 ## Release And Action Status
 
 - CI and release workflows are SHA-pinned to current stable action releases.
 - Release-please owns the `secrets-sync-vX.Y.Z` component tag shape.
 - GoReleaser builds binary release artifacts from release-created tags.
-- The Docker action image tag remains `jbcom/secrets-sync:v1` until digest
+- The Docker action image tag remains `ghcr.io/jbcom/secrets-sync:v1` until digest
   refresh can be automated.
 
 ## Future Release Work
@@ -50,8 +61,6 @@ The main runtime path is the two-phase pipeline:
   tag placeholder until the first standalone repository release exists.
 - The Docker action should eventually move to a digest-pinned image reference
   once release automation can update that digest as part of publication.
-- Any future native Kubernetes runtime surface needs a separate release contract
-  before becoming a first-class artifact.
 
 ## Development Rule
 

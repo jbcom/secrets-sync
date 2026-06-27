@@ -15,7 +15,7 @@ type DiscoveryService struct {
 	awsCtx *AWSExecutionContext
 	config *Config
 
-	// OU caching (v1.2.0)
+	// OU caching
 	ouCache      map[string][]AccountInfo // Cache OU -> accounts mapping
 	ouChildCache map[string][]string      // Cache OU -> child OUs mapping
 }
