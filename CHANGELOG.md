@@ -7,6 +7,13 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.1](https://github.com/jbcom/secrets-sync/compare/secrets-sync-v2.1.0...secrets-sync-v2.1.1) (2026-06-27)
+
+
+### Bug Fixes
+
+* use semver tags for goreleaser ([5498981](https://github.com/jbcom/secrets-sync/commit/54989816d10139c6c4b8994efef63ea533f71337))
+
 ## [2.1.0](https://github.com/jbcom/secrets-sync/compare/secrets-sync-v2.0.2...secrets-sync-v2.1.0) (2026-06-27)
 
 
