@@ -7,6 +7,19 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.0](https://github.com/jbcom/secrets-sync/compare/v2.3.1...v2.4.0) (2026-06-27)
+
+
+### Features
+
+* implement the full roadmap — provider matrix, observability, governance, workflows, and scale ([#19](https://github.com/jbcom/secrets-sync/issues/19)) ([2695e97](https://github.com/jbcom/secrets-sync/commit/2695e97b63c579bfbcda2813bd9d8534c9ee1cbc))
+
+
+### Bug Fixes
+
+* repair Linux Python binding wheels ([#15](https://github.com/jbcom/secrets-sync/issues/15)) ([974a501](https://github.com/jbcom/secrets-sync/commit/974a5015cbb069221cc9736ff1559e6010ab2638))
+* resolve doc drift and wire --show-values CLI flag ([#17](https://github.com/jbcom/secrets-sync/issues/17)) ([8c8fc46](https://github.com/jbcom/secrets-sync/commit/8c8fc46390e6f54bc7b10aec47376bbad6ce543c))
+
 ## [2.3.1](https://github.com/jbcom/secrets-sync/compare/v2.3.0...v2.3.1) (2026-06-27)
 
 
