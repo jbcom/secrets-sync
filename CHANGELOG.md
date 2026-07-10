@@ -7,6 +7,13 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.1](https://github.com/jbcom/secrets-sync/compare/v2.4.0...v2.4.1) (2026-07-10)
+
+
+### Bug Fixes
+
+* update Go runtime and crypto dependency ([de2011e](https://github.com/jbcom/secrets-sync/commit/de2011ea24bf6cf369644d2fdb875edbd9bfa996))
+
 ## [2.4.0](https://github.com/jbcom/secrets-sync/compare/v2.3.1...v2.4.0) (2026-06-27)
 
 
