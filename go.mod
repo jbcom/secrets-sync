@@ -20,7 +20,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssoadmin v1.37.7
 	github.com/aws/aws-sdk-go-v2/service/sts v1.42.0
 	github.com/aws/smithy-go v1.27.1
-	github.com/go-python/gopy v0.4.10
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/vault/api v1.23.0
 	github.com/prometheus/client_golang v1.23.2
@@ -37,7 +36,7 @@ require (
 	go.opentelemetry.io/otel/exporters/zipkin v1.44.0
 	go.opentelemetry.io/otel/sdk v1.44.0
 	go.opentelemetry.io/otel/trace v1.44.0
-	golang.org/x/crypto v0.51.0
+	golang.org/x/crypto v0.52.0
 	google.golang.org/api v0.274.0
 	google.golang.org/grpc v1.81.1
 	gopkg.in/yaml.v3 v3.0.1
