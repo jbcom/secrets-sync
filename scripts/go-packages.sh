@@ -1,7 +1,21 @@
 #!/usr/bin/env bash
-# List checked-in Go packages and exclude generated gopy build output.
+# List source Go packages while excluding generated build output.
 
 set -euo pipefail
 
-GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go list ./... \
-  | grep -v '^github.com/jbcom/secrets-sync/python/build/'
+mapfile -t package_dirs < <(
+  find . -type f -name '*.go' \
+    ! -path './.git/*' \
+    ! -path './.tools/*' \
+    ! -path './bin/*' \
+    ! -path './dist/*' \
+    ! -path './python/build/*' \
+    -exec dirname {} \; \
+    | sort -u
+)
+
+if [[ "${#package_dirs[@]}" -eq 0 ]]; then
+  exit 0
+fi
+
+GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go list "${package_dirs[@]}"
