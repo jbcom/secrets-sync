@@ -12,7 +12,7 @@ published as Go module, GitHub Action, Helm chart, and Python gopy wheels.
 
 ## Repo-specific
 
-Task runner is `just` (Justfile). Go toolchain pinned via `GOTOOLCHAIN=go1.26.4`
+Task runner is `just` (Justfile). Go toolchain pinned via `GOTOOLCHAIN=go1.26.5`
 (every recipe exports `GO_TOOLCHAIN` fallback). Go is primary; Python bindings
 are gopy-generated and built/tested via `tox` (no `pyproject.toml` at root).
 

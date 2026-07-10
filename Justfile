@@ -23,7 +23,7 @@ vuln:
     packages_raw="$(scripts/go-packages.sh)"
     [[ -n "${packages_raw}" ]] || { echo "no Go packages discovered" >&2; exit 1; }
     mapfile -t packages <<<"${packages_raw}"
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 "${packages[@]}"
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go run golang.org/x/vuln/cmd/govulncheck@v1.3.0 "${packages[@]}"
 
 # Run Go tests. Extra arguments are passed to go test.
 test-go *args:
@@ -32,7 +32,7 @@ test-go *args:
     packages_raw="$(scripts/go-packages.sh)"
     [[ -n "${packages_raw}" ]] || { echo "no Go packages discovered" >&2; exit 1; }
     mapfile -t packages <<<"${packages_raw}"
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go test "${packages[@]}" {{ args }}
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go test "${packages[@]}" {{ args }}
 
 # Run Go tests with the race detector and coverage.
 test-unit:
@@ -41,7 +41,7 @@ test-unit:
     packages_raw="$(scripts/go-packages.sh)"
     [[ -n "${packages_raw}" ]] || { echo "no Go packages discovered" >&2; exit 1; }
     mapfile -t packages <<<"${packages_raw}"
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go test -race -coverprofile=coverage.out "${packages[@]}"
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go test -race -coverprofile=coverage.out "${packages[@]}"
 
 # Build all Go release binaries used by local workflows.
 build-all: build controller-build lambda-build
@@ -54,7 +54,7 @@ build:
     version="${VERSION:-$(git describe --tags --always --dirty 2>/dev/null || echo dev)}"
     commit="${COMMIT:-$(git rev-parse --short HEAD 2>/dev/null || echo none)}"
     date="${DATE:-$(date -u '+%Y-%m-%dT%H:%M:%SZ')}"
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go build \
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go build \
       -ldflags "-s -w -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Version=${version} -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Commit=${commit} -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Date=${date}" \
       -o bin/secrets-sync ./cmd/secrets-sync
 
@@ -66,7 +66,7 @@ controller-build:
     version="${VERSION:-$(git describe --tags --always --dirty 2>/dev/null || echo dev)}"
     commit="${COMMIT:-$(git rev-parse --short HEAD 2>/dev/null || echo none)}"
     date="${DATE:-$(date -u '+%Y-%m-%dT%H:%M:%SZ')}"
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go build -trimpath \
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go build -trimpath \
       -ldflags "-s -w -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Version=${version} -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Commit=${commit} -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Date=${date}" \
       -o bin/secrets-sync-controller ./cmd/secrets-sync-controller
 
@@ -78,14 +78,14 @@ lambda-build:
     version="${VERSION:-$(git describe --tags --always --dirty 2>/dev/null || echo dev)}"
     commit="${COMMIT:-$(git rev-parse --short HEAD 2>/dev/null || echo none)}"
     date="${DATE:-$(date -u '+%Y-%m-%dT%H:%M:%SZ')}"
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -trimpath \
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -trimpath \
       -ldflags "-s -w -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Version=${version} -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Commit=${commit} -X github.com/jbcom/secrets-sync/cmd/secrets-sync/cmd.Date=${date}" \
       -o dist/lambda/bootstrap ./cmd/secrets-sync-lambda
 
 # Install patched gopy and goimports into .tools/bin.
 python-tools:
     mkdir -p .tools/bin
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" GOBIN="$PWD/.tools/bin" GOPY_VERSION="{{ gopy_version }}" X_TOOLS_VERSION="{{ x_tools_version }}" bash scripts/install-gopy.sh
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" GOBIN="$PWD/.tools/bin" GOPY_VERSION="{{ gopy_version }}" X_TOOLS_VERSION="{{ x_tools_version }}" bash scripts/install-gopy.sh
 
 # Generate the gopy binding package.
 python-bindings python_version="3.13": python-tools
@@ -250,7 +250,7 @@ python-clean:
 
 # Generate API docs.
 docs-api:
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" GOMARKDOC_VERSION="{{ gomarkdoc_version }}" bash scripts/generate-api-docs.sh
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" GOMARKDOC_VERSION="{{ gomarkdoc_version }}" bash scripts/generate-api-docs.sh
 
 # Build Sphinx docs with warnings treated as errors.
 docs: docs-api
@@ -267,16 +267,16 @@ fmt:
     packages_raw="$(scripts/go-packages.sh)"
     [[ -n "${packages_raw}" ]] || { echo "no Go packages discovered" >&2; exit 1; }
     mapfile -t packages <<<"${packages_raw}"
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go fmt "${packages[@]}"
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go fmt "${packages[@]}"
 
 # Run dependency cleanup.
 tidy:
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go mod tidy
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go mod tidy
 
 # Download and tidy dependencies.
 deps:
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go mod download
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go mod tidy
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go mod download
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go mod tidy
 
 # Build the distroless image.
 docker-build tag="ghcr.io/jbcom/secrets-sync:ci":
@@ -284,7 +284,7 @@ docker-build tag="ghcr.io/jbcom/secrets-sync:ci":
 
 # Validate the GoReleaser config.
 goreleaser-check:
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go run github.com/goreleaser/goreleaser/v2@v2.16.0 check
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go run github.com/goreleaser/goreleaser/v2@v2.16.0 check
 
 # Run integration tests. Requires LocalStack + Vault or docker compose.
 test-integration:
@@ -293,7 +293,7 @@ test-integration:
     if [[ -z "${VAULT_ADDR:-}" || -z "${AWS_ENDPOINT_URL:-}" ]]; then
       docker-compose -f docker-compose.test.yml up --abort-on-container-exit --exit-code-from test-runner
     else
-      GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.4}" go test -v -tags=integration ./tests/integration/...
+      GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go test -v -tags=integration ./tests/integration/...
     fi
 
 # Run integration tests via docker compose.
