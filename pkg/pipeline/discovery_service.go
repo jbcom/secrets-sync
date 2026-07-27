@@ -162,18 +162,23 @@ func (p *Pipeline) expandDynamicTargets(ctx context.Context, cfg *Config) error 
 		return nil
 	}
 
-	if p.awsCtx == nil {
-		return fmt.Errorf("config declares dynamic_targets but the AWS execution context is unavailable; " +
-			"dynamic target discovery requires aws.execution_context to be configured and reachable")
-	}
+	// A nil awsCtx is normal rather than fatal: it just means
+	// aws.execution_context.type was omitted, which is the ambient-credential
+	// setup where the SDK's default chain applies. Discovery handles that, so
+	// only a discovery failure is an error.
+	staticCount := len(cfg.Targets)
 
 	if err := ExpandDynamicTargets(ctx, cfg, p.awsCtx); err != nil {
 		return err
 	}
 
-	if len(cfg.Targets) == 0 {
+	// Compare against the pre-expansion count. Checking len(cfg.Targets) alone
+	// would be satisfied by any static target, hiding the case where every
+	// discovery provider failed or returned nothing -- DiscoverTargets logs
+	// provider errors and returns what it has, so silence here is not success.
+	if len(cfg.Targets) == staticCount {
 		return fmt.Errorf("dynamic target discovery resolved no targets; " +
-			"refusing to run a pipeline that would sync nothing")
+			"refusing to run a pipeline whose dynamic targets would all be missing")
 	}
 
 	graph, err := BuildGraph(cfg)

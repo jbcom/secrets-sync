@@ -61,6 +61,37 @@ func TestDynamicTargetsAreExpandedDuringConstruction(t *testing.T) {
 	}
 }
 
+// Omitting aws.execution_context.type is the ambient-credential setup, where
+// the SDK's default chain supplies credentials. That must reach discovery
+// rather than being rejected up front for having no execution context.
+func TestDynamicTargetsWithoutExplicitExecutionContext(t *testing.T) {
+	cfg := dynamicOnlyConfig()
+	cfg.AWS.ExecutionContext.Type = ""
+
+	_, err := NewWithContext(context.Background(), cfg)
+	if err == nil {
+		return // discovery succeeded; nothing to assert
+	}
+
+	if strings.Contains(err.Error(), "execution context is unavailable") {
+		t.Fatalf("ambient-credential configs must not be rejected for lacking an execution context: %v", err)
+	}
+}
+
+// A discovery pass that adds nothing must fail even when static targets exist,
+// otherwise a static target masks the dynamic ones going missing.
+func TestDynamicDiscoveryAddingNothingFailsDespiteStaticTargets(t *testing.T) {
+	cfg := dynamicOnlyConfig()
+	cfg.Targets = map[string]Target{
+		"static-one": {AccountID: "111111111111", Imports: []string{"app-secrets"}},
+	}
+
+	if _, err := NewWithContext(context.Background(), cfg); err == nil {
+		t.Fatal("expected an error when dynamic discovery contributes no targets, " +
+			"even though a static target is present")
+	}
+}
+
 // Expansion must not disturb the ordinary static path.
 func TestStaticTargetsUnaffectedByExpansion(t *testing.T) {
 	cfg := &Config{

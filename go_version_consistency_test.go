@@ -86,6 +86,61 @@ func TestGoToolchainVersionIsConsistentAcrossBuildSurfaces(t *testing.T) {
 func TestCIMatrixNewestGoVersionMatchesPrimary(t *testing.T) {
 	want := primaryGoVersion(t)
 
+	versions := ciMatrixGoVersions(t)
+	newest := versions[len(versions)-1]
+
+	if newest != want {
+		t.Errorf(".github/workflows/ci.yml matrix newest entry is Go %s but %s declares %s",
+			newest, goVersionSourceOfTruth, want)
+	}
+}
+
+// Documentation quotes the toolchain version for people installing from
+// source; a stale number sends them to a release the build no longer uses.
+func TestDocsQuoteCurrentGoVersion(t *testing.T) {
+	want := primaryGoVersion(t)
+
+	// The docs legitimately name every version the CI matrix supports, not just
+	// the primary one, so the matrix defines what is allowed. Deriving the set
+	// this way also keeps the check alive across release lines: hard-coding the
+	// current minor would make the guard blind the moment the Dockerfile moves
+	// to a new one, which is precisely when stale docs appear.
+	allowed := map[string]bool{}
+	for _, v := range ciMatrixGoVersions(t) {
+		allowed[v] = true
+	}
+	allowed[want] = true
+
+	// docs/_build is generated Sphinx output and is not tracked as source.
+	docs := []string{
+		filepath.Join("docs", "PIPELINE.md"),
+		filepath.Join("docs", "getting-started", "installation.md"),
+		"CLAUDE.md",
+	}
+
+	// Only match versions written as a Go toolchain reference, so unrelated
+	// semver in the docs (chart versions, action tags) is not swept up.
+	quoted := regexp.MustCompile(`(?i)\b(?:go|golang:)\s*v?(\d+\.\d+\.\d+)\b`)
+
+	for _, path := range docs {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+
+		for _, match := range quoted.FindAllStringSubmatch(string(content), -1) {
+			if !allowed[match[1]] {
+				t.Errorf("%s references Go %s, which is neither the primary version (%s) nor in the CI matrix",
+					path, match[1], want)
+			}
+		}
+	}
+}
+
+// ciMatrixGoVersions returns every version listed in the CI go-version matrix.
+func ciMatrixGoVersions(t *testing.T) []string {
+	t.Helper()
+
 	path := filepath.Join(".github", "workflows", "ci.yml")
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -102,38 +157,7 @@ func TestCIMatrixNewestGoVersionMatchesPrimary(t *testing.T) {
 		t.Fatalf("%s go-version matrix declares no versions", path)
 	}
 
-	newest := versions[len(versions)-1]
-	if newest != want {
-		t.Errorf("%s matrix newest entry is Go %s but %s declares %s", path, newest, goVersionSourceOfTruth, want)
-	}
-}
-
-// Documentation quotes the toolchain version for people installing from
-// source; a stale number sends them to a release the build no longer uses.
-func TestDocsQuoteCurrentGoVersion(t *testing.T) {
-	want := primaryGoVersion(t)
-
-	// docs/_build is generated Sphinx output and is not tracked as source.
-	docs := []string{
-		filepath.Join("docs", "PIPELINE.md"),
-		filepath.Join("docs", "getting-started", "installation.md"),
-		"CLAUDE.md",
-	}
-
-	stale := regexp.MustCompile(`\b(?:go|golang:)?(\d+\.26\.\d+)\b`)
-
-	for _, path := range docs {
-		content, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatalf("read %s: %v", path, err)
-		}
-
-		for _, match := range stale.FindAllStringSubmatch(string(content), -1) {
-			if match[1] != want {
-				t.Errorf("%s references Go %s but %s declares %s", path, match[1], goVersionSourceOfTruth, want)
-			}
-		}
-	}
+	return versions
 }
 
 // A bump must not leave the module's own floor above the toolchain it runs on.
