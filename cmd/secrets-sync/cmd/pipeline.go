@@ -491,15 +491,16 @@ func redactPipelineDiagnostic(value string) string {
 
 // stripDiffValues removes raw secret values from a PipelineDiff so they don't
 // leak through JSON serialization when --show-values is false.
+//
+// FormatDiffWithOptions already redacts what it renders, but it does so on a
+// copy; this strips the struct the CLI goes on to serialize into the result
+// envelope.
 func stripDiffValues(d *diff.PipelineDiff) {
 	if d == nil {
 		return
 	}
 	for i := range d.Targets {
-		for j := range d.Targets[i].Changes {
-			d.Targets[i].Changes[j].CurrentValues = nil
-			d.Targets[i].Changes[j].DesiredValues = nil
-		}
+		diff.RedactChangeValues(d.Targets[i].Changes)
 	}
 }
 
@@ -508,8 +509,5 @@ func stripResultDiffValues(r *pipeline.Result) {
 	if r == nil || r.Diff == nil {
 		return
 	}
-	for j := range r.Diff.Changes {
-		r.Diff.Changes[j].CurrentValues = nil
-		r.Diff.Changes[j].DesiredValues = nil
-	}
+	diff.RedactChangeValues(r.Diff.Changes)
 }

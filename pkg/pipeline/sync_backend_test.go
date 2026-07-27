@@ -39,7 +39,7 @@ func TestPipelineAuditEmitsChainedEntries(t *testing.T) {
 func TestPolicyDenied(t *testing.T) {
 	eng, err := policy.Compile(policy.Config{
 		DefaultAction: policy.Allow,
-		Rules:         []policy.Rule{{Name: "no-secrets-to-dev", Source: "^secrets$", Target: "^dev", Action: policy.Deny}},
+		Rules:         []policy.Rule{{Name: "no-secrets-to-dev", Source: "secrets", Target: "dev-.*", Action: policy.Deny}},
 	})
 	if err != nil {
 		t.Fatalf("compile: %v", err)

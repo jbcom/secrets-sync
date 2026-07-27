@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Config is the conditions block on a target. A nil/empty Config always passes.
@@ -85,9 +87,19 @@ func (c Config) inAnyWindow(now time.Time) bool {
 	for _, w := range c.TimeWindows {
 		loc := time.UTC
 		if w.Timezone != "" {
-			if l, err := time.LoadLocation(w.Timezone); err == nil {
-				loc = l
+			l, err := time.LoadLocation(w.Timezone)
+			if err != nil {
+				// Silently evaluating an America/New_York window in UTC would
+				// open the gate hours early or late. Validate() checks the zone
+				// at load time, so reaching here means the runtime disagrees
+				// with the config -- typically a container image without tzdata.
+				// This gate decides whether secrets are written, so treat an
+				// unresolvable zone as "window not satisfied".
+				log.WithError(err).WithField("timezone", w.Timezone).
+					Warn("Cannot load time window timezone; treating window as not satisfied")
+				continue
 			}
+			loc = l
 		}
 		local := now.In(loc)
 		cur := local.Hour()*60 + local.Minute()
@@ -112,12 +124,12 @@ func (c Config) inAnyWindow(now time.Time) bool {
 
 // parseHM parses "HH:MM" into minutes-since-midnight.
 func parseHM(s string) (int, error) {
-	var h, m int
-	if _, err := fmt.Sscanf(s, "%d:%d", &h, &m); err != nil {
+	// time.Parse anchors the whole string and range-checks in one step.
+	// fmt.Sscanf does neither, so it accepted "09:00extra" as 09:00 and
+	// "1:2:3" as 01:02 -- a malformed window silently became a valid one.
+	t, err := time.Parse("15:04", s)
+	if err != nil {
 		return 0, fmt.Errorf("invalid HH:MM time %q", s)
 	}
-	if h < 0 || h > 23 || m < 0 || m > 59 {
-		return 0, fmt.Errorf("time %q out of range", s)
-	}
-	return h*60 + m, nil
+	return t.Hour()*60 + t.Minute(), nil
 }

@@ -65,18 +65,34 @@ func Compile(cfg Config) (*Engine, error) {
 		}
 		var err error
 		if r.Source != "" {
-			if r.sourceRe, err = regexp.Compile(r.Source); err != nil {
+			if r.sourceRe, err = compileAnchored(r.Source); err != nil {
 				return nil, fmt.Errorf("policy: rule %q: invalid source pattern: %w", ruleLabel(r, i), err)
 			}
 		}
 		if r.Target != "" {
-			if r.targetRe, err = regexp.Compile(r.Target); err != nil {
+			if r.targetRe, err = compileAnchored(r.Target); err != nil {
 				return nil, fmt.Errorf("policy: rule %q: invalid target pattern: %w", ruleLabel(r, i), err)
 			}
 		}
 		rules[i] = r
 	}
 	return &Engine{defaultAction: def, rules: rules}, nil
+}
+
+// compileAnchored compiles a policy pattern so it must match the whole name.
+//
+// Unanchored patterns make a policy mean something other than it reads: a deny
+// rule for "prod" would also deny "nonprod", and an allow rule for
+// "vault-prod" would be satisfied by "evil-vault-prod-x". Since these rules
+// decide where credentials may be written, a pattern that matches more names
+// than it appears to is a privilege-escalation path, so the whole-string
+// reading is the only safe one.
+//
+// The pattern is wrapped in a non-capturing group so that a top-level
+// alternation such as "staging|prod" anchors as a whole rather than binding
+// the anchors to only its first and last branches.
+func compileAnchored(pattern string) (*regexp.Regexp, error) {
+	return regexp.Compile("^(?:" + pattern + ")$")
 }
 
 func ruleLabel(r Rule, i int) string {

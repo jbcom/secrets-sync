@@ -278,8 +278,19 @@ func FormatDiff(diff *PipelineDiff, format OutputFormat) string {
 	return FormatDiffWithOptions(diff, format, false)
 }
 
-// FormatDiffWithOptions formats the pipeline diff with additional options
+// FormatDiffWithOptions formats the pipeline diff with additional options.
+//
+// Raw secret values are stripped here, before any formatter runs, unless the
+// caller explicitly asks for them. Redacting at this single chokepoint rather
+// than in each caller means a new output format or a new entry point cannot
+// leak values by omission: previously only the side-by-side formatter honored
+// showValues, so JSON output carried plaintext secrets straight into Lambda
+// responses and CloudWatch logs.
 func FormatDiffWithOptions(diff *PipelineDiff, format OutputFormat, showValues bool) string {
+	if !showValues {
+		diff = RedactValues(diff)
+	}
+
 	switch format {
 	case OutputFormatJSON:
 		return formatJSON(diff)
@@ -291,6 +302,47 @@ func FormatDiffWithOptions(diff *PipelineDiff, format OutputFormat, showValues b
 		return formatSideBySide(diff, showValues)
 	default:
 		return formatHuman(diff)
+	}
+}
+
+// RedactValues returns a copy of the diff with raw secret values removed,
+// leaving the metadata that makes a diff useful -- paths, change types, key
+// names and hashes -- intact.
+//
+// The copy is deliberate. Callers keep using the diff after formatting, for
+// audit records and for the Result they return, so stripping in place would
+// blank data those consumers legitimately hold.
+func RedactValues(diff *PipelineDiff) *PipelineDiff {
+	if diff == nil {
+		return nil
+	}
+
+	redacted := *diff
+	redacted.Targets = make([]TargetDiff, len(diff.Targets))
+
+	for i, target := range diff.Targets {
+		redacted.Targets[i] = target
+		redacted.Targets[i].Changes = make([]SecretChange, len(target.Changes))
+
+		for j, change := range target.Changes {
+			change.CurrentValues = nil
+			change.DesiredValues = nil
+			change.ShowValues = false
+			redacted.Targets[i].Changes[j] = change
+		}
+	}
+
+	return &redacted
+}
+
+// RedactChangeValues removes raw secret values from a slice of changes in
+// place. Result diffs are owned by the caller that is about to serialize them,
+// so unlike RedactValues there is no shared state to preserve.
+func RedactChangeValues(changes []SecretChange) {
+	for i := range changes {
+		changes[i].CurrentValues = nil
+		changes[i].DesiredValues = nil
+		changes[i].ShowValues = false
 	}
 }
 

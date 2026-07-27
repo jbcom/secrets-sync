@@ -244,17 +244,26 @@ policy:
   default_action: allow   # allow (opt-in) | deny (allowlist)
   rules:
     - name: keep-prod-secrets-out-of-dev
-      source: "^prod-"
-      target: "^dev-"
+      source: "prod-.*"
+      target: "dev-.*"
       action: deny
     - name: only-shared-to-sandbox
-      source: "^shared$"
-      target: "^sandbox"
+      source: "shared"
+      target: "sandbox-.*"
       action: allow
 ```
 
 `source` and `target` are regular expressions matched against the source and
-target names; an empty pattern matches anything. Rules are evaluated in order
+target names; an empty pattern matches anything.
+
+Patterns must match the **whole** name. A rule for `prod` covers exactly
+`prod`, not `nonprod` or `prod-eu` — write `prod-.*` when you mean a prefix.
+Anchoring is applied automatically, so leading `^` and trailing `$` are
+redundant but harmless. This matters because these rules decide where
+credentials may be written: a substring match would let a target named
+`evil-vault-prod-x` satisfy a rule intended for `vault-prod`.
+
+Rules are evaluated in order
 and the first match wins; if none match, `default_action` applies. An empty
 policy permits everything.
 

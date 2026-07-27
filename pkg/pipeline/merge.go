@@ -154,6 +154,12 @@ func (p *Pipeline) mergeTarget(ctx context.Context, targetName string, dryRun bo
 		writeErr = p.writeMergedBundleToVault(ctx, bundlePath, mergedSecrets)
 	} else if bs := p.bundleStore(); bs != nil {
 		writeErr = bs.WriteMergedBundle(ctx, targetName, bundleID, mergedSecrets)
+	} else {
+		// Falling through both branches would leave writeErr nil and report a
+		// successful merge that wrote nothing. Reaching here is currently
+		// impossible, but reporting success for an unwritten bundle is the worst
+		// failure mode this tool has, so it is worth stating explicitly.
+		writeErr = fmt.Errorf("no merge store configured to write the merged bundle")
 	}
 
 	if writeErr != nil {
@@ -196,7 +202,7 @@ func (p *Pipeline) mergeTarget(ctx context.Context, targetName string, dryRun bo
 	}
 
 	// Compute diff if tracking is enabled
-	if p.pipelineDiff != nil {
+	if p.diffEnabled() {
 		targetDiff, err := p.computeMergeDiff(ctx, targetName, sourcePaths)
 		if err != nil {
 			l.WithError(err).Debug("Failed to compute merge diff")

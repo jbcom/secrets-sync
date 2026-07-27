@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/jbcom/secrets-sync/pkg/serverless"
 )
@@ -36,7 +37,12 @@ func main() {
 	mux.HandleFunc("/sync", handleInvocation)
 	mux.HandleFunc("/", handleInvocation)
 
-	server := &http.Server{Addr: ":" + port, Handler: mux}
+	server := &http.Server{
+		Addr:    ":" + port,
+		Handler: mux,
+		// Bound header reads so a slow client cannot pin a connection open.
+		ReadHeaderTimeout: 10 * time.Second,
+	}
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		fmt.Fprintf(os.Stderr, "azurefunc: server error: %v\n", err)
 		os.Exit(1)
