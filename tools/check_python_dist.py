@@ -6,7 +6,6 @@ import argparse
 import email.parser
 import sys
 import zipfile
-
 from pathlib import Path
 
 
