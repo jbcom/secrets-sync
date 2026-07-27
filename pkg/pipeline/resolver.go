@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -141,7 +142,7 @@ func (r *ResourceResolver) Initialize(awsCtx *AWSExecutionContext) error {
 func (r *ResourceResolver) Resolve(name string) ResolvedResource {
 	l := log.WithFields(log.Fields{
 		"action": "ResourceResolver.Resolve",
-		"name":   name,
+		"name":   reqctx.SafeLogValue(name),
 	})
 
 	result := ResolvedResource{
@@ -157,7 +158,7 @@ func (r *ResourceResolver) Resolve(name string) ResolvedResource {
 			result.AccountID = name
 			result.ResolvedName = acct.Name
 			result.MatchConfidence = MatchAccountID
-			l.WithField("accountId", name).Debug("Resolved as AWS account by ID")
+			l.WithField("accountId", reqctx.SafeLogValue(name)).Debug("Resolved as AWS account by ID")
 			return result
 		}
 	}
@@ -170,8 +171,8 @@ func (r *ResourceResolver) Resolve(name string) ResolvedResource {
 		result.ResolvedName = acct.Name
 		result.MatchConfidence = MatchExact
 		l.WithFields(log.Fields{
-			"accountId":   acct.ID,
-			"accountName": acct.Name,
+			"accountId":   reqctx.SafeLogValue(acct.ID),
+			"accountName": reqctx.SafeLogValue(acct.Name),
 		}).Debug("Resolved as AWS account by exact name")
 		return result
 	}
@@ -184,9 +185,9 @@ func (r *ResourceResolver) Resolve(name string) ResolvedResource {
 		result.ResolvedName = acct.Name
 		result.MatchConfidence = MatchNormalized
 		l.WithFields(log.Fields{
-			"accountId":      acct.ID,
-			"accountName":    acct.Name,
-			"normalizedName": normalized,
+			"accountId":      reqctx.SafeLogValue(acct.ID),
+			"accountName":    reqctx.SafeLogValue(acct.Name),
+			"normalizedName": reqctx.SafeLogValue(normalized),
 		}).Debug("Resolved as AWS account by normalized name")
 		return result
 	}
@@ -198,8 +199,8 @@ func (r *ResourceResolver) Resolve(name string) ResolvedResource {
 		result.ResolvedName = acct.Name
 		result.MatchConfidence = MatchFuzzy
 		l.WithFields(log.Fields{
-			"accountId":   acct.ID,
-			"accountName": acct.Name,
+			"accountId":   reqctx.SafeLogValue(acct.ID),
+			"accountName": reqctx.SafeLogValue(acct.Name),
 		}).Debug("Resolved as AWS account by fuzzy match")
 		return result
 	}
@@ -384,7 +385,7 @@ func AutoResolveConfig(ctx context.Context, cfg *Config, awsCtx *AWSExecutionCon
 			// Need to resolve what this source is
 			resolved := resolver.Resolve(name)
 			l.WithFields(log.Fields{
-				"source":     name,
+				"source":     reqctx.SafeLogValue(name),
 				"resolvedTo": resolved.Type,
 				"confidence": resolved.MatchConfidence,
 			}).Info("Auto-resolved source")
@@ -420,10 +421,10 @@ func AutoResolveConfig(ctx context.Context, cfg *Config, awsCtx *AWSExecutionCon
 			resolved := resolver.Resolve(imp)
 			if resolved.Type == ResourceTypeAWSAccount && resolved.MatchConfidence != MatchNone {
 				l.WithFields(log.Fields{
-					"target":     targetName,
+					"target":     reqctx.SafeLogValue(targetName),
 					"import":     imp,
 					"resolvedTo": resolved.ResolvedName,
-					"accountId":  resolved.AccountID,
+					"accountId":  reqctx.SafeLogValue(resolved.AccountID),
 					"confidence": resolved.MatchConfidence,
 				}).Info("Auto-resolved import to AWS account")
 

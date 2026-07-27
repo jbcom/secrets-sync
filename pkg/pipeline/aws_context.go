@@ -35,6 +35,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/smithy-go"
 	"github.com/jbcom/secrets-sync/pkg/circuitbreaker"
+	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -139,7 +140,7 @@ func NewAWSExecutionContextWithRuntimeAuth(ctx context.Context, cfg *AWSConfig, 
 	}
 
 	l.WithFields(log.Fields{
-		"accountID":    ec.CallerIdentity.AccountID,
+		"accountID":    reqctx.SafeLogValue(ec.CallerIdentity.AccountID),
 		"identityType": redactARN(ec.CallerIdentity.ARN),
 	}).Info("AWS caller identity discovered")
 
@@ -368,7 +369,7 @@ func (ec *AWSExecutionContext) AssumeRoleConfig(ctx context.Context, accountID s
 
 	l := log.WithFields(log.Fields{
 		"action":    "AssumeRoleConfig",
-		"accountID": accountID,
+		"accountID": reqctx.SafeLogValue(accountID),
 		"roleARN":   roleARN,
 	})
 
@@ -583,22 +584,22 @@ func (ec *AWSExecutionContext) getAccountTagsSafely(ctx context.Context, account
 			switch errorCode {
 			case "AccessDeniedException", "AccessDenied", "UnauthorizedOperation":
 				log.WithFields(log.Fields{
-					"accountID": accountID,
-					"errorCode": errorCode,
+					"accountID": reqctx.SafeLogValue(accountID),
+					"errorCode": reqctx.SafeLogValue(errorCode),
 				}).Debug("No permission to get account tags, continuing without tags")
 			default:
 				// Other API errors might indicate a more serious problem
 				log.WithFields(log.Fields{
-					"accountID": accountID,
-					"errorCode": errorCode,
+					"accountID": reqctx.SafeLogValue(accountID),
+					"errorCode": reqctx.SafeLogValue(errorCode),
 				}).Warn("Failed to get account tags")
 			}
 		} else if strings.Contains(err.Error(), "no access to Organizations") {
 			// Context doesn't have Organizations access
-			log.WithError(err).WithField("accountID", accountID).Debug("No Organizations access, continuing without tags")
+			log.WithError(err).WithField("accountID", reqctx.SafeLogValue(accountID)).Debug("No Organizations access, continuing without tags")
 		} else {
 			// Non-API errors
-			log.WithError(err).WithField("accountID", accountID).Warn("Failed to get account tags")
+			log.WithError(err).WithField("accountID", reqctx.SafeLogValue(accountID)).Warn("Failed to get account tags")
 		}
 		return make(map[string]string)
 	}
