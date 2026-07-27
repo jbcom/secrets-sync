@@ -149,6 +149,42 @@ func (d *DiscoveryService) DiscoverTargets() (map[string]Target, error) {
 	return discoveredTargets, nil
 }
 
+// expandDynamicTargets resolves the config's dynamic targets into concrete ones
+// and rebuilds the dependency graph so the newly discovered targets are
+// actually executed.
+//
+// Discovery needs AWS, so a config that asks for dynamic targets without a
+// usable AWS execution context is a hard error rather than a warning: the
+// alternative is a pipeline that runs over an empty target set and reports
+// success, which for a credential-syncing tool is worse than failing.
+func (p *Pipeline) expandDynamicTargets(ctx context.Context, cfg *Config) error {
+	if len(cfg.DynamicTargets) == 0 {
+		return nil
+	}
+
+	if p.awsCtx == nil {
+		return fmt.Errorf("config declares dynamic_targets but the AWS execution context is unavailable; " +
+			"dynamic target discovery requires aws.execution_context to be configured and reachable")
+	}
+
+	if err := ExpandDynamicTargets(ctx, cfg, p.awsCtx); err != nil {
+		return err
+	}
+
+	if len(cfg.Targets) == 0 {
+		return fmt.Errorf("dynamic target discovery resolved no targets; " +
+			"refusing to run a pipeline that would sync nothing")
+	}
+
+	graph, err := BuildGraph(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to rebuild dependency graph after expanding dynamic targets: %w", err)
+	}
+	p.graph = graph
+
+	return nil
+}
+
 // ExpandDynamicTargets expands dynamic targets in the config and merges them with static targets
 func ExpandDynamicTargets(ctx context.Context, cfg *Config, awsCtx *AWSExecutionContext) error {
 	if len(cfg.DynamicTargets) == 0 {

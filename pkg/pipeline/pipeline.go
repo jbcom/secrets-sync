@@ -190,6 +190,14 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 		}
 	}
 
+	// Expand dynamic targets now that the AWS context discovery depends on
+	// exists. Validate accepts a config whose targets are entirely dynamic, so
+	// skipping this would build an empty dependency graph and the run would
+	// report success having synced nothing.
+	if err := p.expandDynamicTargets(ctx, runtimeCfg); err != nil {
+		return nil, err
+	}
+
 	// Initialize S3 merge store if configured
 	if runtimeCfg.MergeStore.S3 != nil {
 		s3Store, err := NewS3MergeStoreWithRuntimeAuth(ctx, runtimeCfg.MergeStore.S3, runtimeCfg.AWS.Region, p.runtimeAWSAuth())
@@ -365,7 +373,14 @@ func (p *Pipeline) Graph() *Graph {
 func (p *Pipeline) Results() []Result {
 	p.resultsMu.Lock()
 	defer p.resultsMu.Unlock()
-	return p.results
+
+	// Returning the field directly would hand the caller an alias to the live
+	// slice, and the lock stops protecting it the moment this returns. A caller
+	// ranging over that alias while a concurrent Run replaces p.results would
+	// race on the backing array, so hand back a copy.
+	out := make([]Result, len(p.results))
+	copy(out, p.results)
+	return out
 }
 
 // Diff returns the computed diff from the last Run
