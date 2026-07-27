@@ -23,3 +23,17 @@ python/build/
 
 # Transient in-flight context, not a permanent doc.
 CODEBASE_ASSESSMENT.md
+
+# Credential material must never be committed. This repo synchronizes secrets,
+# so its tests and docs are dense with secret-shaped placeholders; these guards
+# keep a real credential from slipping in alongside them unnoticed.
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+credentials.json

@@ -4,13 +4,11 @@ from __future__ import annotations
 
 import os
 import subprocess
-
 from pathlib import Path
-
 
 project = "SecretSync"
 author = "Jon Bogaty"
-copyright = "2025-2026, Jon Bogaty"  # noqa: A001
+copyright = "2025-2026, Jon Bogaty"
 html_title = project
 html_baseurl = "https://jbcom.github.io/secrets-sync/"
 

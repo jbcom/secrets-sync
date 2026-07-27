@@ -5,9 +5,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
-
 from pathlib import Path
-
 
 SETUP_NAME_PATTERNS = (
     re.compile(r"(name\s*=\s*)(['\"])([^'\"]+)(['\"])"),
