@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -89,7 +90,7 @@ func (d *DiscoveryService) DiscoverTargets() (map[string]Target, error) {
 		for _, acct := range accounts {
 			// Check exclusions
 			if isExcluded(acct.ID, dynamicTarget.Exclude) {
-				dtLog.WithField("accountID", acct.ID).Debug("Account excluded")
+				dtLog.WithField("accountID", reqctx.SafeLogValue(acct.ID)).Debug("Account excluded")
 				continue
 			}
 
@@ -135,10 +136,14 @@ func (d *DiscoveryService) DiscoverTargets() (map[string]Target, error) {
 				RoleARN:      roleARN,
 			}
 
+			// Account IDs and regions come back from the Organizations and
+			// Identity Center APIs, so they are external input at this point.
+			// targetName is already constrained to alphanumerics and
+			// underscores by sanitizeTargetName.
 			dtLog.WithFields(log.Fields{
 				"targetName":    targetName,
-				"accountID":     acct.ID,
-				"region":        region,
+				"accountID":     reqctx.SafeLogValue(acct.ID),
+				"region":        reqctx.SafeLogValue(region),
 				"importsCount":  len(imports),
 				"fuzzyMatching": nameMatcher != nil,
 			}).Debug("Discovered target")

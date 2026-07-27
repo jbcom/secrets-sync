@@ -61,6 +61,14 @@ func SafeRequestID(ctx context.Context) string {
 	return sanitizeForLog(GetRequestID(ctx))
 }
 
+// SafeLogValue strips control characters from a value destined for a log
+// field. Use it at the logging boundary for any string that originated
+// outside the process -- provider API responses, config, user input -- so an
+// embedded newline or escape sequence cannot forge or corrupt log entries.
+func SafeLogValue(s string) string {
+	return sanitizeForLog(s)
+}
+
 // sanitizeForLog removes control characters from a string destined for a log.
 func sanitizeForLog(s string) string {
 	return strings.Map(func(r rune) rune {
