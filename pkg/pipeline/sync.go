@@ -146,7 +146,17 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 	// so a partial failure can be reverted.
 	snapshot, snapErr := p.snapshotForRollback(ctx, targetBackend)
 	if snapErr != nil {
-		l.WithError(snapErr).Warn("Rollback snapshot failed; proceeding without rollback protection")
+		// The operator explicitly asked for rollback protection. Continuing
+		// without it would leave the safety net silently absent, and its absence
+		// would only surface during the failure it was meant to cover, so fail
+		// the target instead.
+		return Result{
+			Target:   targetName,
+			Phase:    "sync",
+			Success:  false,
+			Error:    fmt.Errorf("rollback is enabled but the pre-sync snapshot failed: %w", snapErr),
+			Duration: time.Since(start),
+		}
 	}
 
 	// Sync each secret to the target backend.
@@ -231,7 +241,7 @@ func (p *Pipeline) syncTarget(ctx context.Context, targetName string, dryRun boo
 	}
 
 	// Compute diff if tracking is enabled
-	if p.pipelineDiff != nil {
+	if p.diffEnabled() {
 		targetDiff, err := p.computeSyncDiff(ctx, targetName, roleARN, region)
 		if err != nil {
 			l.WithError(err).Debug("Failed to compute sync diff")

@@ -18,6 +18,17 @@ func (p *Pipeline) initDiff(dryRun bool, configPath string) {
 	}
 }
 
+// diffEnabled reports whether diff tracking is active for the current run.
+//
+// Worker goroutines check this before doing the extra work of computing a
+// target diff, and they run concurrently with initDiff, so the read has to take
+// the same lock every other access to pipelineDiff takes.
+func (p *Pipeline) diffEnabled() bool {
+	p.diffMu.Lock()
+	defer p.diffMu.Unlock()
+	return p.pipelineDiff != nil
+}
+
 // addTargetDiff adds a target diff to the pipeline diff
 func (p *Pipeline) addTargetDiff(td diff.TargetDiff) {
 	p.diffMu.Lock()

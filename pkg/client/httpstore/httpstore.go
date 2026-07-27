@@ -16,10 +16,12 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -128,6 +130,21 @@ func (c *Client) Init(_ context.Context) error {
 			return fmt.Errorf("httpstore: load client cert: %w", err)
 		}
 		tlsCfg.Certificates = []tls.Certificate{cert}
+	}
+	// An operator who pins a private CA expects that CA to be the trust anchor.
+	// Accepting ca_cert and then verifying against the system pool anyway would
+	// fail open silently: any CA in the host store, including a MITM proxy,
+	// could impersonate the secret store and collect the bearer token.
+	if c.CACert != "" {
+		pemBytes, err := os.ReadFile(c.CACert)
+		if err != nil {
+			return fmt.Errorf("httpstore: read ca_cert: %w", err)
+		}
+		pool := x509.NewCertPool()
+		if !pool.AppendCertsFromPEM(pemBytes) {
+			return fmt.Errorf("httpstore: ca_cert %q contains no valid PEM certificates", c.CACert)
+		}
+		tlsCfg.RootCAs = pool
 	}
 	transport.TLSClientConfig = tlsCfg
 	c.doer = &http.Client{Timeout: c.Timeout, Transport: transport}

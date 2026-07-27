@@ -31,8 +31,8 @@ func TestEvaluateFirstMatchWins(t *testing.T) {
 	e, err := Compile(Config{
 		DefaultAction: Deny,
 		Rules: []Rule{
-			{Name: "allow-shared-to-prod", Source: "^shared$", Target: "^prod", Action: Allow},
-			{Name: "deny-all-prod", Target: "^prod", Action: Deny},
+			{Name: "allow-shared-to-prod", Source: "shared", Target: "prod-.*", Action: Allow},
+			{Name: "deny-all-prod", Target: "prod-.*", Action: Deny},
 		},
 	})
 	if err != nil {
@@ -54,7 +54,7 @@ func TestEvaluateFirstMatchWins(t *testing.T) {
 }
 
 func TestEmptyPatternMatchesAny(t *testing.T) {
-	e, _ := Compile(Config{Rules: []Rule{{Name: "block-prod", Target: "prod", Action: Deny}}})
+	e, _ := Compile(Config{Rules: []Rule{{Name: "block-prod", Target: "prod-.*", Action: Deny}}})
 	// Empty source pattern matches any source.
 	if d := e.Evaluate("anything", "prod-db"); d.Allowed {
 		t.Fatalf("empty source pattern should match any source: %+v", d)

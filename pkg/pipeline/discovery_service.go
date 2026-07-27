@@ -149,6 +149,47 @@ func (d *DiscoveryService) DiscoverTargets() (map[string]Target, error) {
 	return discoveredTargets, nil
 }
 
+// expandDynamicTargets resolves the config's dynamic targets into concrete ones
+// and rebuilds the dependency graph so the newly discovered targets are
+// actually executed.
+//
+// Discovery needs AWS, so a config that asks for dynamic targets without a
+// usable AWS execution context is a hard error rather than a warning: the
+// alternative is a pipeline that runs over an empty target set and reports
+// success, which for a credential-syncing tool is worse than failing.
+func (p *Pipeline) expandDynamicTargets(ctx context.Context, cfg *Config) error {
+	if len(cfg.DynamicTargets) == 0 {
+		return nil
+	}
+
+	// A nil awsCtx is normal rather than fatal: it just means
+	// aws.execution_context.type was omitted, which is the ambient-credential
+	// setup where the SDK's default chain applies. Discovery handles that, so
+	// only a discovery failure is an error.
+	staticCount := len(cfg.Targets)
+
+	if err := ExpandDynamicTargets(ctx, cfg, p.awsCtx); err != nil {
+		return err
+	}
+
+	// Compare against the pre-expansion count. Checking len(cfg.Targets) alone
+	// would be satisfied by any static target, hiding the case where every
+	// discovery provider failed or returned nothing -- DiscoverTargets logs
+	// provider errors and returns what it has, so silence here is not success.
+	if len(cfg.Targets) == staticCount {
+		return fmt.Errorf("dynamic target discovery resolved no targets; " +
+			"refusing to run a pipeline whose dynamic targets would all be missing")
+	}
+
+	graph, err := BuildGraph(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to rebuild dependency graph after expanding dynamic targets: %w", err)
+	}
+	p.graph = graph
+
+	return nil
+}
+
 // ExpandDynamicTargets expands dynamic targets in the config and merges them with static targets
 func ExpandDynamicTargets(ctx context.Context, cfg *Config, awsCtx *AWSExecutionContext) error {
 	if len(cfg.DynamicTargets) == 0 {

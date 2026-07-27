@@ -134,6 +134,9 @@ func startMetricsServer() {
 	server := &http.Server{
 		Addr:    addr,
 		Handler: mux,
+		// Without a header deadline a client can hold a connection open
+		// indefinitely by dribbling headers, exhausting the listener.
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	log.WithField("address", addr).Info("Starting metrics server")
