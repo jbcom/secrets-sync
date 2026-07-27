@@ -136,12 +136,13 @@ func (d *DiscoveryService) DiscoverTargets() (map[string]Target, error) {
 				RoleARN:      roleARN,
 			}
 
-			// Account IDs and regions come back from the Organizations and
-			// Identity Center APIs, so they are external input at this point.
-			// targetName is already constrained to alphanumerics and
-			// underscores by sanitizeTargetName.
+			// Account IDs, names and regions come back from the Organizations
+			// and Identity Center APIs, so they are external input here.
+			// targetName is only constrained by sanitizeTargetName when it was
+			// derived from acct.Name; both fallbacks above interpolate the raw
+			// account ID, so it needs sanitizing too.
 			dtLog.WithFields(log.Fields{
-				"targetName":    targetName,
+				"targetName":    reqctx.SafeLogValue(targetName),
 				"accountID":     reqctx.SafeLogValue(acct.ID),
 				"region":        reqctx.SafeLogValue(region),
 				"importsCount":  len(imports),

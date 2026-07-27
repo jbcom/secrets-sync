@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/google/uuid"
 )
@@ -70,12 +71,24 @@ func SafeLogValue(s string) string {
 }
 
 // sanitizeForLog removes control characters from a string destined for a log.
+//
+// Filtering only the ASCII range would leave several characters that break a
+// log line just as effectively: U+2028 and U+2029 are line and paragraph
+// separators, U+0085 is NEL, the C1 block at U+0080-U+009F includes CSI which
+// drives terminal escape sequences, and the bidirectional format controls can
+// reorder displayed text so an entry reads differently than it is stored.
+// unicode.Cc, Cf and Zl/Zp cover all of these.
 func sanitizeForLog(s string) string {
 	return strings.Map(func(r rune) rune {
-		if r < 0x20 || r == 0x7f {
+		switch {
+		case unicode.Is(unicode.Cc, r), // control (C0 and C1, includes NEL)
+			unicode.Is(unicode.Cf, r), // format (bidi overrides, zero-width)
+			unicode.Is(unicode.Zl, r), // line separator (U+2028)
+			unicode.Is(unicode.Zp, r): // paragraph separator (U+2029)
 			return -1
+		default:
+			return r
 		}
-		return r
 	}, s)
 }
 
