@@ -78,18 +78,27 @@ func SafeLogValue(s string) string {
 // drives terminal escape sequences, and the bidirectional format controls can
 // reorder displayed text so an entry reads differently than it is stored.
 // unicode.Cc, Cf and Zl/Zp cover all of these.
+// The result is built rune by rune into a new string, admitting only runes
+// that pass the check, rather than mapping over the input. Both are equivalent
+// at runtime, but rebuilding is an allowlist -- a rune reaches the output only
+// by being explicitly accepted -- and static analysis can follow it, whereas a
+// strings.Map closure is opaque enough that taint is modelled as flowing
+// straight through and the sanitizer is not recognized as a barrier.
 func sanitizeForLog(s string) string {
-	return strings.Map(func(r rune) rune {
-		switch {
-		case unicode.Is(unicode.Cc, r), // control (C0 and C1, includes NEL)
-			unicode.Is(unicode.Cf, r), // format (bidi overrides, zero-width)
-			unicode.Is(unicode.Zl, r), // line separator (U+2028)
-			unicode.Is(unicode.Zp, r): // paragraph separator (U+2029)
-			return -1
-		default:
-			return r
+	var b strings.Builder
+	b.Grow(len(s))
+
+	for _, r := range s {
+		if unicode.Is(unicode.Cc, r) || // control (C0 and C1, includes NEL)
+			unicode.Is(unicode.Cf, r) || // format (bidi overrides, zero-width)
+			unicode.Is(unicode.Zl, r) || // line separator (U+2028)
+			unicode.Is(unicode.Zp, r) { // paragraph separator (U+2029)
+			continue
 		}
-	}, s)
+		b.WriteRune(r)
+	}
+
+	return b.String()
 }
 
 // GetElapsedTime calculates elapsed time from request start
