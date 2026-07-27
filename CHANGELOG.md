@@ -7,6 +7,15 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.4.2](https://github.com/jbcom/secrets-sync/compare/v2.4.1...v2.4.2) (2026-07-27)
+
+
+### Bug Fixes
+
+* **security:** patch diff leak, policy bypass, ca_cert bypass; wire dynamic targets ([#23](https://github.com/jbcom/secrets-sync/issues/23)) ([430b3f1](https://github.com/jbcom/secrets-sync/commit/430b3f1a4e4d8f22e2e19d50ca505e3b460a4782))
+* **security:** sanitize every provider-supplied value reaching a log field ([#26](https://github.com/jbcom/secrets-sync/issues/26)) ([61f1969](https://github.com/jbcom/secrets-sync/commit/61f1969de4f4eaa9d1db3662a547c0810ee99347))
+* **security:** sanitize provider-supplied values at the discovery log boundary ([#25](https://github.com/jbcom/secrets-sync/issues/25)) ([fa1c5f8](https://github.com/jbcom/secrets-sync/commit/fa1c5f8e1c443bbbb34b61b6df197e8d62ebc904))
+
 ## [2.4.1](https://github.com/jbcom/secrets-sync/compare/v2.4.0...v2.4.1) (2026-07-10)
 
 
