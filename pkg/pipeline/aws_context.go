@@ -140,7 +140,7 @@ func NewAWSExecutionContextWithRuntimeAuth(ctx context.Context, cfg *AWSConfig, 
 	}
 
 	l.WithFields(log.Fields{
-		"accountID":    ec.CallerIdentity.AccountID,
+		"accountID":    reqctx.SafeLogValue(ec.CallerIdentity.AccountID),
 		"identityType": redactARN(ec.CallerIdentity.ARN),
 	}).Info("AWS caller identity discovered")
 
@@ -369,7 +369,7 @@ func (ec *AWSExecutionContext) AssumeRoleConfig(ctx context.Context, accountID s
 
 	l := log.WithFields(log.Fields{
 		"action":    "AssumeRoleConfig",
-		"accountID": accountID,
+		"accountID": reqctx.SafeLogValue(accountID),
 		"roleARN":   roleARN,
 	})
 
@@ -584,14 +584,14 @@ func (ec *AWSExecutionContext) getAccountTagsSafely(ctx context.Context, account
 			switch errorCode {
 			case "AccessDeniedException", "AccessDenied", "UnauthorizedOperation":
 				log.WithFields(log.Fields{
-					"accountID": accountID,
-					"errorCode": errorCode,
+					"accountID": reqctx.SafeLogValue(accountID),
+					"errorCode": reqctx.SafeLogValue(errorCode),
 				}).Debug("No permission to get account tags, continuing without tags")
 			default:
 				// Other API errors might indicate a more serious problem
 				log.WithFields(log.Fields{
-					"accountID": accountID,
-					"errorCode": errorCode,
+					"accountID": reqctx.SafeLogValue(accountID),
+					"errorCode": reqctx.SafeLogValue(errorCode),
 				}).Warn("Failed to get account tags")
 			}
 		} else if strings.Contains(err.Error(), "no access to Organizations") {

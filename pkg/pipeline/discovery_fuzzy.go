@@ -101,7 +101,7 @@ func (m *NameMatcher) MatchAccountToTarget(accountName string, patterns []Accoun
 	})
 
 	normalizedName := m.NormalizeAccountName(accountName)
-	l.WithField("normalized", normalizedName).Debug("Normalized account name")
+	l.WithField("normalized", reqctx.SafeLogValue(normalizedName)).Debug("Normalized account name")
 
 	for _, pattern := range patterns {
 		var matched bool
@@ -202,7 +202,7 @@ func (m *NameMatcher) ResolveAccountImports(
 ) []string {
 	l := log.WithFields(log.Fields{
 		"action":  "ResolveAccountImports",
-		"account": acct.ID,
+		"account": reqctx.SafeLogValue(acct.ID),
 		"name":    reqctx.SafeLogValue(acct.Name),
 	})
 
@@ -210,10 +210,10 @@ func (m *NameMatcher) ResolveAccountImports(
 	if targetName, matched := m.MatchAccountToTarget(acct.Name, patterns); matched {
 		// If matched target exists, use its imports
 		if target, ok := targetConfigs[targetName]; ok {
-			l.WithField("matchedTarget", targetName).Debug("Using imports from matched target")
+			l.WithField("matchedTarget", reqctx.SafeLogValue(targetName)).Debug("Using imports from matched target")
 			return target.Imports
 		}
-		l.WithField("matchedTarget", targetName).Warn("Matched target not found in config")
+		l.WithField("matchedTarget", reqctx.SafeLogValue(targetName)).Warn("Matched target not found in config")
 	}
 
 	// Fall back to default imports
