@@ -42,7 +42,7 @@ func (d *DiscoveryService) DiscoverTargets() (map[string]Target, error) {
 	discoveredTargets := make(map[string]Target)
 
 	for dynamicName, dynamicTarget := range d.config.DynamicTargets {
-		dtLog := l.WithField("dynamicTarget", dynamicName)
+		dtLog := l.WithField("dynamicTarget", reqctx.SafeLogValue(dynamicName))
 		dtLog.Debug("Processing dynamic target")
 
 		var accounts []AccountInfo
@@ -223,7 +223,7 @@ func ExpandDynamicTargets(ctx context.Context, cfg *Config, awsCtx *AWSExecution
 		if _, exists := cfg.Targets[name]; !exists {
 			cfg.Targets[name] = target
 		} else {
-			l.WithField("target", name).Warn("Dynamic target name conflicts with static target, skipping")
+			l.WithField("target", reqctx.SafeLogValue(name)).Warn("Dynamic target name conflicts with static target, skipping")
 		}
 	}
 

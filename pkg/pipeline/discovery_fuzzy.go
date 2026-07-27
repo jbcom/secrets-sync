@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -202,7 +203,7 @@ func (m *NameMatcher) ResolveAccountImports(
 	l := log.WithFields(log.Fields{
 		"action":  "ResolveAccountImports",
 		"account": acct.ID,
-		"name":    acct.Name,
+		"name":    reqctx.SafeLogValue(acct.Name),
 	})
 
 	// Check if account name matches a target pattern

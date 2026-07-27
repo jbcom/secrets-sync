@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	reqctx "github.com/jbcom/secrets-sync/pkg/context"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -157,7 +158,7 @@ func (r *ResourceResolver) Resolve(name string) ResolvedResource {
 			result.AccountID = name
 			result.ResolvedName = acct.Name
 			result.MatchConfidence = MatchAccountID
-			l.WithField("accountId", name).Debug("Resolved as AWS account by ID")
+			l.WithField("accountId", reqctx.SafeLogValue(name)).Debug("Resolved as AWS account by ID")
 			return result
 		}
 	}
@@ -171,7 +172,7 @@ func (r *ResourceResolver) Resolve(name string) ResolvedResource {
 		result.MatchConfidence = MatchExact
 		l.WithFields(log.Fields{
 			"accountId":   acct.ID,
-			"accountName": acct.Name,
+			"accountName": reqctx.SafeLogValue(acct.Name),
 		}).Debug("Resolved as AWS account by exact name")
 		return result
 	}
@@ -185,7 +186,7 @@ func (r *ResourceResolver) Resolve(name string) ResolvedResource {
 		result.MatchConfidence = MatchNormalized
 		l.WithFields(log.Fields{
 			"accountId":      acct.ID,
-			"accountName":    acct.Name,
+			"accountName":    reqctx.SafeLogValue(acct.Name),
 			"normalizedName": normalized,
 		}).Debug("Resolved as AWS account by normalized name")
 		return result
@@ -199,7 +200,7 @@ func (r *ResourceResolver) Resolve(name string) ResolvedResource {
 		result.MatchConfidence = MatchFuzzy
 		l.WithFields(log.Fields{
 			"accountId":   acct.ID,
-			"accountName": acct.Name,
+			"accountName": reqctx.SafeLogValue(acct.Name),
 		}).Debug("Resolved as AWS account by fuzzy match")
 		return result
 	}
