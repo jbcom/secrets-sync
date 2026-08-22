@@ -2,13 +2,13 @@
 
 ## Requirements
 
-- Go 1.25.11 or Go 1.26.5 for source builds; CI validates both supported
+- Go 1.25.13 or Go 1.26.6 for source builds; CI validates both supported
   upstream Go lines at known non-vulnerable patch levels.
 - Docker (optional, for containerized runs or the GitHub Action image)
 
-The Justfile defaults maintainer builds and generated docs to Go 1.26.5. To
+The Justfile defaults maintainer builds and generated docs to Go 1.26.6. To
 verify the lower supported line locally, prefix commands with
-`GO_TOOLCHAIN=go1.25.11`, for example `GO_TOOLCHAIN=go1.25.11 just test-go`.
+`GO_TOOLCHAIN=go1.25.13`, for example `GO_TOOLCHAIN=go1.25.13 just test-go`.
 
 ## Install the CLI
 
