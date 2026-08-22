@@ -18,4 +18,4 @@ if [[ "${#package_dirs[@]}" -eq 0 ]]; then
   exit 0
 fi
 
-GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.5}" go list "${package_dirs[@]}"
+GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.6}" go list "${package_dirs[@]}"

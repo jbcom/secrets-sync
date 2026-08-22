@@ -111,7 +111,7 @@ just build-all
 just python-matrix
 
 # Verify the lower supported Go line
-GO_TOOLCHAIN=go1.25.11 just test-go
+GO_TOOLCHAIN=go1.25.13 just test-go
 
 # Build
 just build

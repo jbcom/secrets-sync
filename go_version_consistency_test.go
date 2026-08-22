@@ -14,7 +14,7 @@ import (
 // must agree with it. Workflows, the Justfile and the docs each repeat the
 // version as a literal because their formats offer no include mechanism, so
 // without a test a bump silently lands in some files and not others. That
-// exact drift is what produced the codex/go-1.26.5-runtime-fix branch, where
+// exact drift is what produced an earlier Go runtime-fix branch, where
 // CI ran one patch release while the Justfile and Dockerfile ran another.
 const goVersionSourceOfTruth = "Dockerfile"
 

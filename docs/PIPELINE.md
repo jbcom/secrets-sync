@@ -377,7 +377,7 @@ jobs:
 ```yaml
 secrets-sync:
   stage: deploy
-  image: golang:1.26.5
+  image: golang:1.26.6
   before_script:
     - go install github.com/jbcom/secrets-sync/cmd/secrets-sync@latest
   script:

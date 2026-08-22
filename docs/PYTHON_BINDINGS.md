@@ -48,7 +48,7 @@ import secrets_sync
 session = secrets_sync.NewProviderSession()
 session.VaultAddress = "https://vault.example.com"
 session.VaultNamespace = "admin"
-session.VaultToken = vault_token_from_vendor_fabric
+session.VaultToken = upstream_vault_token
 session.AWSRegion = "us-east-1"
 session.AWSAccessKeyID = aws_credentials.access_key
 session.AWSSecretAccessKey = aws_credentials.secret_key
