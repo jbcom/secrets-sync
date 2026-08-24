@@ -111,7 +111,7 @@ func TestDocsQuoteCurrentGoVersion(t *testing.T) {
 	}
 	allowed[want] = true
 
-	// docs/_build is generated Sphinx output and is not tracked as source.
+	// docs/dist is generated Sourcey output and is not tracked as source.
 	docs := []string{
 		filepath.Join("docs", "PIPELINE.md"),
 		filepath.Join("docs", "getting-started", "installation.md"),

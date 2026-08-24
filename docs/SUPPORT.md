@@ -90,7 +90,7 @@ When reporting bugs, please include:
    ```bash
    # If using CLI
    secrets-sync --version
-   
+
    # If using GitHub Action
    # Include the version/tag from your workflow
    uses: jbcom/secrets-sync@vX.Y.Z
@@ -269,7 +269,7 @@ Your feedback helps us improve! Please:
 - **Repository**: [SecretSync package](https://github.com/jbcom/secrets-sync)
 - **Issues**: [GitHub Issues](https://github.com/jbcom/secrets-sync/issues)
 - **Releases**: [Release list](https://github.com/jbcom/secrets-sync/releases)
-- **License**: [MIT License](../LICENSE)
+- **License**: [MIT License](https://github.com/jbcom/secrets-sync/blob/main/LICENSE)
 
 ---
 

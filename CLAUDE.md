@@ -23,7 +23,7 @@ are gopy-generated and built/tested via `tox` (no `pyproject.toml` at root).
 - **Quality (lint + pytools + docs via tox):** `just quality`
 - **Fmt (go fmt):** `just fmt`
 - **Tidy (go mod tidy):** `just tidy`
-- **Docs (gomarkdoc API + Sphinx, warnings=errors):** `just docs`
+- **Docs (Sourcey Markdown + native Go API, static output validation):** `just docs`
 - **Clean (bin/dist/.tools/.tox/coverage):** `just clean`
 - **Python binding build (one version):** `just python-build [3.13]`
 - **Python matrix (3.11–3.14):** `just python-matrix`
@@ -45,6 +45,3 @@ are gopy-generated and built/tested via `tox` (no `pyproject.toml` at root).
 - **Release pipeline order:** ci.yml → release.yml (GoReleaser + Python wheels +
   GHCR) → cd.yml (deploy). release-please-config.json drives versions
   (release-type `go`); do not encode versions in commits or directives.
-- **AGENTS.md: missing** — standard-repo requires it for extended operating
-  protocols/architecture/patterns. Flag as a gap to create; do not inline that
-  content in CLAUDE.md.

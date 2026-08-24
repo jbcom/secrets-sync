@@ -10,7 +10,7 @@ on:
   # Scheduled sync every 6 hours
   schedule:
     - cron: '0 */6 * * *'
-  
+
   # Manual trigger with options
   workflow_dispatch:
     inputs:
@@ -59,13 +59,13 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
-      
+
       - name: Validate Configuration (Dry Run)
         uses: jbcom/secrets-sync@vX.Y.Z
         with:
@@ -84,11 +84,11 @@ jobs:
     runs-on: ubuntu-latest
     # Optional: Use GitHub Environments for additional protection
     # environment: production
-    
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - name: Determine Configuration
         id: config
         run: |
@@ -97,7 +97,7 @@ jobs:
           else
             echo "config=config.yaml" >> $GITHUB_OUTPUT
           fi
-      
+
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
@@ -105,7 +105,7 @@ jobs:
           aws-region: us-east-1
           # Optional: Add session tags for audit trail
           role-session-name: GitHubActions-SecretSync-${{ github.run_id }}
-      
+
       - name: Run SecretSync
         uses: jbcom/secrets-sync@vX.Y.Z
         with:
@@ -119,7 +119,7 @@ jobs:
           # Vault credentials from GitHub Secrets
           VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
           VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
-          
+
           # Optional: Additional environment variables
           # VAULT_ADDR: https://vault.example.com
           # VAULT_NAMESPACE: admin
@@ -135,7 +135,7 @@ jobs:
         run: |
           echo "✅ Secrets sync completed successfully"
           # Add your notification logic here (Slack, Teams, etc.)
-      
+
       - name: Send Failure Notification
         if: needs.sync.result == 'failure'
         run: |

@@ -16,6 +16,8 @@
 
 ---
 
+![SecretSync transfers an audited secret flow from one controlled source to several destinations.](docs/assets/secrets-sync-hero.png)
+
 SecretSync provides **fully automated, enterprise-grade secret synchronization** across multiple cloud providers and secret stores. Built for scale with a **two-phase pipeline architecture** (merge → sync), it supports inheritance, dynamic target discovery, and CI/CD-friendly diff reporting.
 
 ## 🏢 Independent Go Runtime, Python Facade Above It
@@ -78,7 +80,7 @@ SecretSync originated as a fork of [robertlestak/vault-secret-sync](https://gith
 
 **SecretSync is an independent product** with its own roadmap and development direction. It has been substantially rewritten with:
 - Two-phase pipeline architecture (merge → sync)
-- S3 merge store support  
+- S3 merge store support
 - Dynamic target discovery (AWS Organizations, Identity Center)
 - Comprehensive diff/dry-run system with CI/CD integration
 - DeepMerge semantics for secret aggregation
@@ -296,7 +298,7 @@ See [GitHub Actions documentation](./docs/GITHUB_ACTIONS.md) for complete usage 
 - name: Validate secrets pipeline
   run: |
     secrets-sync pipeline --config pipeline.yaml --dry-run --output github --exit-code
-  
+
 - name: Apply secrets (on merge to main)
   if: github.ref == 'refs/heads/main'
   run: |
@@ -524,7 +526,7 @@ For detailed documentation, see [tests/integration/README.md](./tests/integratio
 ### Contributing
 We welcome contributions! See our [Contributing Guide](./CONTRIBUTING.md) for:
 - 🛠️ Development setup
-- 📝 Code style guidelines  
+- 📝 Code style guidelines
 - 🧪 Testing requirements
 - 📋 Pull request process
 

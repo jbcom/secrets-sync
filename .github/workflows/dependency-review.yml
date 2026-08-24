@@ -1,0 +1,18 @@
+name: Dependency Review
+
+on:
+  pull_request:
+
+permissions: {}
+
+jobs:
+  dependency-review-gate:
+    name: Dependency Review / gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+    steps:
+      - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high

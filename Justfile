@@ -2,7 +2,6 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 
 gopy_version := "v0.4.10"
 x_tools_version := "v0.47.0"
-gomarkdoc_version := "v1.1.0"
 macosx_deployment_target := "11.0"
 auditwheel_version := "6.7.0"
 
@@ -248,17 +247,19 @@ python-install python_version="3.13":
 python-clean:
     rm -rf python/build
 
-# Generate API docs.
-docs-api:
-    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.6}" GOMARKDOC_VERSION="{{ gomarkdoc_version }}" bash scripts/generate-api-docs.sh
-
-# Build Sphinx docs with warnings treated as errors.
-docs: docs-api
-    tox -e docs
+# Build and validate the Sourcey documentation site. Sourcey reads Go package
+# comments directly through its native godoc adapter; there is no generated
+# Markdown API mirror to maintain.
+docs:
+    bash scripts/validate-docs.sh
+    corepack pnpm --dir docs install --frozen-lockfile
+    GOTOOLCHAIN="${GO_TOOLCHAIN:-go1.26.6}" corepack pnpm --dir docs run validate
+    python3 scripts/validate-sourcey-output.py
 
 # Run lint and docs checks.
 quality:
-    tox -e lint,pytools,docs
+    tox -e lint,pytools
+    just docs
 
 # Run Go formatting.
 fmt:
@@ -341,5 +342,5 @@ test-env-down:
 # Clean local build artifacts.
 clean: python-clean
     rm -f secrets-sync coverage.out
-    rm -rf bin dist docs/_build .tools .tox
+    rm -rf bin dist docs/dist .tools .tox
     docker-compose -f docker-compose.test.yml down -v 2>/dev/null || true

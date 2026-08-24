@@ -32,16 +32,16 @@ SOURCES=$(cat /testdata/secrets_seed.json | jq -r '.sources | keys[]')
 
 for source in $SOURCES; do
   echo "Processing source: $source"
-  
+
   # Get all secret paths for this source
   PATHS=$(cat /testdata/secrets_seed.json | jq -r ".sources[\"$source\"] | keys[]")
-  
+
   for path in $PATHS; do
     echo "  Writing secret: $source/$path"
-    
+
     # Extract secret data and write to Vault
     SECRET_DATA=$(cat /testdata/secrets_seed.json | jq -c ".sources[\"$source\"][\"$path\"]")
-    
+
     # Write to Vault KV v2 (note: 'data' in path for KV v2)
     vault kv put "secret/$source/$path" data="$SECRET_DATA" > /dev/null 2>&1 || {
       echo "    WARNING: Failed to write $source/$path"

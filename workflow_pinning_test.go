@@ -179,6 +179,9 @@ func markdownAndExampleWorkflowFiles(t *testing.T) []string {
 			if err != nil {
 				return err
 			}
+			if entry.IsDir() && (entry.Name() == "node_modules" || entry.Name() == "dist" || entry.Name() == "_build") {
+				return filepath.SkipDir
+			}
 			if entry.IsDir() {
 				return nil
 			}

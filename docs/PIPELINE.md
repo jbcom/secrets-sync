@@ -51,7 +51,7 @@ targets:
     imports:
       - analytics
       - analytics-engineers
-  
+
   Serverless_Prod:
     account_id: "222222222222"
     imports:
@@ -150,7 +150,7 @@ aws:
       # Or custom role:
       # name: CustomSecretsRole
       # path: /secrets/
-    
+
     account_factory:
       enabled: true
       on_account_creation: true  # Sync secrets when new accounts are created
@@ -174,13 +174,13 @@ targets:
     imports:
       - analytics           # Source
       - analytics-engineers # Source
-  
+
   # Derived target - inherits from Stg
   Serverless_Prod:
     account_id: "222222222222"
     imports:
       - Serverless_Stg      # Inherits ALL secrets from Stg
-  
+
   # Further inheritance
   livequery_demos:
     account_id: "333333333333"
@@ -318,11 +318,11 @@ Dynamic targets support all static target options:
 pipeline:
   merge:
     parallel: 4           # Max concurrent merge operations per level
-  
+
   sync:
     parallel: 4           # Max concurrent sync operations
     delete_orphans: false # Remove secrets not in source
-  
+
   dry_run: false          # Can be overridden with --dry-run
   continue_on_error: true # Don't fail entire pipeline on single target failure
 ```
@@ -351,15 +351,15 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    
+
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
-      
+
       - name: Run Pipeline
         uses: jbcom/secrets-sync@vX.Y.Z
         with:

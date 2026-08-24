@@ -36,13 +36,13 @@ targets:
     imports:
       - analytics
       - data-engineers
-  
+
   Production:
     account_id: "222222222222"
     region: us-east-1
     imports:
       - Staging  # Inherits ALL secrets from Staging
-  
+
   Demo:
     account_id: "333333333333"
     region: us-east-1
@@ -63,7 +63,7 @@ dynamic_targets:
       - data-engineers
     exclude:
       - "222222222222"  # Exclude production
-  
+
   # Development accounts discovered from Organizations OU
   dev_accounts:
     discovery:
@@ -87,7 +87,7 @@ dynamic_targets:
         target: Production
       - pattern: ".*-demo$"
         target: Demo
-  
+
   # All member accounts with tag-based filtering
   tagged_accounts:
     discovery:
