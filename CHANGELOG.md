@@ -7,6 +7,16 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.1](https://github.com/jbcom/secrets-sync/compare/v2.5.0...v2.5.1) (2026-08-24)
+
+
+### Bug Fixes
+
+* bump goreleaser/goreleaser-action from 7.2.2 to 7.2.3 ([8d79bd9](https://github.com/jbcom/secrets-sync/commit/8d79bd98c63e63beb25d5c2b5e77f8409bbe4f71))
+* **docs:** complete Context7 index scope ([d12d010](https://github.com/jbcom/secrets-sync/commit/d12d01056304baf97e929b963a11dfcb5e29d34c))
+* **quality:** harden local validation ([044e101](https://github.com/jbcom/secrets-sync/commit/044e101ca1d0b7c418633b7200bcb218778baaae))
+* **quality:** harden local validation ([1025a47](https://github.com/jbcom/secrets-sync/commit/1025a47cb182f3c3abe53f06b3af7c8218109753))
+
 ## [2.5.0](https://github.com/jbcom/secrets-sync/compare/v2.4.2...v2.5.0) (2026-08-24)
 
 
