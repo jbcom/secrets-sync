@@ -7,6 +7,25 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.0](https://github.com/jbcom/secrets-sync/compare/v2.4.2...v2.5.0) (2026-08-24)
+
+
+### Features
+
+* **docs:** migrate documentation to Sourcey ([1f57ed6](https://github.com/jbcom/secrets-sync/commit/1f57ed65eeebd211c5df99e1aedd1dd805764b67))
+* **docs:** migrate documentation to Sourcey ([37eee82](https://github.com/jbcom/secrets-sync/commit/37eee82eee87d4185d81e6231c41d1f1201549bf))
+
+
+### Bug Fixes
+
+* **ci:** align dependency review policy ([e99ba7e](https://github.com/jbcom/secrets-sync/commit/e99ba7e5773ff480671971afa5d5ab8954ef53af))
+* **ci:** document Sourcey license exception ([582db14](https://github.com/jbcom/secrets-sync/commit/582db14f6963d67fd0d1712058948d3eb8681da3))
+* **ci:** enable Corepack before docs install ([1c29879](https://github.com/jbcom/secrets-sync/commit/1c29879e15fbae967c05193a848edb45a2d66086))
+* **docs:** centralize static index route ([47dde19](https://github.com/jbcom/secrets-sync/commit/47dde19cd63a47786d7cbe1bcdff4682230c88a0))
+* **docs:** remove unused Sourcey template page ([2e1411b](https://github.com/jbcom/secrets-sync/commit/2e1411b11007b1afa179d64e8e28bbcab4508b23))
+* **docs:** validate generated Sourcey routes ([25c461b](https://github.com/jbcom/secrets-sync/commit/25c461b9da2a82b9aec51972a11e94db93dc39cb))
+* **policy:** authenticate trusted metadata checks ([3bc4923](https://github.com/jbcom/secrets-sync/commit/3bc4923828972587107953c2ffb1b3067f53b855))
+
 ## [2.4.2](https://github.com/jbcom/secrets-sync/compare/v2.4.1...v2.4.2) (2026-07-27)
 
 
