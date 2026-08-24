@@ -2,7 +2,7 @@
   "$schema": "https://context7.com/schema/context7.json",
   "projectTitle": "SecretSync",
   "description": "Go secret synchronization pipeline with a published Python binding and GitHub Action.",
-  "folders": ["docs", "pkg", "cmd", "python"],
+  "folders": ["docs", "examples", "pkg", "cmd", "python"],
   "excludeFolders": ["docs/dist", "node_modules", ".github"],
   "excludeFiles": ["CHANGELOG.md"],
   "rules": [
@@ -11,6 +11,6 @@
     "Do not add credentials to configuration or examples; use the documented secret-provider integrations."
   ],
   "previousVersions": [
-    { "tag": "v2.5.0" }
+    { "tag": "v2.4.2" }
   ]
 }
