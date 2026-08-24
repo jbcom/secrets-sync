@@ -15,7 +15,4 @@ jobs:
     steps:
       - uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
         with:
-          fail-on-severity: moderate
-          # Sourcey is the explicitly selected documentation tool and is
-          # AGPL-3.0-only. Keep the gate for other strong-copyleft additions.
-          deny-licenses: GPL-2.0-only, GPL-3.0-only
+          fail-on-severity: high

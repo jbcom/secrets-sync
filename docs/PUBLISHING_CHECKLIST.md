@@ -48,8 +48,7 @@ source of truth and verify the GitHub check output.
 - Use `gh` to verify latest stable action releases before changing pins.
 - Do not grant broad workflow permissions; keep top-level `permissions: {}` and
   add job-scoped permissions only where needed.
-- Dependency Review blocks moderate-or-higher vulnerabilities and new GPL-only
-  dependencies. Sourcey is an approved AGPL-3.0-only documentation build tool.
+- Dependency Review blocks newly introduced high-or-higher vulnerabilities.
 
 Current workflow action pins:
 
