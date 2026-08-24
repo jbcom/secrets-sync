@@ -9,13 +9,14 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 DIST = Path(__file__).resolve().parent.parent / "docs" / "dist"
+INDEX_FILE = "index.html"
 REQUIRED = (
-    "index.html",
+    INDEX_FILE,
     "getting-started.html",
     "pipeline.html",
     "security.html",
     "api.html",
-    "api/index.html",
+    f"api/{INDEX_FILE}",
     "llms.txt",
     "llms-full.txt",
     "search-index.json",
@@ -55,13 +56,13 @@ def local_target(page: Path, href: str) -> Path | None:
         candidate = page.parent / path
 
     if path.endswith("/"):
-        return candidate / "index.html"
+        return candidate / INDEX_FILE
     return candidate
 
 
 def ensure_api_compatibility_route() -> None:
     """Create the Go-doc tab endpoint Sourcey links to in static HTML mode."""
-    route_page = DIST / "api" / "index.html"
+    route_page = DIST / "api" / INDEX_FILE
     route_page.parent.mkdir(parents=True, exist_ok=True)
     route_page.write_text(
         '<!doctype html><html lang="en"><head>'
