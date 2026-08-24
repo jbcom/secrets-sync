@@ -281,4 +281,4 @@ uses: jbcom/secrets-sync@main
 
 ## License
 
-MIT - See [LICENSE](../LICENSE)
+MIT - See [LICENSE](https://github.com/jbcom/secrets-sync/blob/main/LICENSE)

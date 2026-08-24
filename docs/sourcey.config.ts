@@ -4,16 +4,12 @@ export default defineConfig({
   name: "SecretSync",
   siteUrl: "https://jonbogaty.com",
   baseUrl: "/secrets-sync",
-  // Static hosts do not generally provide extensionless-route fallbacks.
+  // GitHub Pages serves Sourcey's explicit static HTML routes without a
+  // server-side extensionless-route fallback.
   prettyUrls: false,
   repo: "https://github.com/jbcom/secrets-sync",
   editBranch: "main",
   editBasePath: "docs",
-  logo: {
-    light: "./assets/secrets-sync-hero.png",
-    dark: "./assets/secrets-sync-hero.png",
-    href: "/secrets-sync/",
-  },
   ogImage: "./assets/secrets-sync-hero.png",
   theme: {
     preset: "default",
@@ -107,7 +103,7 @@ export default defineConfig({
   },
   footer: {
     links: [
-      { label: "Security", href: "/secrets-sync/SECURITY.html" },
+      { label: "Security", href: "/secrets-sync/security.html" },
       { label: "MIT License", href: "https://github.com/jbcom/secrets-sync/blob/main/LICENSE" },
     ],
   },

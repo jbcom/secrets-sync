@@ -133,7 +133,7 @@ in-cluster config, `KUBECONFIG`, or `~/.kube/config`; the HTTP store uses a
 bearer token, custom headers, or mTLS client certificates.
 
 A full multi-provider example lives at
-[`examples/multi-provider-targets.yaml`](../examples/multi-provider-targets.yaml).
+[`examples/multi-provider-targets.yaml`](https://github.com/jbcom/secrets-sync/blob/main/examples/multi-provider-targets.yaml).
 
 ## Conditional sync
 
