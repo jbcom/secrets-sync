@@ -641,30 +641,30 @@ func (ec *AWSExecutionContext) Summary() string {
 	var sb strings.Builder
 
 	sb.WriteString("AWS Execution Context:\n")
-	sb.WriteString(fmt.Sprintf("  Account ID: %s\n", ec.CallerIdentity.AccountID))
-	sb.WriteString(fmt.Sprintf("  ARN: %s\n", ec.CallerIdentity.ARN))
+	fmt.Fprintf(&sb, "  Account ID: %s\n", ec.CallerIdentity.AccountID)
+	fmt.Fprintf(&sb, "  ARN: %s\n", ec.CallerIdentity.ARN)
 
 	if ec.OrganizationInfo != nil {
-		sb.WriteString(fmt.Sprintf("  Organization ID: %s\n", ec.OrganizationInfo.ID))
-		sb.WriteString(fmt.Sprintf("  Management Account: %s\n", ec.OrganizationInfo.MasterAccountID))
+		fmt.Fprintf(&sb, "  Organization ID: %s\n", ec.OrganizationInfo.ID)
+		fmt.Fprintf(&sb, "  Management Account: %s\n", ec.OrganizationInfo.MasterAccountID)
 
 		if ec.OrganizationInfo.IsManagementAccount {
 			sb.WriteString("  Role: Management Account ⚠️\n")
 		} else if ec.OrganizationInfo.IsDelegatedAdmin {
 			sb.WriteString("  Role: Delegated Administrator ✓\n")
-			sb.WriteString(fmt.Sprintf("  Delegated Services: %v\n", ec.OrganizationInfo.DelegatedServices))
+			fmt.Fprintf(&sb, "  Delegated Services: %v\n", ec.OrganizationInfo.DelegatedServices)
 		} else {
 			sb.WriteString("  Role: Member Account\n")
 		}
 	}
 
-	sb.WriteString(fmt.Sprintf("  Control Tower: %v\n", ec.Config.ControlTower.Enabled))
+	fmt.Fprintf(&sb, "  Control Tower: %v\n", ec.Config.ControlTower.Enabled)
 	if ec.Config.ControlTower.Enabled {
-		sb.WriteString(fmt.Sprintf("  Execution Role: %s\n", ec.Config.ControlTower.ExecutionRole.Name))
+		fmt.Fprintf(&sb, "  Execution Role: %s\n", ec.Config.ControlTower.ExecutionRole.Name)
 	}
 
-	sb.WriteString(fmt.Sprintf("  Identity Center Access: %v\n", ec.CanAccessIdentityCenter()))
-	sb.WriteString(fmt.Sprintf("  Organizations Access: %v\n", ec.CanAccessOrganizations()))
+	fmt.Fprintf(&sb, "  Identity Center Access: %v\n", ec.CanAccessIdentityCenter())
+	fmt.Fprintf(&sb, "  Organizations Access: %v\n", ec.CanAccessOrganizations())
 
 	return sb.String()
 }
