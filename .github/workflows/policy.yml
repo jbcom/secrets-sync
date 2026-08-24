@@ -15,6 +15,7 @@ jobs:
     steps:
       - name: Reject external changes to control-plane files
         env:
+          GH_TOKEN: ${{ github.token }}
           BASE_REPOSITORY: ${{ github.repository }}
           HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
           PULL_NUMBER: ${{ github.event.pull_request.number }}
