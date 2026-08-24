@@ -354,6 +354,15 @@ func formatJSON(diff *PipelineDiff) string {
 	return string(data)
 }
 
+func writeChangeSummary(sb *strings.Builder, summary ChangeSummary) {
+	fmt.Fprintf(sb, "  Added:     %d\n", summary.Added)
+	fmt.Fprintf(sb, "  Removed:   %d\n", summary.Removed)
+	fmt.Fprintf(sb, "  Modified:  %d\n", summary.Modified)
+	fmt.Fprintf(sb, "  Unchanged: %d\n", summary.Unchanged)
+	fmt.Fprintf(sb, "  Total:     %d\n", summary.Total)
+	sb.WriteString("\n")
+}
+
 func formatHuman(diff *PipelineDiff) string {
 	var sb strings.Builder
 
@@ -365,12 +374,7 @@ func formatHuman(diff *PipelineDiff) string {
 	// Overall summary
 	sb.WriteString("Pipeline Diff Summary\n")
 	sb.WriteString("=====================\n")
-	fmt.Fprintf(&sb, "  Added:     %d\n", diff.Summary.Added)
-	fmt.Fprintf(&sb, "  Removed:   %d\n", diff.Summary.Removed)
-	fmt.Fprintf(&sb, "  Modified:  %d\n", diff.Summary.Modified)
-	fmt.Fprintf(&sb, "  Unchanged: %d\n", diff.Summary.Unchanged)
-	fmt.Fprintf(&sb, "  Total:     %d\n", diff.Summary.Total)
-	sb.WriteString("\n")
+	writeChangeSummary(&sb, diff.Summary)
 
 	if diff.IsZeroSum() {
 		sb.WriteString("✅ ZERO-SUM: No changes detected\n")
@@ -530,12 +534,7 @@ func formatSideBySide(diff *PipelineDiff, showValues bool) string {
 	// Overall summary
 	sb.WriteString("Pipeline Diff Summary (Side-by-Side)\n")
 	sb.WriteString("====================================\n")
-	fmt.Fprintf(&sb, "  Added:     %d\n", diff.Summary.Added)
-	fmt.Fprintf(&sb, "  Removed:   %d\n", diff.Summary.Removed)
-	fmt.Fprintf(&sb, "  Modified:  %d\n", diff.Summary.Modified)
-	fmt.Fprintf(&sb, "  Unchanged: %d\n", diff.Summary.Unchanged)
-	fmt.Fprintf(&sb, "  Total:     %d\n", diff.Summary.Total)
-	sb.WriteString("\n")
+	writeChangeSummary(&sb, diff.Summary)
 
 	if diff.IsZeroSum() {
 		sb.WriteString("✅ ZERO-SUM: No changes detected\n")
