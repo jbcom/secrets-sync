@@ -1,5 +1,5 @@
 # Pipeline Configuration Example
-# 
+#
 # This example shows a complete multi-account secrets sync configuration
 # with AWS Control Tower integration and inheritance hierarchies.
 
@@ -22,11 +22,11 @@ vault:
       mount: approle
       role_id: ${VAULT_ROLE_ID}        # Environment variable
       secret_id: ${VAULT_SECRET_ID}
-    
+
     # Alternative: Token authentication
     # token:
     #   token: ${VAULT_TOKEN}
-    
+
     # Alternative: Kubernetes authentication
     # kubernetes:
     #   role: secrets-sync
@@ -37,13 +37,13 @@ vault:
 # =============================================================================
 aws:
   region: us-east-1
-  
+
   # Execution Context: Where is this pipeline running from?
   execution_context:
     # Option 1: Management Account (not recommended for production)
     type: management_account
     account_id: "123456789012"
-    
+
     # Option 2: Delegated Administrator (recommended)
     # type: delegated_admin
     # account_id: "987654321098"
@@ -51,7 +51,7 @@ aws:
     #   services:
     #     - sso.amazonaws.com
     #     - organizations.amazonaws.com
-    
+
     # Option 3: Custom Hub Account
     # type: hub_account
     # account_id: "111111111111"
@@ -65,7 +65,7 @@ aws:
       # Or custom:
       # name: CustomSecretsRole
       # path: /secrets/
-    
+
     account_factory:
       enabled: true
       on_account_creation: true  # Auto-sync to new accounts
@@ -104,7 +104,7 @@ sources:
       # paths:
       #   - "shared/*"
       #   - "api-keys/*"
-  
+
   analytics-engineers:
     vault:
       mount: analytics-engineers
@@ -132,7 +132,7 @@ merge_store:
   vault:
     mount: merged-secrets
     # Secrets for target "Foo" stored at: merged-secrets/Foo/*
-  
+
   # Alternative: S3
   # s3:
   #   bucket: my-secrets-bucket
@@ -223,10 +223,10 @@ dynamic_targets:
 pipeline:
   merge:
     parallel: 4           # Max concurrent merge operations per dependency level
-  
+
   sync:
     parallel: 4           # Max concurrent sync operations
     delete_orphans: false # Remove secrets from target that aren't in source
-  
+
   dry_run: false          # Override with --dry-run flag
   continue_on_error: true # Don't fail entire pipeline on single target failure

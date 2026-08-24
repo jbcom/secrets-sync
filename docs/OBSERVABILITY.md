@@ -95,8 +95,8 @@ and secret paths before writing groups, notices, or warnings.
 ### Vault Metrics
 
 #### `secrets_sync_vault_api_call_duration_seconds`
-**Type**: Histogram  
-**Labels**: `operation`, `status`  
+**Type**: Histogram
+**Labels**: `operation`, `status`
 **Description**: Duration of Vault API calls in seconds
 
 **Operations**:
@@ -113,8 +113,8 @@ secrets_sync_vault_api_call_duration_seconds_count{operation="list_secrets",stat
 ```
 
 #### `secrets_sync_vault_secrets_listed_total`
-**Type**: Counter  
-**Labels**: `path`  
+**Type**: Counter
+**Labels**: `path`
 **Description**: Total number of secrets listed from Vault
 
 **Example**:
@@ -123,22 +123,22 @@ secrets_sync_vault_secrets_listed_total{path="kv/prod/app"} 150
 ```
 
 #### `secrets_sync_vault_traversal_depth`
-**Type**: Histogram  
-**Labels**: `path`  
+**Type**: Histogram
+**Labels**: `path`
 **Description**: Depth reached during BFS traversal
 
 Useful for detecting deep directory structures that may impact performance.
 
 #### `secrets_sync_vault_queue_size`
-**Type**: Gauge  
-**Labels**: `path`  
+**Type**: Gauge
+**Labels**: `path`
 **Description**: Current size of the BFS traversal queue
 
 Indicates how many paths are pending during recursive listing.
 
 #### `secrets_sync_vault_errors_total`
-**Type**: Counter  
-**Labels**: `operation`, `error_type`  
+**Type**: Counter
+**Labels**: `operation`, `error_type`
 **Description**: Total number of Vault errors
 
 **Error types**:
@@ -151,8 +151,8 @@ Indicates how many paths are pending during recursive listing.
 ### AWS Metrics
 
 #### `secrets_sync_aws_api_call_duration_seconds`
-**Type**: Histogram  
-**Labels**: `operation`, `region`, `status`  
+**Type**: Histogram
+**Labels**: `operation`, `region`, `status`
 **Description**: Duration of AWS API calls in seconds
 
 **Operations**:
@@ -166,15 +166,15 @@ secrets_sync_aws_api_call_duration_seconds_bucket{operation="list_secrets",regio
 ```
 
 #### `secrets_sync_aws_pagination_pages`
-**Type**: Histogram  
-**Labels**: `operation`  
+**Type**: Histogram
+**Labels**: `operation`
 **Description**: Number of pagination pages processed
 
 Tracks how many pages were required for list operations. High values may indicate performance opportunities.
 
 #### `secrets_sync_aws_cache_hits_total` / `secrets_sync_aws_cache_misses_total`
-**Type**: Counter  
-**Labels**: `operation`  
+**Type**: Counter
+**Labels**: `operation`
 **Description**: Cache hit/miss counters for AWS operations
 
 Monitor cache effectiveness when `CacheTTL` is configured.
@@ -187,21 +187,21 @@ rate(secrets_sync_aws_cache_hits_total[5m]) /
 ```
 
 #### `secrets_sync_aws_secrets_operations_total`
-**Type**: Counter  
-**Labels**: `operation`, `status`  
+**Type**: Counter
+**Labels**: `operation`, `status`
 **Description**: Total number of secrets operations
 
-**Operations**: `create`, `update`, `skip`, `delete`  
+**Operations**: `create`, `update`, `skip`, `delete`
 **Status**: `success`, `error`
 
 ### Pipeline Metrics
 
 #### `secrets_sync_pipeline_execution_duration_seconds`
-**Type**: Histogram  
-**Labels**: `phase`, `operation`  
+**Type**: Histogram
+**Labels**: `phase`, `operation`
 **Description**: Duration of pipeline execution phases
 
-**Phases**: `merge`, `sync`  
+**Phases**: `merge`, `sync`
 **Operations**: `merge`, `sync`, `pipeline`
 
 **Example**:
@@ -211,8 +211,8 @@ secrets_sync_pipeline_execution_duration_seconds_count{phase="merge",operation="
 ```
 
 #### `secrets_sync_pipeline_targets_processed_total`
-**Type**: Counter  
-**Labels**: `phase`, `status`  
+**Type**: Counter
+**Labels**: `phase`, `status`
 **Description**: Total number of targets processed
 
 **Example**:
@@ -222,29 +222,29 @@ secrets_sync_pipeline_targets_processed_total{phase="sync",status="error"} 2
 ```
 
 #### `secrets_sync_pipeline_parallel_workers`
-**Type**: Gauge  
-**Labels**: `phase`  
+**Type**: Gauge
+**Labels**: `phase`
 **Description**: Number of active parallel workers
 
 Real-time view of parallelism during execution.
 
 #### `secrets_sync_pipeline_errors_total`
-**Type**: Counter  
-**Labels**: `phase`, `error_type`  
+**Type**: Counter
+**Labels**: `phase`, `error_type`
 **Description**: Total number of pipeline errors
 
 ### S3 Metrics
 
 #### `secrets_sync_s3_operation_duration_seconds`
-**Type**: Histogram  
-**Labels**: `operation`, `status`  
+**Type**: Histogram
+**Labels**: `operation`, `status`
 **Description**: Duration of S3 operations
 
 **Operations**: S3 read/write for merge store operations
 
 #### `secrets_sync_s3_object_size_bytes`
-**Type**: Histogram  
-**Labels**: `operation`  
+**Type**: Histogram
+**Labels**: `operation`
 **Description**: Size of S3 objects in bytes
 
 ## Prometheus Configuration

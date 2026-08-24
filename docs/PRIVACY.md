@@ -1,6 +1,6 @@
 # Privacy Policy for SecretSync
 
-**Effective Date:** December 8, 2024  
+**Effective Date:** December 8, 2024
 **Last Updated:** December 8, 2024
 
 ## Introduction

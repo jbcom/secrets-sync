@@ -19,16 +19,16 @@ jobs:
     permissions:
       id-token: write  # Required for OIDC
       contents: read
-    
+
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
-      
+
       - name: Sync Secrets
         uses: jbcom/secrets-sync@vX.Y.Z
         with:
@@ -79,16 +79,16 @@ jobs:
       id-token: write
       contents: read
       pull-requests: write  # For PR comments
-    
+
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
-      
+
       - name: Validate Changes (Dry Run)
         uses: jbcom/secrets-sync@vX.Y.Z
         with:
@@ -126,16 +126,16 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    
+
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
-      
+
       - name: Sync Secrets
         uses: jbcom/secrets-sync@vX.Y.Z
         with:
@@ -164,7 +164,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - name: Merge Secrets
         uses: jbcom/secrets-sync@vX.Y.Z
         with:
@@ -193,16 +193,16 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    
+
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
-      
+
       - name: Sync with Discovery
         uses: jbcom/secrets-sync@vX.Y.Z
         with:
@@ -233,16 +233,16 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    
+
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
-      
+
       - name: Check for Changes
         id: check
         uses: jbcom/secrets-sync@vX.Y.Z
@@ -255,7 +255,7 @@ jobs:
         env:
           VAULT_ROLE_ID: ${{ secrets.VAULT_ROLE_ID }}
           VAULT_SECRET_ID: ${{ secrets.VAULT_SECRET_ID }}
-      
+
       - name: Apply Changes
         if: steps.check.outcome == 'failure'
         uses: jbcom/secrets-sync@vX.Y.Z
@@ -293,16 +293,16 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    
+
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
           aws-region: us-east-1
-      
+
       - name: Sync Secrets
         uses: jbcom/secrets-sync@vX.Y.Z
         with:
@@ -349,7 +349,7 @@ targets:
     account_id: "111111111111"
     imports:
       - analytics
-  
+
   Production:
     account_id: "222222222222"
     imports:
@@ -626,16 +626,16 @@ jobs:
     permissions:
       id-token: write
       contents: read
-    
+
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b # v6.2.0
         with:
           role-to-assume: ${{ secrets[format('AWS_ROLE_{0}', matrix.environment)] }}
           aws-region: us-east-1
-      
+
       - name: Sync Secrets
         uses: jbcom/secrets-sync@vX.Y.Z
         with:
@@ -679,7 +679,7 @@ runs:
       with:
         role-to-assume: ${{ secrets.AWS_OIDC_ROLE_ARN }}
         aws-region: us-east-1
-    
+
     - uses: jbcom/secrets-sync@vX.Y.Z
       with:
         config: ${{ inputs.config }}

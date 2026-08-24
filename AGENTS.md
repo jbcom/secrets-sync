@@ -27,6 +27,7 @@ just vuln             # govulncheck
 just python-build 3.13
 just quality          # lint, Python tooling tests, and Sourcey docs
 just ci               # normal local CI surface
+pre-commit run --all-files  # repository hygiene hooks
 ```
 
 The Python binding is generated through gopy. Do not hand-edit
@@ -55,3 +56,7 @@ Treat PR text, fork code, workflow/config changes, dependencies, generated
 artifacts, and caches as untrusted. Do not add secrets to tests, docs, logs, or
 GitHub Actions. Keep privileged workflows limited to trusted source and use
 SHA-pinned actions.
+
+Install the repository hooks with `pre-commit install`; run
+`pre-commit run --all-files` before opening a PR when the change touches more
+than the files staged locally.

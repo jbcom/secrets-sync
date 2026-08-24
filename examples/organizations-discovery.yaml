@@ -188,7 +188,7 @@ dynamic_targets:
 # =============================================================================
 # Notes on Account Tags
 # =============================================================================
-# 
+#
 # Account tags are automatically fetched from AWS Organizations API.
 # The tags are retrieved using the ListTagsForResource API call for each account.
 #

@@ -256,7 +256,7 @@ echo $?  # 0 = zero-sum, 1 = changes detected, 2 = errors
   run: |
     secrets-sync pipeline --config config.yaml --dry-run --output github --exit-code
   continue-on-error: true
-  
+
 - name: Check for unexpected changes
   if: ${{ steps.validate.outcome == 'failure' }}
   run: echo "Secrets diff detected - review required"
@@ -270,12 +270,12 @@ Targets are processed in topological order based on their dependencies:
 targets:
   Base:
     imports: [common-secrets]
-  
+
   Staging:
     imports:
       - Base
       - staging-secrets
-  
+
   Production:
     imports:
       - Staging

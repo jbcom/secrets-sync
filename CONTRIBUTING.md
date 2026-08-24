@@ -53,6 +53,8 @@ Be respectful, inclusive, and professional. We're all here to learn and improve 
 
    # Run docs/lint checks
    just quality
+
+   pre-commit install
    ```
 
 #### Making Changes
@@ -66,11 +68,11 @@ Be respectful, inclusive, and professional. We're all here to learn and improve 
 2. **Write good commit messages**
    ```
    feat(store): add support for Azure Key Vault
-   
+
    - Implement Azure authentication
    - Add KV client wrapper
    - Include integration tests
-   
+
    Fixes #123
    ```
 
@@ -115,6 +117,9 @@ GO_TOOLCHAIN=go1.25.13 just test-go
 
 # Build
 just build
+
+# Run repository hygiene hooks across the worktree
+pre-commit run --all-files
 ```
 
 #### Submitting Changes
@@ -179,7 +184,7 @@ func TestMyFunction(t *testing.T) {
         {"valid input", "test", "result", false},
         {"invalid input", "", "", true},
     }
-    
+
     for _, tt := range tests {
         t.Run(tt.name, func(t *testing.T) {
             got, err := MyFunction(tt.input)
@@ -243,20 +248,20 @@ To add support for a new backend:
 2. **Implement the current client shape**
    ```go
    package newbackend
-   
+
    import "github.com/jbcom/secrets-sync/pkg/driver"
-   
+
    type Client struct {
        Name string `yaml:"name,omitempty" json:"name,omitempty"`
    }
-   
+
    func (c *Client) Validate() error {
        if c.Name == "" {
            return driver.ErrPathRequired
        }
        return nil
    }
-   
+
    func (c *Client) Driver() driver.DriverName {
        return driver.DriverName("newbackend")
    }
@@ -265,7 +270,7 @@ To add support for a new backend:
 3. **Add tests**
    ```go
    package newstore_test
-   
+
    func TestStore_Get(t *testing.T) {
        // test implementation
    }

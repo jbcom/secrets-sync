@@ -90,7 +90,7 @@ When reporting bugs, please include:
    ```bash
    # If using CLI
    secrets-sync --version
-   
+
    # If using GitHub Action
    # Include the version/tag from your workflow
    uses: jbcom/secrets-sync@vX.Y.Z

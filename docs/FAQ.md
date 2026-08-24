@@ -110,12 +110,12 @@ sources:
 targets:
   base:
     imports: [common-secrets]
-  
+
   staging:
     imports:
       - base
       - staging-overrides
-  
+
   production:
     imports:
       - staging
@@ -133,7 +133,7 @@ targets:
     role_arn: "arn:aws:iam::111111111111:role/SecretSyncRole"
     region: "us-east-1"
     imports: [shared-secrets]
-  
+
   prod-account:
     account_id: "222222222222"
     role_arn: "arn:aws:iam::222222222222:role/SecretSyncRole"
@@ -154,11 +154,11 @@ sources:
   base-secrets:
     vault:
       path: "secret/data/base"
-  
+
   dev-secrets:
     vault:
       path: "secret/data/dev"
-  
+
   prod-secrets:
     vault:
       path: "secret/data/prod"
@@ -166,7 +166,7 @@ sources:
 targets:
   development:
     imports: [base-secrets, dev-secrets]
-  
+
   production:
     imports: [base-secrets, prod-secrets]
 ```
@@ -216,7 +216,7 @@ merge_store:
 targets:
   staging:
     imports: [base-secrets]
-  
+
   production:
     imports:
       - staging
