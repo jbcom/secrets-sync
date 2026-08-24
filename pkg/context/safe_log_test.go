@@ -29,13 +29,13 @@ func TestSafeLogValueStripsControlCharacters(t *testing.T) {
 
 		// Filtering only the ASCII range leaves these, and each breaks a log
 		// line as effectively as \n does.
-		{"U+2028 line separator", "111 forged", "111forged"},
-		{"U+2029 paragraph separator", "111 forged", "111forged"},
-		{"U+0085 next line", "111forged", "111forged"},
-		{"U+009B C1 control sequence introducer", "111forged", "111forged"},
-		{"U+200E bidi mark reordering display", "111‎forged", "111forged"},
-		{"U+202E right-to-left override", "111‮forged", "111forged"},
-		{"U+200B zero-width space", "111​forged", "111forged"},
+		{"U+2028 line separator", "111\u2028forged", "111forged"},
+		{"U+2029 paragraph separator", "111\u2029forged", "111forged"},
+		{"U+0085 next line", "111\u0085forged", "111forged"},
+		{"U+009B C1 control sequence introducer", "111\u009bforged", "111forged"},
+		{"U+200E bidi mark reordering display", "111\u200eforged", "111forged"},
+		{"U+202E right-to-left override", "111\u202eforged", "111forged"},
+		{"U+200B zero-width space", "111\u200bforged", "111forged"},
 	}
 
 	for _, tc := range tests {

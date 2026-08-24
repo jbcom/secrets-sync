@@ -182,9 +182,9 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 
 	// Initialize AWS execution context if configured
 	if runtimeCfg.AWS.ExecutionContext.Type != "" {
-		awsCtx, err := NewAWSExecutionContextWithRuntimeAuth(ctx, &runtimeCfg.AWS, p.runtimeAWSAuth())
-		if err != nil {
-			log.WithError(err).Warn("Failed to initialize AWS execution context")
+		awsCtx, awsErr := NewAWSExecutionContextWithRuntimeAuth(ctx, &runtimeCfg.AWS, p.runtimeAWSAuth())
+		if awsErr != nil {
+			log.WithError(awsErr).Warn("Failed to initialize AWS execution context")
 		} else {
 			p.awsCtx = awsCtx
 		}
@@ -194,15 +194,15 @@ func NewWithContextAndRuntimeAuth(ctx context.Context, cfg *Config, auth *Runtim
 	// exists. Validate accepts a config whose targets are entirely dynamic, so
 	// skipping this would build an empty dependency graph and the run would
 	// report success having synced nothing.
-	if err := p.expandDynamicTargets(ctx, runtimeCfg); err != nil {
-		return nil, err
+	if expandErr := p.expandDynamicTargets(ctx, runtimeCfg); expandErr != nil {
+		return nil, expandErr
 	}
 
 	// Initialize S3 merge store if configured
 	if runtimeCfg.MergeStore.S3 != nil {
-		s3Store, err := NewS3MergeStoreWithRuntimeAuth(ctx, runtimeCfg.MergeStore.S3, runtimeCfg.AWS.Region, p.runtimeAWSAuth())
-		if err != nil {
-			log.WithError(err).Warn("Failed to initialize S3 merge store")
+		s3Store, s3Err := NewS3MergeStoreWithRuntimeAuth(ctx, runtimeCfg.MergeStore.S3, runtimeCfg.AWS.Region, p.runtimeAWSAuth())
+		if s3Err != nil {
+			log.WithError(s3Err).Warn("Failed to initialize S3 merge store")
 		} else {
 			p.s3Store = s3Store
 			// Build cross-region replicas if configured.

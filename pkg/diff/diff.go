@@ -365,11 +365,11 @@ func formatHuman(diff *PipelineDiff) string {
 	// Overall summary
 	sb.WriteString("Pipeline Diff Summary\n")
 	sb.WriteString("=====================\n")
-	sb.WriteString(fmt.Sprintf("  Added:     %d\n", diff.Summary.Added))
-	sb.WriteString(fmt.Sprintf("  Removed:   %d\n", diff.Summary.Removed))
-	sb.WriteString(fmt.Sprintf("  Modified:  %d\n", diff.Summary.Modified))
-	sb.WriteString(fmt.Sprintf("  Unchanged: %d\n", diff.Summary.Unchanged))
-	sb.WriteString(fmt.Sprintf("  Total:     %d\n", diff.Summary.Total))
+	fmt.Fprintf(&sb, "  Added:     %d\n", diff.Summary.Added)
+	fmt.Fprintf(&sb, "  Removed:   %d\n", diff.Summary.Removed)
+	fmt.Fprintf(&sb, "  Modified:  %d\n", diff.Summary.Modified)
+	fmt.Fprintf(&sb, "  Unchanged: %d\n", diff.Summary.Unchanged)
+	fmt.Fprintf(&sb, "  Total:     %d\n", diff.Summary.Total)
 	sb.WriteString("\n")
 
 	if diff.IsZeroSum() {
@@ -385,7 +385,7 @@ func formatHuman(diff *PipelineDiff) string {
 			continue
 		}
 
-		sb.WriteString(fmt.Sprintf("Target: %s\n", td.Target))
+		fmt.Fprintf(&sb, "Target: %s\n", td.Target)
 		sb.WriteString(strings.Repeat("-", 40) + "\n")
 
 		for _, c := range td.Changes {
@@ -399,16 +399,16 @@ func formatHuman(diff *PipelineDiff) string {
 				if c.DesiredVersion > 0 {
 					versionInfo = fmt.Sprintf(" (v%d)", c.DesiredVersion)
 				}
-				sb.WriteString(fmt.Sprintf("  + %s (new secret)%s\n", c.Path, versionInfo))
+				fmt.Fprintf(&sb, "  + %s (new secret)%s\n", c.Path, versionInfo)
 				if len(c.DesiredKeys) > 0 {
-					sb.WriteString(fmt.Sprintf("    keys: %v\n", c.DesiredKeys))
+					fmt.Fprintf(&sb, "    keys: %v\n", c.DesiredKeys)
 				}
 			case ChangeTypeRemoved:
 				versionInfo := ""
 				if c.CurrentVersion > 0 {
 					versionInfo = fmt.Sprintf(" (was v%d)", c.CurrentVersion)
 				}
-				sb.WriteString(fmt.Sprintf("  - %s (removed)%s\n", c.Path, versionInfo))
+				fmt.Fprintf(&sb, "  - %s (removed)%s\n", c.Path, versionInfo)
 			case ChangeTypeModified:
 				versionInfo := ""
 				if c.CurrentVersion > 0 && c.DesiredVersion > 0 {
@@ -418,15 +418,15 @@ func formatHuman(diff *PipelineDiff) string {
 				} else if c.DesiredVersion > 0 {
 					versionInfo = fmt.Sprintf(" (→ v%d)", c.DesiredVersion)
 				}
-				sb.WriteString(fmt.Sprintf("  ~ %s (modified)%s\n", c.Path, versionInfo))
+				fmt.Fprintf(&sb, "  ~ %s (modified)%s\n", c.Path, versionInfo)
 				if len(c.KeysAdded) > 0 {
-					sb.WriteString(fmt.Sprintf("    + keys: %v\n", c.KeysAdded))
+					fmt.Fprintf(&sb, "    + keys: %v\n", c.KeysAdded)
 				}
 				if len(c.KeysRemoved) > 0 {
-					sb.WriteString(fmt.Sprintf("    - keys: %v\n", c.KeysRemoved))
+					fmt.Fprintf(&sb, "    - keys: %v\n", c.KeysRemoved)
 				}
 				if len(c.KeysModified) > 0 {
-					sb.WriteString(fmt.Sprintf("    ~ keys: %v\n", c.KeysModified))
+					fmt.Fprintf(&sb, "    ~ keys: %v\n", c.KeysModified)
 				}
 			}
 		}
@@ -442,9 +442,9 @@ func formatGitHub(diff *PipelineDiff) string {
 	if diff.IsZeroSum() {
 		sb.WriteString("::notice::✅ Zero-sum: No changes detected\n")
 	} else {
-		sb.WriteString(fmt.Sprintf("::warning::⚠️ %d changes detected (%d added, %d removed, %d modified)\n",
+		fmt.Fprintf(&sb, "::warning::⚠️ %d changes detected (%d added, %d removed, %d modified)\n",
 			diff.Summary.Added+diff.Summary.Removed+diff.Summary.Modified,
-			diff.Summary.Added, diff.Summary.Removed, diff.Summary.Modified))
+			diff.Summary.Added, diff.Summary.Removed, diff.Summary.Modified)
 	}
 
 	// Group annotations by target
@@ -453,18 +453,18 @@ func formatGitHub(diff *PipelineDiff) string {
 			continue
 		}
 
-		sb.WriteString(fmt.Sprintf("::group::Target: %s (%d changes)\n", escapeGitHubCommandData(td.Target),
-			td.Summary.Added+td.Summary.Removed+td.Summary.Modified))
+		fmt.Fprintf(&sb, "::group::Target: %s (%d changes)\n", escapeGitHubCommandData(td.Target),
+			td.Summary.Added+td.Summary.Removed+td.Summary.Modified)
 
 		for _, c := range td.Changes {
 			safePath := escapeGitHubCommandData(c.Path)
 			switch c.ChangeType {
 			case ChangeTypeAdded:
-				sb.WriteString(fmt.Sprintf("::notice::+ %s (new secret)\n", safePath))
+				fmt.Fprintf(&sb, "::notice::+ %s (new secret)\n", safePath)
 			case ChangeTypeRemoved:
-				sb.WriteString(fmt.Sprintf("::warning::- %s (removed)\n", safePath))
+				fmt.Fprintf(&sb, "::warning::- %s (removed)\n", safePath)
 			case ChangeTypeModified:
-				sb.WriteString(fmt.Sprintf("::notice::~ %s (modified)\n", safePath))
+				fmt.Fprintf(&sb, "::notice::~ %s (modified)\n", safePath)
 			}
 		}
 
@@ -530,11 +530,11 @@ func formatSideBySide(diff *PipelineDiff, showValues bool) string {
 	// Overall summary
 	sb.WriteString("Pipeline Diff Summary (Side-by-Side)\n")
 	sb.WriteString("====================================\n")
-	sb.WriteString(fmt.Sprintf("  Added:     %d\n", diff.Summary.Added))
-	sb.WriteString(fmt.Sprintf("  Removed:   %d\n", diff.Summary.Removed))
-	sb.WriteString(fmt.Sprintf("  Modified:  %d\n", diff.Summary.Modified))
-	sb.WriteString(fmt.Sprintf("  Unchanged: %d\n", diff.Summary.Unchanged))
-	sb.WriteString(fmt.Sprintf("  Total:     %d\n", diff.Summary.Total))
+	fmt.Fprintf(&sb, "  Added:     %d\n", diff.Summary.Added)
+	fmt.Fprintf(&sb, "  Removed:   %d\n", diff.Summary.Removed)
+	fmt.Fprintf(&sb, "  Modified:  %d\n", diff.Summary.Modified)
+	fmt.Fprintf(&sb, "  Unchanged: %d\n", diff.Summary.Unchanged)
+	fmt.Fprintf(&sb, "  Total:     %d\n", diff.Summary.Total)
 	sb.WriteString("\n")
 
 	if diff.IsZeroSum() {
@@ -550,7 +550,7 @@ func formatSideBySide(diff *PipelineDiff, showValues bool) string {
 			continue
 		}
 
-		sb.WriteString(fmt.Sprintf("Target: %s\n", td.Target))
+		fmt.Fprintf(&sb, "Target: %s\n", td.Target)
 		sb.WriteString(strings.Repeat("=", 80) + "\n")
 
 		for _, c := range td.Changes {
@@ -583,33 +583,33 @@ func formatSecretChangeSideBySide(change SecretChange, showValues bool) string {
 
 	switch change.ChangeType {
 	case ChangeTypeAdded:
-		sb.WriteString(fmt.Sprintf("+ %s%s\n", change.Path, versionInfo))
+		fmt.Fprintf(&sb, "+ %s%s\n", change.Path, versionInfo)
 		sb.WriteString("  ┌─ NEW SECRET ─────────────────────────────────────────────────────────┐\n")
 		if showValues && change.DesiredValues != nil {
 			for key, value := range change.DesiredValues {
 				maskedValue := maskValue(value, showValues)
-				sb.WriteString(fmt.Sprintf("  │ + %-20s: %s\n", key, maskedValue))
+				fmt.Fprintf(&sb, "  │ + %-20s: %s\n", key, maskedValue)
 			}
 		} else if len(change.DesiredKeys) > 0 {
-			sb.WriteString(fmt.Sprintf("  │   Keys: %v\n", change.DesiredKeys))
+			fmt.Fprintf(&sb, "  │   Keys: %v\n", change.DesiredKeys)
 		}
 		sb.WriteString("  └──────────────────────────────────────────────────────────────────────┘\n")
 
 	case ChangeTypeRemoved:
-		sb.WriteString(fmt.Sprintf("- %s%s\n", change.Path, versionInfo))
+		fmt.Fprintf(&sb, "- %s%s\n", change.Path, versionInfo)
 		sb.WriteString("  ┌─ REMOVED SECRET ─────────────────────────────────────────────────────┐\n")
 		if showValues && change.CurrentValues != nil {
 			for key, value := range change.CurrentValues {
 				maskedValue := maskValue(value, showValues)
-				sb.WriteString(fmt.Sprintf("  │ - %-20s: %s\n", key, maskedValue))
+				fmt.Fprintf(&sb, "  │ - %-20s: %s\n", key, maskedValue)
 			}
 		} else if len(change.CurrentKeys) > 0 {
-			sb.WriteString(fmt.Sprintf("  │   Keys: %v\n", change.CurrentKeys))
+			fmt.Fprintf(&sb, "  │   Keys: %v\n", change.CurrentKeys)
 		}
 		sb.WriteString("  └──────────────────────────────────────────────────────────────────────┘\n")
 
 	case ChangeTypeModified:
-		sb.WriteString(fmt.Sprintf("~ %s%s\n", change.Path, versionInfo))
+		fmt.Fprintf(&sb, "~ %s%s\n", change.Path, versionInfo)
 		sb.WriteString("  ┌─ CURRENT ─────────────────┬─ DESIRED ─────────────────────────────────┐\n")
 
 		// Show side-by-side comparison
@@ -648,23 +648,23 @@ func formatSecretChangeSideBySide(change SecretChange, showValues bool) string {
 					indicator = "~"
 				}
 
-				sb.WriteString(fmt.Sprintf("  │%s%-10s: %-15s │%s%-10s: %-15s │\n",
+				fmt.Fprintf(&sb, "  │%s%-10s: %-15s │%s%-10s: %-15s │\n",
 					indicator, key, truncateString(currentStr, 15),
-					indicator, key, truncateString(desiredStr, 15)))
+					indicator, key, truncateString(desiredStr, 15))
 			}
 		} else {
 			// Show key-level changes
 			if len(change.KeysAdded) > 0 {
-				sb.WriteString(fmt.Sprintf("  │ + Added keys: %-12s │                                           │\n",
-					strings.Join(change.KeysAdded, ", ")))
+				fmt.Fprintf(&sb, "  │ + Added keys: %-12s │                                           │\n",
+					strings.Join(change.KeysAdded, ", "))
 			}
 			if len(change.KeysRemoved) > 0 {
-				sb.WriteString(fmt.Sprintf("  │ - Removed keys: %-10s │                                           │\n",
-					strings.Join(change.KeysRemoved, ", ")))
+				fmt.Fprintf(&sb, "  │ - Removed keys: %-10s │                                           │\n",
+					strings.Join(change.KeysRemoved, ", "))
 			}
 			if len(change.KeysModified) > 0 {
-				sb.WriteString(fmt.Sprintf("  │ ~ Modified keys: %-9s │                                           │\n",
-					strings.Join(change.KeysModified, ", ")))
+				fmt.Fprintf(&sb, "  │ ~ Modified keys: %-9s │                                           │\n",
+					strings.Join(change.KeysModified, ", "))
 			}
 		}
 		sb.WriteString("  └───────────────────────────┴───────────────────────────────────────────┘\n")
