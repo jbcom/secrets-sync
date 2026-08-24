@@ -7,16 +7,44 @@ updates:
     open-pull-requests-limit: 5
     groups:
       go-minor-and-patch:
+        applies-to: version-updates
         update-types: [minor, patch]
+      go-major:
+        applies-to: version-updates
+        update-types: [major]
+    # Kubernetes 0.36 requires Go 1.26. SecretSync supports Go 1.25.13, so
+    # keep Dependabot on the newest compatible 0.35 line until that support
+    # policy changes deliberately.
+    ignore:
+      - dependency-name: k8s.io/api
+        versions: [">= 0.36.0"]
+      - dependency-name: k8s.io/apimachinery
+        versions: [">= 0.36.0"]
+      - dependency-name: k8s.io/client-go
+        versions: [">= 0.36.0"]
 
   - package-ecosystem: npm
     directory: /docs
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    groups:
+      npm-minor-and-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]
+      npm-major:
+        applies-to: version-updates
+        update-types: [major]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    groups:
+      actions-minor-and-patch:
+        applies-to: version-updates
+        update-types: [minor, patch]
+      actions-major:
+        applies-to: version-updates
+        update-types: [major]
