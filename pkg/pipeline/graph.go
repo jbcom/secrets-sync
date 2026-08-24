@@ -242,7 +242,7 @@ func (g *Graph) PrintGraph() string {
 	sb.WriteString("Dependency Graph:\n")
 
 	for i, level := range levels {
-		sb.WriteString(fmt.Sprintf("  Level %d: %v\n", i, level))
+		fmt.Fprintf(&sb, "  Level %d: %v\n", i, level)
 	}
 
 	sb.WriteString("\nInheritance:\n")
@@ -257,7 +257,7 @@ func (g *Graph) PrintGraph() string {
 				}
 			}
 			if len(targetDeps) > 0 {
-				sb.WriteString(fmt.Sprintf("  %s <- %v\n", name, targetDeps))
+				fmt.Fprintf(&sb, "  %s <- %v\n", name, targetDeps)
 			}
 		}
 	}

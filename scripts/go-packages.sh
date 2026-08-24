@@ -9,6 +9,8 @@ mapfile -t package_dirs < <(
     ! -path './.tools/*' \
     ! -path './bin/*' \
     ! -path './dist/*' \
+    ! -path '*/node_modules/*' \
+    ! -path './docs/dist/*' \
     ! -path './python/build/*' \
     -exec dirname {} \; \
     | sort -u
