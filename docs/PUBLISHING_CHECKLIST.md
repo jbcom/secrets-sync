@@ -54,6 +54,7 @@ Current workflow action pins:
 | Action | Stable version | Commit SHA |
 | --- | --- | --- |
 | `actions/checkout` | `v7.0.0` | `9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0` |
+| `actions/setup-node` | `v7.0.0` | `820762786026740c76f36085b0efc47a31fe5020` |
 | `actions/setup-go` | `v6.5.0` | `924ae3a1cded613372ab5595356fb5720e22ba16` |
 | `actions/setup-python` | `v6.3.0` | `ece7cb06caefa5fff74198d8649806c4678c61a1` |
 | `astral-sh/setup-uv` | `v8.2.0` | `fac544c07dec837d0ccb6301d7b5580bf5edae39` |

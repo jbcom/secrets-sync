@@ -90,6 +90,12 @@ jobs:
         with:
           persist-credentials: false
       - run: sudo apt-get update && sudo apt-get install -y just
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+      - run: corepack enable
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
         with:
           python-version: "3.13"
@@ -105,10 +111,34 @@ jobs:
           cache-dependency-glob: |
             Justfile
             tox.ini
-            docs/conf.py
-            scripts/generate-api-docs.sh
+            docs/package.json
+            docs/sourcey.config.ts
+            pnpm-lock.yaml
             scripts/validate-docs.sh
+            scripts/validate-sourcey-output.py
             tools/*.py
             tests/python/**/*.py
       - run: uv tool install tox --with tox-uv
       - run: just quality
+
+  gate:
+    name: gate
+    needs: [go, python-binding, container, quality]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - name: Require every native gate
+        env:
+          GO_RESULT: ${{ needs.go.result }}
+          PYTHON_RESULT: ${{ needs.python-binding.result }}
+          CONTAINER_RESULT: ${{ needs.container.result }}
+          QUALITY_RESULT: ${{ needs.quality.result }}
+        run: |
+          set -euo pipefail
+          for result in "$GO_RESULT" "$PYTHON_RESULT" "$CONTAINER_RESULT" "$QUALITY_RESULT"; do
+            if [[ "$result" != "success" ]]; then
+              echo "A required CI job did not succeed: $result" >&2
+              exit 1
+            fi
+          done

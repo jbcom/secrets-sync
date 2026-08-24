@@ -1,0 +1,31 @@
+:root {
+  --ss-ink: #062b32;
+  --ss-teal: #0f766e;
+  --ss-mist: #e6fffb;
+}
+
+body {
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--ss-mist) 55%, transparent), transparent 32rem),
+    #fbfefd;
+}
+
+[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.12), transparent 32rem),
+    #061b20;
+}
+
+header {
+  border-bottom-color: color-mix(in srgb, var(--ss-teal) 22%, transparent);
+}
+
+header img {
+  border-radius: 0.35rem;
+  object-fit: cover;
+  object-position: 68% center;
+}
+
+a {
+  text-underline-offset: 0.18em;
+}

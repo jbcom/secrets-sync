@@ -1,0 +1,13 @@
+{
+  "name": "secrets-sync",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "sourcey dev",
+    "build": "sourcey build",
+    "validate": "sourcey build"
+  },
+  "dependencies": {
+    "sourcey": "^3.6.0"
+  }
+}

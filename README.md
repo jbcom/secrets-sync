@@ -16,6 +16,8 @@
 
 ---
 
+![SecretSync transfers an audited secret flow from one controlled source to several destinations.](docs/assets/secrets-sync-hero.png)
+
 SecretSync provides **fully automated, enterprise-grade secret synchronization** across multiple cloud providers and secret stores. Built for scale with a **two-phase pipeline architecture** (merge → sync), it supports inheritance, dynamic target discovery, and CI/CD-friendly diff reporting.
 
 ## 🏢 Independent Go Runtime, Python Facade Above It

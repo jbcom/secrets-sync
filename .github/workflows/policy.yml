@@ -1,0 +1,35 @@
+name: Repository Policy
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  gate:
+    name: gate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Reject external changes to control-plane files
+        env:
+          BASE_REPOSITORY: ${{ github.repository }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+          PULL_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          if [[ "$HEAD_REPOSITORY" == "$BASE_REPOSITORY" ]]; then
+            echo "Same-upstream PR: control-plane changes are permitted for trusted maintainers."
+            exit 0
+          fi
+
+          changed_files="$(gh api --paginate "repos/$BASE_REPOSITORY/pulls/$PULL_NUMBER/files" --jq '.[].filename')"
+          sensitive='^(\.github/(workflows|actions)/|\.github/dependabot\.yml$|\.coderabbit\.ya?ml$|sonar[-.]|release-please|\.release-please-manifest\.json$|\.goreleaser\.ya?ml$|action\.yml$|docs/sourcey\.config\.ts$|docs/package\.json$|pnpm-lock\.yaml$|pnpm-workspace\.yaml$)'
+          forbidden="$(printf '%s\n' "$changed_files" | grep -E "$sensitive" || true)"
+          if [[ -n "$forbidden" ]]; then
+            echo "External forks cannot modify repository control-plane files:" >&2
+            printf '%s\n' "$forbidden" >&2
+            exit 1
+          fi

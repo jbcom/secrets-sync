@@ -15,6 +15,9 @@ func TestMarkdownFencedCodeBlocksAreBalanced(t *testing.T) {
 			if err != nil {
 				return err
 			}
+			if entry.IsDir() && (entry.Name() == "node_modules" || entry.Name() == "dist" || entry.Name() == "_build") {
+				return filepath.SkipDir
+			}
 			if entry.IsDir() || filepath.Ext(path) != ".md" {
 				return nil
 			}
@@ -186,6 +189,9 @@ func TestPublicGitHubDirectoryLinksUseTreeURLs(t *testing.T) {
 		err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
 			if err != nil {
 				return err
+			}
+			if entry.IsDir() && (entry.Name() == "node_modules" || entry.Name() == "dist" || entry.Name() == "_build") {
+				return filepath.SkipDir
 			}
 			if entry.IsDir() || filepath.Ext(path) != ".md" {
 				return nil

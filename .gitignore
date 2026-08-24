@@ -8,6 +8,8 @@ coverage.out
 .ruff_cache/
 __pycache__/
 docs/_build/
+docs/dist/
+node_modules/
 docs/apidocs/
 dist/
 python/build/
