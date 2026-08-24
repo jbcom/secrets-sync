@@ -1,0 +1,36 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: true
+  review_status: true
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    drafts: true
+  tools:
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    gitleaks:
+      enabled: true
+
+  path_instructions:
+    - path: ".github/**"
+      instructions: >-
+        Treat workflows and repository automation as a security boundary. Require
+        least-privilege permissions, immutable action SHA pins, and no execution
+        of untrusted pull-request code in privileged contexts.
+    - path: "pkg/**"
+      instructions: >-
+        Secret values and credentials must never reach logs, error strings, test
+        fixtures, or serialized output without deliberate redaction.
+    - path: "docs/**"
+      instructions: >-
+        Keep Sourcey configuration and documentation consistent with the public
+        CLI and Go API. Do not introduce a second production documentation renderer.
+
+chat:
+  auto_reply: true
