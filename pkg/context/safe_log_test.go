@@ -12,11 +12,13 @@ import (
 // entries. A newline lets an attacker append a fabricated line; a carriage
 // return can overwrite one on a terminal; ANSI escapes can hide text entirely.
 func TestSafeLogValueStripsControlCharacters(t *testing.T) {
-	tests := []struct {
+	type testCase struct {
 		name  string
 		input string
 		want  string
-	}{
+	}
+
+	tests := []testCase{
 		{"plain text passes through", "111111111111", "111111111111"},
 		{"newline forging a second entry", "111\nlevel=fatal msg=\"breach\"", "111level=fatal msg=\"breach\""},
 		{"carriage return overwriting a line", "111\rmalicious", "111malicious"},
@@ -26,16 +28,19 @@ func TestSafeLogValueStripsControlCharacters(t *testing.T) {
 		{"delete character", "111\x7f222", "111222"},
 		{"empty stays empty", "", ""},
 		{"unicode is preserved", "café-eu-west-1", "café-eu-west-1"},
-
-		// Filtering only the ASCII range leaves these, and each breaks a log
-		// line as effectively as \n does.
-		{"U+2028 line separator", "111\u2028forged", "111forged"},
-		{"U+2029 paragraph separator", "111\u2029forged", "111forged"},
-		{"U+0085 next line", "111\u0085forged", "111forged"},
-		{"U+009B C1 control sequence introducer", "111\u009bforged", "111forged"},
-		{"U+200E bidi mark reordering display", "111\u200eforged", "111forged"},
-		{"U+202E right-to-left override", "111\u202eforged", "111forged"},
-		{"U+200B zero-width space", "111\u200bforged", "111forged"},
+	}
+	// Filtering only the ASCII range leaves these, and each breaks a log line
+	// as effectively as \n does.
+	for name, r := range map[string]rune{
+		"U+2028 line separator":                 0x2028,
+		"U+2029 paragraph separator":            0x2029,
+		"U+0085 next line":                      0x0085,
+		"U+009B C1 control sequence introducer": 0x009B,
+		"U+200E bidi mark reordering display":   0x200E,
+		"U+202E right-to-left override":         0x202E,
+		"U+200B zero-width space":               0x200B,
+	} {
+		tests = append(tests, testCase{name, "111" + string(r) + "forged", "111forged"})
 	}
 
 	for _, tc := range tests {
