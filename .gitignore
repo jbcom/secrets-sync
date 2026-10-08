@@ -14,14 +14,13 @@ docs/apidocs/
 dist/
 python/build/
 
-# agent-state: directive.md and decisions.ndjson are tracked; the rest is
-# re-derivable cache and must stay out of git.
-.agent-state/digest.md
-.agent-state/cursor.md
-.agent-state/.indexed-sha
-.agent-state/.last-stop-sha
-.agent-state/.last-compaction
-.agent-state/batch.json
+# Local agent runtime state and machine-specific configuration (at any depth).
+.agent-state/
+.claude/
+.augment/
+.agents/
+.mcp.json
+opencode.json
 
 # Transient in-flight context, not a permanent doc.
 CODEBASE_ASSESSMENT.md
