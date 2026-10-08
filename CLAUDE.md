@@ -1,14 +1,8 @@
-<!-- profile: standard-repo agent-state v1 -->
 # secrets-sync
 
 Enterprise-grade secret synchronization pipeline (two-phase merge → sync) across
 cloud providers and secret stores. Go CLI + Kubernetes controller + AWS Lambda,
 published as Go module, GitHub Action, Helm chart, and Python gopy wheels.
-
-## Profiles loaded
-
-@/Users/jbogaty/.claude/profiles/agent-state.md
-@/Users/jbogaty/.claude/profiles/standard-repo.md
 
 ## Repo-specific
 
