@@ -11,8 +11,8 @@ importers:
   docs:
     dependencies:
       sourcey:
-        specifier: ^3.6.0
-        version: 3.6.5(@babel/core@7.29.7)
+        specifier: ^3.6.12
+        version: 3.6.12(@babel/core@7.29.7)
 
 packages:
 
@@ -1181,8 +1181,8 @@ packages:
     resolution: {integrity: sha512-i5uvt8C3ikiWeNZSVZNWcfZPItFQOsYTUAOkcUPGd8DqDy1uOUikjt5dG+uRlwyvR108Fb9DOd4GvXfT0N2/uQ==}
     engines: {node: '>= 12'}
 
-  sourcey@3.6.5:
-    resolution: {integrity: sha512-Pq0UMFsMha5lYrA57iPiUxXe3usvpzbuOs8kawQydxFGUlGvasP9bPFF2gQpN9yWBTWpnIVlaxZamHEzdtj+1A==}
+  sourcey@3.6.12:
+    resolution: {integrity: sha512-F3UUv7AHm+MJKW9k5PHPf3mvSCKVteQIiXzqkhvYSwIV8gsNeMEoF+ADPuz5YTKRuPtJq2t8KoC4Dug5BaJw6A==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -2427,7 +2427,7 @@ snapshots:
 
   source-map@0.7.6: {}
 
-  sourcey@3.6.5(@babel/core@7.29.7):
+  sourcey@3.6.12(@babel/core@7.29.7):
     dependencies:
       '@apidevtools/json-schema-ref-parser': 13.0.5
       '@preact/preset-vite': 2.10.6(@babel/core@7.29.7)(preact@10.29.8)(vite@8.2.2(jiti@2.7.0))
