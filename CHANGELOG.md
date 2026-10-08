@@ -7,6 +7,28 @@ All notable changes to SecretSync will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.5.2](https://github.com/jbcom/secrets-sync/compare/v2.5.1...v2.5.2) (2026-10-08)
+
+
+### Bug Fixes
+
+* bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc ([53c5f69](https://github.com/jbcom/secrets-sync/commit/53c5f69def84542f3be88fc329ff2a08e4ceaaee))
+* bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp ([08824f2](https://github.com/jbcom/secrets-sync/commit/08824f238743cb87f0352aef556e443da1b2a1cf))
+* bump go.opentelemetry.io/otel/exporters/zipkin ([be7ac53](https://github.com/jbcom/secrets-sync/commit/be7ac538cddffb462b9ec5c94552480aeb093144))
+* bump go.opentelemetry.io/otel/sdk from 1.44.0 to 1.45.0 ([5725583](https://github.com/jbcom/secrets-sync/commit/57255838c8e2ba463f8a3985964f3c8a13ca6c89))
+* bump google.golang.org/grpc from 1.82.1 to 1.83.2 ([a6ecc26](https://github.com/jbcom/secrets-sync/commit/a6ecc261fc67c7249db2af028b227f7f0f1dd575))
+* bump google.golang.org/grpc from 1.82.1 to 1.83.2 ([b99fca1](https://github.com/jbcom/secrets-sync/commit/b99fca107dd9cf279627bae1679f7955f59f56e7))
+* bump js-yaml from 4.3.1 to 4.3.2 ([97b1fa4](https://github.com/jbcom/secrets-sync/commit/97b1fa4a95aa161ec8d2830876c7fd8cd4eb2cd8))
+* bump js-yaml from 4.3.1 to 4.3.2 ([41f5277](https://github.com/jbcom/secrets-sync/commit/41f5277d87eb1df2df7fe2c5ee94631bff3d845e))
+* bump source-map-js from 1.2.1 to 1.2.2 ([d7486d0](https://github.com/jbcom/secrets-sync/commit/d7486d0388904ad42113d11f51db3829a3b0bc2b))
+* bump source-map-js from 1.2.1 to 1.2.2 ([0b2b417](https://github.com/jbcom/secrets-sync/commit/0b2b41745c51deb95fcf45e3a6d034ad6076772c))
+* bump sourcey ([d96566d](https://github.com/jbcom/secrets-sync/commit/d96566dd6802138d7f8638f197cbcbc85e65729d))
+* bump sourcey from 3.6.5 to 3.6.12 in the npm-minor-and-patch group across 1 directory ([423dea3](https://github.com/jbcom/secrets-sync/commit/423dea374293f64833d04785ec60f9ff4874ed12))
+* model docs pnpm workspace root ([26663f1](https://github.com/jbcom/secrets-sync/commit/26663f1646ca381912706b2446e87f1be8237ba7))
+* model docs pnpm workspace root ([77f65ac](https://github.com/jbcom/secrets-sync/commit/77f65ac8c52289326b06ae558818d7e485aa2955))
+* **observability:** preserve default resource schema ([fc7e082](https://github.com/jbcom/secrets-sync/commit/fc7e082a16e2af882f179becfd27e97518a72653))
+* recover OpenTelemetry exporter updates ([92da50a](https://github.com/jbcom/secrets-sync/commit/92da50a2838b38039079081f8ba72db223df8933))
+
 ## [2.5.1](https://github.com/jbcom/secrets-sync/compare/v2.5.0...v2.5.1) (2026-08-24)
 
 
