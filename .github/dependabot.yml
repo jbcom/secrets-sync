@@ -6,12 +6,23 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
+      # OpenTelemetry Go modules ship and are validated as one compatible
+      # family. Keep direct exporters, core/SDK modules, and resolved semconv
+      # modules out of unrelated broad Go update groups.
+      otel-family:
+        applies-to: version-updates
+        patterns:
+          - "go.opentelemetry.io/otel*"
       go-minor-and-patch:
         applies-to: version-updates
         update-types: [minor, patch]
+        exclude-patterns:
+          - "go.opentelemetry.io/otel*"
       go-major:
         applies-to: version-updates
         update-types: [major]
+        exclude-patterns:
+          - "go.opentelemetry.io/otel*"
     # Kubernetes 0.36 requires Go 1.26. SecretSync supports Go 1.25.13, so
     # keep Dependabot on the newest compatible 0.35 line until that support
     # policy changes deliberately.
