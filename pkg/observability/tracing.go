@@ -74,8 +74,9 @@ func InitTracing(ctx context.Context, cfg TracingConfig) (*TracerProvider, error
 	if serviceName == "" {
 		serviceName = "secrets-sync"
 	}
-	res, err := resource.Merge(resource.Default(), resource.NewWithAttributes(
-		semconv.SchemaURL,
+	defaultResource := resource.Default()
+	res, err := resource.Merge(defaultResource, resource.NewWithAttributes(
+		defaultResource.SchemaURL(),
 		semconv.ServiceName(serviceName),
 	))
 	if err != nil {
