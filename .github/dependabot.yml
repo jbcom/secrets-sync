@@ -24,7 +24,9 @@ updates:
         versions: [">= 0.36.0"]
 
   - package-ecosystem: npm
-    directory: /docs
+    # pnpm keeps the shared lock and workspace declaration at the repository
+    # root. Dependabot then discovers the docs workspace manifest from it.
+    directory: /
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
