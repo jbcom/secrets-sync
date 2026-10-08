@@ -1,0 +1,9 @@
+{
+  "name": "secrets-sync-workspace",
+  "private": true,
+  "scripts": {
+    "docs:dev": "pnpm --dir docs run dev",
+    "docs:build": "pnpm --dir docs run build",
+    "docs:validate": "pnpm --dir docs run validate"
+  }
+}
