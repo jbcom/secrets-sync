@@ -8,6 +8,6 @@
     "validate": "sourcey build"
   },
   "dependencies": {
-    "sourcey": "^3.6.12"
+    "sourcey": "^3.6.13"
   }
 }
